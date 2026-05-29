@@ -117,7 +117,8 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from "vue";
 import WarningIconOrange from "../../assets/images/WarningIconOrange.svg";
-import api from "@app/services/api.js";
+import { resendDeletionCode } from "@app/services/settings/security.js";
+import { parseSettingsError } from "@app/services/settings/errors.js";
 
 const props = defineProps({
   open: {
@@ -170,17 +171,7 @@ const hasVerificationError = computed(() => Boolean(errorMessage.value));
 const canResendCode = computed(() => timeRemaining.value <= 0);
 
 function extractResendError(e) {
-  const d = e?.response?.data;
-  if (d == null) return e?.message || "Could not resend code. Please try again.";
-  if (typeof d === "string") return d;
-  if (d.message != null) {
-    const m = d.message;
-    return Array.isArray(m) ? m.join(", ") : String(m);
-  }
-  if (d.error != null) {
-    return typeof d.error === "string" ? d.error : JSON.stringify(d.error);
-  }
-  return "Could not resend code. Please try again.";
+  return parseSettingsError(e);
 }
 
 const clearVerificationError = () => {
@@ -289,7 +280,7 @@ const handleResend = async () => {
   isResending.value = true;
   errorMessage.value = "";
   try {
-    await api.post(props.resendEndpoint);
+    await resendDeletionCode(props.resendEndpoint);
     codeDigits.value = ["", "", "", "", "", ""];
     timeRemaining.value = props.initialTime;
     startTimer();

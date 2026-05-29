@@ -127,7 +127,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Plan from "./Plan.vue";
-import api from "@app/services/api.js";
+import { fetchSubscription } from "@app/services/settings/billing.js";
 import GeminiIcon from "../../assets/images/GeminiIcon.svg";
 import PostIcon from "../../assets/images/PostIcon.svg";
 import PcircleIcon from "../../assets/images/PcircleIcon.svg";
@@ -190,8 +190,7 @@ const renewAtDisplay = computed(() => {
 async function loadSubscription() {
   subscriptionLoading.value = true;
   try {
-    const { data } = await api.get('/api/subscription');
-    subscription.value = data;
+    subscription.value = await fetchSubscription();
   } catch (e) {
     console.error('GET /api/subscription failed:', e);
     subscription.value = null;

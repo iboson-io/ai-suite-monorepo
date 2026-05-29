@@ -142,7 +142,8 @@ import BackButtonArrow from "../../assets/images/BackButtonArrow.svg";
 import EyeCloseIcon from "../../assets/images/EyeCloseIcon.svg";
 import PasswordSuccessModal from "./PasswordSuccessModal.vue";
 import WarningIcon from "../../assets/images/WarningIcon.svg";
-import api from "@app/services/api.js";
+import { changePassword } from "@app/services/settings/password.js";
+import { parseSettingsError } from "@app/services/settings/errors.js";
 
 const emit = defineEmits(["back", "passwordUpdated"]);
 
@@ -487,9 +488,9 @@ const handleResetPassword = async () => {
   if (isCurrentPasswordValid && isNewPasswordValid && isConfirmPasswordValid) {
     try {
       // Call API to update password
-      await api.put('/auth/change-password', {
-        current_password: currentPassword.value,
-        new_password: newPassword.value
+      await changePassword({
+        currentPassword: currentPassword.value,
+        newPassword: newPassword.value,
       });
       
       // Show success modal
@@ -498,11 +499,7 @@ const handleResetPassword = async () => {
     } catch (error) {
       console.error('Failed to update password:', error);
       // Show error message if API call fails
-      if (error.response?.data?.message) {
-        errors.currentPassword = error.response.data.message;
-      } else {
-        errors.currentPassword = 'Failed to update password. Please try again.';
-      }
+      errors.currentPassword = parseSettingsError(error);
     }
   }
 };

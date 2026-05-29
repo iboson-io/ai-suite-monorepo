@@ -1,2 +1,15 @@
 export { default as SettingsView } from './views/SettingsView.vue'
 export { default as SuccessToastNotification } from './components/common/SuccessToastNotification.vue'
+export { default as Logo } from './components/common/Logo.vue'
+
+export { default as SignInView } from './views/auth/SignIn.vue'
+export { default as SignUpView } from './views/auth/SignUp.vue'
+export { default as EmailValidationView } from './views/auth/EmailValidation.vue'
+export { default as PasswordView } from './views/auth/Password.vue'
+export { default as ForgotPasswordView } from './views/auth/ForgotPassword.vue'
+export { default as ResetLinkView } from './views/auth/ResetLink.vue'
+export { default as ResetPasswordView } from './views/auth/ResetPassword.vue'
+export { default as PasswordUpdationView } from './views/auth/PasswordUpdation.vue'
+export { default as AccountDeletedView } from './views/auth/AccountDeleted.vue'
+
+export { default as BrandingSection } from './components/auth/BrandingSection.vue'

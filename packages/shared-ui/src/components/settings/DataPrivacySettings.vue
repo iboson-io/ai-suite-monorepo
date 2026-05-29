@@ -91,7 +91,13 @@
 import { ref, onMounted } from "vue";
 import ConfirmDataDeletionModal from "./ConfirmDataDeletionModal.vue";
 import SuccessToastNotification from "../common/SuccessToastNotification.vue";
-import api from "@app/services/api.js";
+import {
+  requestClearData,
+  deleteAccountData,
+  fetchPrivacySettings as fetchPrivacySettingsApi,
+  updateAiLearningConsent as updateAiLearningConsentApi,
+  updateAnalyticsConsent as updateAnalyticsConsentApi,
+} from "@app/services/settings/dataPrivacy.js";
 
 const aiContentLearning = ref(false);
 const analyticsSharing = ref(false);
@@ -103,7 +109,7 @@ const deleteModal = ref(null);
 const requestDeleteData = async () => {
   try {
     isRequestingDelete.value = true;
-    await api.post('/auth/account/request-clear-data');
+    await requestClearData();
     showDeleteModal.value = true;
   } catch (error) {
     console.error('Failed to request data deletion:', error);
@@ -115,11 +121,7 @@ const requestDeleteData = async () => {
 
 const handleDeleteData = async (code) => {
   try {
-    await api.delete('/auth/account/data', {
-      data: {
-        code: code
-      }
-    });
+    await deleteAccountData(code);
     
     // Data deleted successfully, call modal's success handler
     deleteModal.value?.handleDeleteResult(true);
@@ -150,8 +152,7 @@ const handleDeleteData = async (code) => {
 // Fetch privacy settings from API
 const fetchPrivacySettings = async () => {
   try {
-    const response = await api.get('/api/settings/privacy');
-    const settings = response.data?.data?.settings;
+    const settings = await fetchPrivacySettingsApi();
     if (settings) {
       aiContentLearning.value = settings.aiLearningConsent || false;
       analyticsSharing.value = settings.analyticsConsent || false;
@@ -168,9 +169,7 @@ const fetchPrivacySettings = async () => {
 const updateAiLearningConsent = async () => {
   try {
     const newValue = !aiContentLearning.value;
-    await api.put('/api/settings/privacy', {
-      ai_learning_consent: newValue
-    });
+    await updateAiLearningConsentApi(newValue);
     aiContentLearning.value = newValue;
     console.log('AI Learning consent updated successfully');
   } catch (error) {
@@ -184,9 +183,7 @@ const updateAiLearningConsent = async () => {
 const updateAnalyticsConsent = async () => {
   try {
     const newValue = !analyticsSharing.value;
-    await api.put('/api/settings/privacy', {
-      analytics_consent: newValue
-    });
+    await updateAnalyticsConsentApi(newValue);
     analyticsSharing.value = newValue;
     console.log('Analytics consent updated successfully');
   } catch (error) {

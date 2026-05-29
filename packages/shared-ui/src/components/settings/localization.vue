@@ -150,7 +150,10 @@
 import { reactive, computed, onMounted } from 'vue';
 import DownArrow from "../../assets/images/DownArrow.svg";
 import { Languages, Regions, Timezones } from './Localization.js';
-import api from '@app/services/api.js';
+import {
+  fetchLocalizationSettings as fetchLocalizationSettingsApi,
+  updateLocalizationSettings,
+} from '@app/services/settings/localization.js';
 
 // Initial values (snapshot of original state)
 const initialValues = {
@@ -163,9 +166,9 @@ const initialValues = {
 // Fetch localization settings from API
 const fetchLocalizationSettings = async () => {
   try {
-    const response = await api.get('/api/settings/localization');
-    if (response.data.status && response.data.data?.settings) {
-      const { language, region, timeFormat, timezone } = response.data.data.settings;
+    const settings = await fetchLocalizationSettingsApi();
+    if (settings) {
+      const { language, region, timeFormat, timezone } = settings;
       
       // Update initial values with API data
       initialValues.interfaceLanguage = language;
@@ -236,19 +239,19 @@ const saveChanges = async () => {
     const timezoneDescription = currentTimezone ? currentTimezone.text : '';
     
     const payload = {
-      language: localizationSettings.interfaceLanguage,
+      interfaceLanguage: localizationSettings.interfaceLanguage,
       region: localizationSettings.region,
-      time_format: localizationSettings.timeFormat,
+      timeFormat: localizationSettings.timeFormat,
       timezone: localizationSettings.timezone,
-      timezoneDescription: timezoneDescription
+      timezoneDescription,
     };
-    
-    const response = await api.put('/api/settings/localization', payload);
-    
-    if (response.data.status) {
+
+    const response = await updateLocalizationSettings(payload);
+
+    if (response.success) {
       // Update initial values to match current values after successful save
       Object.assign(initialValues, { ...localizationSettings });
-      console.log('Localization settings saved successfully:', response.data);
+      console.log('Localization settings saved successfully:', response);
     }
   } catch (error) {
     console.error('Failed to save localization settings:', error);

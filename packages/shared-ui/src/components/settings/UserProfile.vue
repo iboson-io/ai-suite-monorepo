@@ -337,7 +337,18 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
-import api, { TOKEN_KEY } from "@app/services/api.js";
+import {
+  TOKEN_KEY,
+  parseSettingsError,
+  fetchUserProfile as fetchUserProfileApi,
+  updateProfileUsername,
+  requestChangeEmail,
+  verifyChangeEmail,
+  getGoogleConnectUrl,
+  disconnectGoogle,
+  deleteProfilePicture as deleteProfilePictureApi,
+  uploadProfilePicture,
+} from "@app/services/settings/userProfile.js";
 import { Cropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 import BlackCloseIcon from "../../assets/images/BlackCloseIcon.svg";
@@ -372,41 +383,14 @@ function buildFallbackAvatar(seed) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(label)}&background=7950F2&color=fff&size=96`;
 }
 
-/** Whether Google OAuth is linked; reads common `/auth/me` user field shapes. */
-function readIsGoogleLinked(user) {
-  if (!user || typeof user !== "object") return false;
-  const flags = [
-    user.isGoogleLinked,
-    user.googleLinked,
-    user.hasGoogleLinked,
-    user.googleConnected,
-  ];
-  for (const f of flags) {
-    if (f === true) return true;
-    if (f === false) return false;
-  }
-  const id = user.googleId ?? user.google_id;
-  if (id != null && String(id).trim() !== "") return true;
-  const provider = user.authProvider ?? user.loginProvider ?? user.provider;
-  if (typeof provider === "string" && provider.toLowerCase() === "google") {
-    return true;
-  }
-  const providers = user.providers ?? user.oauthProviders;
-  if (Array.isArray(providers) && providers.some((p) => String(p).toLowerCase() === "google")) {
-    return true;
-  }
-  return false;
-}
-
+/** Whether Google OAuth is linked (normalized by app settings service). */
 async function fetchUserProfile() {
   isUserLoading.value = true;
   try {
-    const { data } = await api.get("/auth/me");
-    const user = data?.data?.user ?? data?.user ?? null;
-    if (!user || typeof user !== "object") return;
+    const profile = await fetchUserProfileApi();
+    if (!profile) return;
 
-    const username = user.username != null ? String(user.username).trim() : "";
-    const email = user.email != null ? String(user.email).trim() : "";
+    const { username, email, profilePictureUrl: pictureUrl, isGoogleLinked: googleLinked } = profile;
 
     profileForm.name = username;
     profileForm.email = email;
@@ -415,11 +399,10 @@ async function fetchUserProfile() {
 
     const fallback = buildFallbackAvatar(username || email);
     defaultAvatarUrl.value = fallback;
-    const pic = user.profilePictureUrl != null ? String(user.profilePictureUrl).trim() : "";
-    profilePictureUrl.value = pic || fallback;
+    profilePictureUrl.value = pictureUrl || fallback;
 
     googleAccountEmail.value = email;
-    isGoogleLinked.value = readIsGoogleLinked(user);
+    isGoogleLinked.value = googleLinked;
   } catch (e) {
     console.error("Failed to load user profile:", e);
   } finally {
@@ -492,32 +475,7 @@ const emailChangeResendBody = computed(() => {
 const cropperSrc = computed(() => uploadedImage.value || profilePictureUrl.value || "");
 
 function extractProfileUpdateError(e) {
-  const d = e?.response?.data;
-  if (d == null) {
-    return e?.message || "Something went wrong. Please try again.";
-  }
-  if (typeof d === "string") return d;
-  if (d.message != null) {
-    const m = d.message;
-    return Array.isArray(m) ? m.join(", ") : String(m);
-  }
-  if (d.error != null) {
-    return typeof d.error === "string" ? d.error : JSON.stringify(d.error);
-  }
-  if (Array.isArray(d.errors)) {
-    const parts = d.errors.map((x) =>
-      typeof x === "string" ? x : x?.message || x?.msg || String(x)
-    );
-    const msg = parts.filter(Boolean).join(" ");
-    if (msg) return msg;
-  }
-  if (d.errors && typeof d.errors === "object" && !Array.isArray(d.errors)) {
-    const parts = Object.entries(d.errors).flatMap(([k, v]) =>
-      Array.isArray(v) ? v.map((item) => `${k}: ${item}`) : [`${k}: ${v}`]
-    );
-    if (parts.length) return parts.join(" ");
-  }
-  return "Could not save changes.";
+  return parseSettingsError(e);
 }
 
 // Edit functions
@@ -546,7 +504,7 @@ const saveChanges = async () => {
   }
   isSavingName.value = true;
   try {
-    await api.put("/auth/profile", { username });
+    await updateProfileUsername(username);
     originalValues.name = username;
     profileForm.name = username;
     isEditing.value = false;
@@ -571,7 +529,7 @@ const startEditingEmail = async () => {
 
   isRequestingEditEmailOtp.value = true;
   try {
-    await api.post("/auth/change-email/request", {});
+    await requestChangeEmail({});
     showEmailVerificationModal.value = true;
   } catch (e) {
     emailOtpRequestError.value = extractProfileUpdateError(e);
@@ -607,7 +565,7 @@ const saveEmailChanges = async () => {
 
   isRequestingSaveEmailOtp.value = true;
   try {
-    await api.post("/auth/change-email/request", { new_email: newEmail });
+    await requestChangeEmail({ new_email: newEmail });
     pendingNewEmail.value = newEmail;
     verificationAction.value = "save";
     verificationEmail.value = newEmail;
@@ -636,7 +594,7 @@ const handleVerifyCode = async (code) => {
       verificationAction.value === "save" && pendingNewEmail.value
         ? { code: trimmed, new_email: pendingNewEmail.value.trim() }
         : { code: trimmed };
-    await api.post("/auth/change-email/verify", body);
+    await verifyChangeEmail(body);
 
     if (verificationAction.value === "edit") {
       closeEmailVerificationModal();
@@ -685,16 +643,14 @@ const connectGoogleAccount = () => {
     googleConnectError.value = "You need to be signed in to connect Google.";
     return;
   }
-  const baseUrl = (api.defaults.baseURL || "").replace(/\/+$/, "");
-  const q = new URLSearchParams({ token });
-  window.location.href = `${baseUrl}/auth/google/connect?${q.toString()}`;
+  window.location.href = getGoogleConnectUrl();
 };
 
 const handleDisconnectGoogle = async () => {
   googleDisconnectError.value = "";
   isDisconnectingGoogle.value = true;
   try {
-    await api.delete("/auth/google");
+    await disconnectGoogle();
     isGoogleLinked.value = false;
     closeDisconnectModal();
   } catch (e) {
@@ -722,10 +678,10 @@ const deleteProfilePicture = async () => {
 
   isDeletingProfilePicture.value = true;
   try {
-    const { data } = await api.delete("/auth/profile/picture");
+    const result = await deleteProfilePictureApi();
 
-    if (data?.status === false) {
-      throw new Error(data?.message || "Could not delete profile picture.");
+    if (!result.success) {
+      throw new Error(result.message || "Could not delete profile picture.");
     }
 
     if (profilePictureUrl.value && profilePictureUrl.value.startsWith("blob:")) {
@@ -816,16 +772,7 @@ const saveProfilePicture = async () => {
     const formData = new FormData();
     formData.append("picture", blob, "profile-picture.jpg");
 
-    const { data } = await api.put("/auth/profile/picture", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    const user = data?.data?.user ?? data?.user ?? null;
-    const fromUser =
-      user?.profilePictureUrl != null ? String(user.profilePictureUrl).trim() : "";
-    const fromRoot =
-      data?.profilePictureUrl != null ? String(data.profilePictureUrl).trim() : "";
-    const newUrl = fromUser || fromRoot;
+    const { profilePictureUrl: newUrl } = await uploadProfilePicture(formData);
 
     if (profilePictureUrl.value && profilePictureUrl.value.startsWith("blob:")) {
       URL.revokeObjectURL(profilePictureUrl.value);

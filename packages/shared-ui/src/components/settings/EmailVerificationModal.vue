@@ -107,7 +107,8 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from "vue";
 import BlackCloseIcon from "../../assets/images/BlackCloseIcon.svg";
-import api from "@app/services/api.js";
+import { resendChangeEmailOtp } from "@app/services/settings/userProfile.js";
+import { parseSettingsError } from "@app/services/settings/errors.js";
 
 const props = defineProps({
   open: {
@@ -165,17 +166,7 @@ let timerInterval = null;
 const canResendCode = computed(() => timeRemaining.value <= 0);
 
 function extractResendError(e) {
-  const d = e?.response?.data;
-  if (d == null) return e?.message || "Could not resend code. Please try again.";
-  if (typeof d === "string") return d;
-  if (d.message != null) {
-    const m = d.message;
-    return Array.isArray(m) ? m.join(", ") : String(m);
-  }
-  if (d.error != null) {
-    return typeof d.error === "string" ? d.error : JSON.stringify(d.error);
-  }
-  return "Could not resend code. Please try again.";
+  return parseSettingsError(e);
 }
 
 const formattedTime = computed(() => {
@@ -272,7 +263,7 @@ const handleResend = async () => {
   emit("clear-verify-error");
   try {
     const body = props.resendBody && typeof props.resendBody === "object" ? { ...props.resendBody } : {};
-    await api.post("/auth/change-email/resend", body);
+    await resendChangeEmailOtp(body);
     codeDigits.value = emptyDigits();
     timeRemaining.value = props.initialTime;
     startTimer();

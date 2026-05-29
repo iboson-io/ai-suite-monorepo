@@ -57,7 +57,7 @@
 <script setup>
 import { ref } from 'vue';
 import BlackCloseIcon from "../../assets/images/BlackCloseIcon.svg";
-import api from "@app/services/api.js";
+import { TOKEN_KEY, logoutAllDevices } from "@app/services/settings/security.js";
 
 const props = defineProps({
   open: {
@@ -91,10 +91,10 @@ const handleConfirm = async () => {
     isLoading.value = true;
     
     // Call the logout-all-devices API
-    await api.post('/auth/logout-all-devices');
+    await logoutAllDevices();
     
     // Clear the current token from localStorage
-    localStorage.removeItem('token');
+    localStorage.removeItem(TOKEN_KEY);
     
     // Show success message (optional)
     console.log('Successfully logged out from all devices');

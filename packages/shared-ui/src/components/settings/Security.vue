@@ -143,7 +143,15 @@ import CreatePassword from "./CreatePassword.vue";
 import UpdatePassword from "./UpdatePassword.vue";
 import ConfirmDataDeletionModal from "./ConfirmDataDeletionModal.vue";
 import LogoutConfirmationModal from "./LogoutConfirmationModal.vue";
-import api, { TOKEN_KEY } from "@app/services/api.js";
+import {
+  TOKEN_KEY,
+  logoutCurrentSession,
+  logoutSession,
+  fetchSessions as fetchSessionsApi,
+  fetchAuthUser,
+  requestAccountDeletion as requestAccountDeletionApi,
+  deleteAccount,
+} from "@app/services/settings/security.js";
 
 const router = useRouter()
 const showCreatePassword = ref(false);
@@ -157,20 +165,6 @@ const sessions = ref([]);
 const isSessionsLoading = ref(false);
 const sessionsError = ref("");
 const loggingOutSessionId = ref(null);
-
-function normalizeSession(raw) {
-  if (!raw || typeof raw !== "object") return null;
-  const id = raw.id != null ? String(raw.id).trim() : "";
-  if (!id) return null;
-  return {
-    id,
-    browser: raw.browser != null && String(raw.browser).trim() !== "" ? String(raw.browser).trim() : "Unknown browser",
-    os: raw.os != null && String(raw.os).trim() !== "" ? String(raw.os).trim() : "Unknown device",
-    lastUsedAt: raw.lastUsedAt ?? raw.last_used_at ?? null,
-    createdAt: raw.createdAt ?? raw.created_at ?? null,
-    isCurrent: raw.isCurrent === true || raw.is_current === true,
-  };
-}
 
 function formatSessionActivity(session) {
   if (session.isCurrent) return "Active now";
@@ -198,7 +192,7 @@ async function handleSessionLogout(session) {
   try {
     if (session.isCurrent) {
       try {
-        await api.post("/api/logout");
+        await logoutCurrentSession();
       } catch (error) {
         console.error("Logout request failed:", error);
       } finally {
@@ -208,7 +202,7 @@ async function handleSessionLogout(session) {
       return;
     }
 
-    await api.delete(`/auth/sessions/${session.id}`);
+    await logoutSession(session.id);
     sessions.value = sessions.value.filter((s) => s.id !== session.id);
   } catch (error) {
     console.error("Failed to log out session:", error);
@@ -222,12 +216,7 @@ async function fetchSessions() {
   sessionsError.value = "";
   isSessionsLoading.value = true;
   try {
-    const { data } = await api.get("/auth/sessions");
-    const list =
-      (data?.status && Array.isArray(data.data?.sessions) && data.data.sessions) ||
-      (Array.isArray(data?.sessions) && data.sessions) ||
-      [];
-    sessions.value = list.map(normalizeSession).filter(Boolean);
+    sessions.value = await fetchSessionsApi();
   } catch (error) {
     console.error("Failed to fetch sessions:", error);
     sessions.value = [];
@@ -259,11 +248,8 @@ const deleteModal = ref(null);
 // Fetch user data to check if password exists
 const fetchUserData = async () => {
   try {
-    const response = await api.get('/auth/me');
-    const user = response.data?.data?.user;
-    if (user) {
-      hasPasswordCreated.value = user.passwordExist || false;
-    }
+    const { hasPasswordCreated: passwordExists } = await fetchAuthUser();
+    hasPasswordCreated.value = passwordExists;
   } catch (error) {
     console.error('Failed to fetch user data:', error);
     // Default to false if API call fails
@@ -279,11 +265,7 @@ onMounted(() => {
 
 const handleDeleteData = async (code) => {
   try {
-    await api.delete('/auth/account', {
-      data: {
-        code: code
-      }
-    });
+    await deleteAccount(code);
     
     // Account deleted successfully, call modal's success handler
     deleteModal.value?.handleDeleteResult(true);
@@ -311,7 +293,7 @@ const handleDeleteData = async (code) => {
 const requestAccountDeletion = async () => {
   try {
     isDeleting.value = true;
-    await api.post('/auth/account/request-delete');
+    await requestAccountDeletionApi();
     showDeleteModal.value = true;
   } catch (error) {
     console.error('Failed to request account deletion:', error);

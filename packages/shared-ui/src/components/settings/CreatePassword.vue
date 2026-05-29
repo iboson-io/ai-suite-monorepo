@@ -108,7 +108,8 @@ import BackButtonArrow from "../../assets/images/BackButtonArrow.svg";
 import EyeCloseIcon from "../../assets/images/EyeCloseIcon.svg";
 import PasswordSuccessModal from "./PasswordSuccessModal.vue";
 import WarningIcon from "../../assets/images/WarningIcon.svg";
-import api from "@app/services/api.js";
+import { changePassword } from "@app/services/settings/password.js";
+import { parseSettingsError } from "@app/services/settings/errors.js";
 
 const emit = defineEmits(["back", "passwordCreated"]);
 
@@ -354,9 +355,9 @@ const handleResetPassword = async () => {
   if (isNewPasswordValid && isConfirmPasswordValid) {
     try {
       // Call API to create password
-      await api.put('/auth/change-password', {
-        current_password: '', // null for password creation
-        new_password: newPassword.value
+      await changePassword({
+        currentPassword: '',
+        newPassword: newPassword.value,
       });
       
       // Show success modal
@@ -365,11 +366,7 @@ const handleResetPassword = async () => {
     } catch (error) {
       console.error('Failed to create password:', error);
       // Show error message if API call fails
-      if (error.response?.data?.message) {
-        errors.newPassword = error.response.data.message;
-      } else {
-        errors.newPassword = 'Failed to create password. Please try again.';
-      }
+      errors.newPassword = parseSettingsError(error);
     }
   }
 };
