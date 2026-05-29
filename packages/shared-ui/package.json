@@ -1,0 +1,19 @@
+{
+  "name": "@ai-suite/shared-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./styles/Main.css": "./src/styles/Main.css",
+    "./tailwind.preset.js": "./tailwind.preset.js",
+    "./tailwind.config.base.js": "./tailwind.config.base.js"
+  },
+  "peerDependencies": {
+    "axios": "^1.14.0",
+    "vue": "^3.5.0",
+    "vue-advanced-cropper": "^2.8.0",
+    "vue-router": "^4.6.0"
+  }
+}

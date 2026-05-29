@@ -1,0 +1,19 @@
+{
+  "name": "ai-suite",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:social": "npm run dev -w @ai-suite/social-media-marketing",
+    "dev:campaign": "npm run dev -w @ai-suite/campaign",
+    "build": "npm run build --workspaces --if-present",
+    "build:social": "npm run build -w @ai-suite/social-media-marketing",
+    "build:campaign": "npm run build -w @ai-suite/campaign",
+    "preview:social": "npm run preview -w @ai-suite/social-media-marketing",
+    "preview:campaign": "npm run preview -w @ai-suite/campaign"
+  }
+}
