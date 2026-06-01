@@ -1,5 +1,6 @@
 export { default as SettingsView } from './views/SettingsView.vue'
 export { default as SuccessToastNotification } from './components/common/SuccessToastNotification.vue'
+export { default as DeletePostModal } from './components/common/DeletePostModal.vue'
 export { default as Logo } from './components/common/Logo.vue'
 
 export { default as SignInView } from './views/auth/SignIn.vue'
@@ -10,6 +11,9 @@ export { default as ForgotPasswordView } from './views/auth/ForgotPassword.vue'
 export { default as ResetLinkView } from './views/auth/ResetLink.vue'
 export { default as ResetPasswordView } from './views/auth/ResetPassword.vue'
 export { default as PasswordUpdationView } from './views/auth/PasswordUpdation.vue'
-export { default as AccountDeletedView } from './views/auth/AccountDeleted.vue'
+export { default as AccountDeletedView } from './views/AccountDeleted.vue'
 
 export { default as BrandingSection } from './components/auth/BrandingSection.vue'
+export { default as NotificationsView } from './components/notifications/NotificationsView.vue'
+export { default as PromptBox } from './components/promptBox/PromptBox.vue'
+export { default as SchedulerCalendarModal } from './components/calendar/SchedulerCalendarModal.vue'

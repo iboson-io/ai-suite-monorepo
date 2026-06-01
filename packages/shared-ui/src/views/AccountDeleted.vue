@@ -36,5 +36,5 @@
 </template>
 
 <script setup>
-import WomenByeImage from "../../assets/images/WomenByeImage.png"
+import WomenByeImage from "../assets/images/WomenByeImage.png"
 </script>
