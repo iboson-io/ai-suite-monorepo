@@ -1,6 +1,11 @@
+export { default as DashboardView } from './views/Dashboard.vue'
 export { default as SettingsView } from './views/SettingsView.vue'
+export { default as Sidebar } from './components/dashboard/Sidebar.vue'
+export { default as SidebarMobile } from './components/dashboard/SidebarMobile.vue'
+export { default as UserAccountPopup } from './components/dashboard/UserAccountPopup.vue'
 export { default as SuccessToastNotification } from './components/common/SuccessToastNotification.vue'
 export { default as DeletePostModal } from './components/common/DeletePostModal.vue'
+export { default as Cards } from './components/common/Cards.vue'
 export { default as Logo } from './components/common/Logo.vue'
 
 export { default as SignInView } from './views/auth/SignIn.vue'
@@ -17,3 +22,4 @@ export { default as BrandingSection } from './components/auth/BrandingSection.vu
 export { default as NotificationsView } from './components/notifications/NotificationsView.vue'
 export { default as PromptBox } from './components/promptBox/PromptBox.vue'
 export { default as SchedulerCalendarModal } from './components/calendar/SchedulerCalendarModal.vue'
+export { default as ChatActionBar } from './components/chat/ActionBar.vue'

@@ -41,10 +41,10 @@
               ]"
             >
               <div
-                @click="selectProduct({ id: null, name: 'All products' })"
+                @click="selectProduct(allProductsOption)"
                 class="cursor-pointer px-xl py-md label_2_medium secondary_text_color hover:bg-gray-50"
               >
-                All products
+                {{ allProductsLabel }}
               </div>
               <div
                 v-for="item in products"
@@ -157,7 +157,11 @@ import ActiveMikeIcon from '../../assets/images/ActiveMikeIcon.svg'
 import {
   fetchProducts as fetchProductsApi,
   fetchModels as fetchModelsApi,
+  getPromptBoxConfig,
 } from '@app/services/promptBox/promptBox.js'
+
+const { allProductsLabel } = getPromptBoxConfig()
+const allProductsOption = { id: null, name: allProductsLabel }
 
 const props = defineProps({
   isAiGenerating: {
@@ -363,8 +367,8 @@ const selectProduct = (item) => {
 }
 
 function syncProductFromId(productId) {
-  if (productId == null || productId === '' || productId === 'All products') {
-    selectedProduct.value = { id: null, name: 'All products' }
+  if (productId == null || productId === '' || productId === allProductsLabel) {
+    selectedProduct.value = { ...allProductsOption }
     return
   }
   const idStr = String(productId)
