@@ -2,18 +2,36 @@
   "name": "ai-suite",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
-    "dev:social": "npm run dev -w @ai-suite/social-media-marketing",
-    "dev:campaign": "npm run dev -w @ai-suite/campaign",
-    "build": "npm run build --workspaces --if-present",
-    "build:social": "npm run build -w @ai-suite/social-media-marketing",
-    "build:campaign": "npm run build -w @ai-suite/campaign",
-    "preview:social": "npm run preview -w @ai-suite/social-media-marketing",
-    "preview:campaign": "npm run preview -w @ai-suite/campaign"
+    "dev": "concurrently -n social,campaign -c blue,green \"npm run dev:social\" \"npm run dev:campaign\"",
+    "dev:social": "vite --host 0.0.0.0 --config apps/social-media-marketing-project/vite.config.js",
+    "dev:campaign": "vite --host 0.0.0.0 --config apps/campaign-project-ui/vite.config.js",
+    "build": "npm run build:social && npm run build:campaign",
+    "build:social": "vite build --config apps/social-media-marketing-project/vite.config.js",
+    "build:campaign": "vite build --config apps/campaign-project-ui/vite.config.js",
+    "preview:social": "vite preview --config apps/social-media-marketing-project/vite.config.js",
+    "preview:campaign": "vite preview --config apps/campaign-project-ui/vite.config.js"
+  },
+  "dependencies": {
+    "@ai-suite/shared-ui": "workspace:*",
+    "@emoji-mart/data": "^1.2.1",
+    "axios": "^1.14.0",
+    "canvas-confetti": "^1.9.4",
+    "chart.js": "^4.5.1",
+    "vue": "^3.5.24",
+    "vue-advanced-cropper": "^2.8.9",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^7.2.4"
   }
 }

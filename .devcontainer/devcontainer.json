@@ -1,0 +1,20 @@
+{
+  "name": "AI Suite",
+  "forwardPorts": [3000, 3001],
+  "portsAttributes": {
+    "3000": {
+      "label": "Social Media Marketing",
+      "onAutoForward": "openBrowser"
+    },
+    "3001": {
+      "label": "Campaign Project",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": ["Vue.volar"]
+    }
+  }
+}

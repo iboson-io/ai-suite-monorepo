@@ -1,0 +1,446 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+  color: #28293d;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
+.data-privacy-full-height {
+  /* Full viewport height minus header, padding, and tabs navigation */
+  min-height: calc(100vh - 200px);
+}
+
+
+/* scrollbar size */
+.custom_scrollbar::-webkit-scrollbar {
+  width: 4px; /* Chrome/Safari - hide by default */
+}
+
+/* track */
+.custom_scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 80px 0px 50px 0px;          /* gap top & bottom */
+  border-radius: 10px;
+  
+}
+
+/* thumb */
+.custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #8a8a8a;
+}
+
+/* Show on aside hover */
+aside:hover .custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c4c7ce;
+}
+
+aside:hover .custom_scrollbar::-webkit-scrollbar-track {
+  background: #ebebeb;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .data-privacy-full-height {
+    min-height: calc(100vh - 220px);
+  }
+}
+
+/* Large screen adjustments */
+@media (min-width: 1024px) {
+  .data-privacy-full-height {
+    min-height: calc(100vh - 170px);
+  }
+}
+/* Hide text on md screens for product select, show only icon and arrow */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-select .product-text {
+    color: transparent;
+    width: 0;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1400px) {
+  .popup_position {
+    bottom: 5em !important;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 5000px) {
+  .sidebar_bottom_section {
+    position: absolute;
+    bottom: 1rem;
+  }
+  .popup_position {
+    bottom: 6em !important;
+  }
+}
+.sidebar_bottom_section{
+  margin-left: 1em;
+  margin-left: 0px;
+}
+/* Checkbox styling */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #DADDE1;
+  border-radius: 4px;
+  background-color: #Fff;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+}
+.custom-checkbox:hover{
+background-color: #f3f4f5;
+}
+
+.custom-checkbox:checked {
+  background-color: #dadde1;
+  border: 1.5px solid #DADDE1;
+}
+
+.custom-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 8px;
+  border: solid #28293D;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+}
+
+/* Dropdown panel styling */
+.relative > div[class*="absolute"] {
+  border: 1px solid #F1F2F4;
+}
+/* Hide scrollbar for mobile view */
+.chart-scroll-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.chart-scroll-container::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+.border_transparent .relative > div[class*="absolute"], .border_none {
+  border: 1px solid transparent !important;
+}
+/* .relative > div[class*="absolute"] {
+  border: 1px solid transparent !important;
+} */
+
+/* Custom scrollbar for calendar - visible only on hover, gray-400 color, thinner */
+.custom-scrollbar-calendar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.custom-scrollbar-calendar:hover {
+  scrollbar-color: #9ca3af transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar-calendar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar-calendar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar-calendar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
+.custom-scrollbar-calendar:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+
+
+/* primary button animation */
+
+.primary_button_animation {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  isolation: isolate; /* 🔥 THIS FIXES IT */
+}
+
+/* Inner pill */
+.primary_button_animation::after {
+  content: "";
+  position: absolute;
+  inset: 0.5em 0.75em;
+  background: #000;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* Glow layer */
+.primary_button_animation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: conic-gradient(
+    from var(--mask) at 50% 50%,
+    oklch(0.88 0.19 195),
+    oklch(0.58 0.24 267),
+    oklch(0.66 0.28 312),
+    oklch(0.74 0.3 334),
+    oklch(0.7 0.24 24),
+    oklch(0.79 0.2 65),
+    oklch(0.96 0.24 110),
+    oklch(0.87 0.32 140),
+    oklch(0.86 0.3 150),
+    oklch(0.88 0.19 195)
+  );
+  filter: blur(0.9em);
+  opacity: 0;
+  transform: scale(0.96, 0.9);
+  z-index: -2;
+  transition: all 0.25s ease;
+   --mask: 30deg;
+}
+
+/* Hover */
+.primary_button_animation:hover::before {
+  /* opacity: 0.6;
+  transform: scale(0.85);
+  filter: blur(1em); */
+  animation: spinOnce 0.5s linear 1 forwards;
+}
+
+/* Focus */
+.primary_button_animation:focus-visible {
+  outline: 2px solid oklch(82.795% 0.22329 150.665);
+  outline-offset: 3px;
+}
+
+/* Animation */
+.primary_button_animation:focus::before,
+.primary_button_animation.active::before {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Custom property */
+@property --mask {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 30deg;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    --mask: 30deg;
+    opacity: 0.6;
+    transform: scale(0.80, 0.8);
+  }
+  70% {
+    --mask: 180deg;
+  }
+  85% {
+    opacity: 0.4;
+    transform: scale(0.80, 0.8);
+  }
+}
+
+@keyframes spinOnce {
+  0% {
+    --mask: 30deg;
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+
+  100% {
+    --mask: 390deg; /* 360 + start = forward spin */
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+}
+
+/* chat button animation css */
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.button-gradient {
+  --border-size: 1px;
+  --radius: 12px;
+  --angle: 0deg;
+
+  padding: var(--border-size);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  background: transparent;
+
+  /* Smooth animation both directions */
+  transition: --angle 0.6s linear;
+
+  background-image: conic-gradient(
+    from calc(var(--angle) - 45deg),
+
+    #FAB0003D 10deg,
+    #15BE5329 120deg,
+
+    transparent 130deg,
+
+    #0073E6 150deg,
+    #0073E6 150deg,
+
+    transparent 180deg,
+
+    #FAB0003D 280deg,
+    #15BE5329 300deg,
+
+    transparent 290deg,
+
+    #9966FF 320deg,
+    #9966FF 320deg,
+
+    transparent 360deg
+  );
+}
+
+/* Hover rotates forward */
+.button-gradient:hover {
+  --angle: 150deg;
+}
+
+.button-gradient span {
+  border-radius: calc(var(--radius) - var(--border-size));
+}
+
+/* Prompt box animated border shadow when AI is generating */
+.prompt-box-animated {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+}
+
+.prompt-box-animated::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  border-radius: 12px 12px 0 0;
+  z-index: -1;
+  animation: center-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 50%,
+    rgba(153, 102, 255, 0.9) 0%,
+    rgba(124, 58, 237, 0.7) 25%,
+    rgba(99, 102, 241, 0.5) 40%,
+    rgba(59, 130, 246, 0.3) 60%,
+    rgba(99, 102, 241, 0.15) 75%,
+    transparent 100%
+  );
+  filter: blur(12px);
+}
+
+@keyframes center-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scaleX(1) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.1) scaleY(1.2);
+  }
+}
+
+.prompt-box-animated > div {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary-color, #fff);
+  border-radius: 12px;
+}
+
+.prompt-box-animated > div::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(129.49deg, #FAB000 3.76%, #9966FF 23.94%, #0073E6 70.44%, #15BE53 101.03%);
+  background-size: 200% 200%;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: -1;
+  animation: border-gradient-animate 3s linear infinite;
+}
+
+@keyframes border-gradient-animate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Remove autofill background color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+/* For dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--bg-secondary-color, #fff) inset !important;
+    box-shadow: 0 0 0 30px var(--bg-secondary-color, #fff) inset !important;
+  }
+}
+select:focus {
+  box-shadow: 0px 0px 0px 3px #D9E2FC;
+  outline: none;
+}
+
+
