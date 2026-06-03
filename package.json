@@ -7,21 +7,36 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n social,campaign -c blue,green \"npm run dev:social\" \"npm run dev:campaign\"",
+    "dev": "concurrently -n social,campaign,agent -c blue,green,magenta \"npm run dev:social\" \"npm run dev:campaign\" \"npm run dev:agent-builder\"",
     "dev:social": "vite --host 0.0.0.0 --config apps/social-media-marketing-project/vite.config.js",
     "dev:campaign": "vite --host 0.0.0.0 --config apps/campaign-project-ui/vite.config.js",
-    "build": "npm run build:social && npm run build:campaign",
+    "dev:agent-builder": "vite --host 0.0.0.0 --config apps/ai-agent-builder/vite.config.js",
+    "build": "npm run build:social && npm run build:campaign && npm run build:agent-builder",
     "build:social": "vite build --config apps/social-media-marketing-project/vite.config.js",
     "build:campaign": "vite build --config apps/campaign-project-ui/vite.config.js",
+    "build:agent-builder": "vite build --config apps/ai-agent-builder/vite.config.js",
     "preview:social": "vite preview --config apps/social-media-marketing-project/vite.config.js",
-    "preview:campaign": "vite preview --config apps/campaign-project-ui/vite.config.js"
+    "preview:campaign": "vite preview --config apps/campaign-project-ui/vite.config.js",
+    "preview:agent-builder": "vite preview --config apps/ai-agent-builder/vite.config.js"
   },
   "dependencies": {
     "@ai-suite/shared-ui": "workspace:*",
     "@emoji-mart/data": "^1.2.1",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/core": "^1.48.2",
+    "@vue-flow/minimap": "^1.5.4",
     "axios": "^1.14.0",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
+    "countries-list": "^3.1.1",
+    "dagre": "^0.8.5",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "lottie-web": "^5.13.0",
+    "marked": "^16.1.2",
+    "moment": "^2.30.1",
+    "pusher": "^5.2.0",
+    "three": "^0.178.0",
     "vue": "^3.5.24",
     "vue-advanced-cropper": "^2.8.9",
     "vue-router": "^4.6.4"
@@ -32,6 +47,7 @@
     "concurrently": "^9.2.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
+    "unplugin-auto-import": "^20.3.0",
     "vite": "^7.2.4"
   }
 }
