@@ -12,11 +12,11 @@
         <h1 class="primary_text_color heading_h5_semibold md:heading_h4_semibold">
           Chat with your AI agent
         </h1>
-        <p class="mt-md heading_h5_semibold md:heading_h4_semibold gradient_text_color">
+        <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color">
           Automate support and resolve issues
         </p>
 
-        <div class="mt-10xl">
+        <div class="">
           <PromptBox
             :is-ai-generating="isLoading"
             @send-message="handleFirstMessage"

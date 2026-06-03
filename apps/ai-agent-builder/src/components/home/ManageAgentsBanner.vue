@@ -1,13 +1,9 @@
 <template>
   <section
-    class="mx-auto mt-10xl flex max-w-3xl flex-col gap-xl rounded-2xl border border-info-100 bg-info-25 px-5xl py-5xl text-left sm:flex-row sm:items-center sm:justify-between"
+    class="mx-auto mt-10xl flex max-w-3xl flex-col gap-xl rounded-2xl bg-gradient-to-b from-[#E6F1FD] to-[#F2E6FF] px-5xl py-5xl text-left sm:flex-row sm:items-center sm:justify-between"
   >
-    <div class="flex items-start gap-xl">
-      <div
-        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-pink-400 via-purple-400 to-indigo-400"
-      >
-        <img :src="AgentsIcon" alt="" class="h-5 w-5 brightness-0 invert" />
-      </div>
+    <div class="flex items-center gap-xl">
+      <img :src="AgentsIcon" alt="" class="h-12 w-auto shrink-0" />
       <div>
         <h2 class="label_1_semibold primary_text_color">Manage AI Agents</h2>
         <p class="body_3_regular secondary_text_color mt-md">
