@@ -49,8 +49,8 @@
       </div>
       <div class="block h-[1px] w-full bg-gray-25 mt-6xl"></div>
       <!-- New Chat -->
-      <div class="relative group mt-6xl" @mouseenter="hoveredItem = 'chat'" @mouseleave="hoveredItem = null"
-        :ref="el => { if (el) menuItemRefs['chat'] = el }">
+      <div class="relative group mt-6xl" @mouseenter="hoveredItem = 'newChat'" @mouseleave="hoveredItem = null"
+        :ref="el => { if (el) menuItemRefs['newChat'] = el }">
 
         <button class="button-gradient w-full" @click="handleNewChatClick">
           <span class="flex gap-md items-center w-full bg_primary_color primary_text_color label_2_semibold"
@@ -62,7 +62,7 @@
         </button>
 
         <Teleport to="body">
-          <div v-if="isCollapsed && hoveredItem === 'chat'" :style="getTooltipStyle('chat')"
+          <div v-if="isCollapsed && hoveredItem === 'newChat'" :style="getTooltipStyle('newChat')"
             class="pointer-events-none fixed whitespace-nowrap z-[1000] transition-all duration-200 ">
             <div
               class="relative bg-black-400 primary_2_text_color label_2_medium rounded-lg px-xl py-md outline-none ring-0 border_none">

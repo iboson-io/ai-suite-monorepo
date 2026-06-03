@@ -11,7 +11,7 @@ export function getSidebarConfig() {
     enableSessionRename: true,
     enableNotificationBadge: true,
     chatRoute: '/home',
-    newChatButtonClass: 'p-md',
+    newChatButtonClass: 'px-md py-xl',
     layout: 'scrollable',
   }
 }
