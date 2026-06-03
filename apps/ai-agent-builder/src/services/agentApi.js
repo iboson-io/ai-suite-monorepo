@@ -186,6 +186,43 @@ class ApiService {
     }
   }
 
+  async requestChatList(endpoint, options = {}) {
+    const url = `${this.chatBaseURL}${endpoint}`
+
+    const config = {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.getAuthHeader(),
+        ...options.headers,
+      },
+      ...options,
+    }
+
+    try {
+      const response = await fetch(url, config)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+
+        if (this.isAuthError(response, errorData)) {
+          await this.handleAuthError()
+          throw new Error('Authentication required')
+        }
+
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      if (error.message === 'Authentication required') {
+        throw error
+      }
+      console.error('Chat list API request failed:', error)
+      throw error
+    }
+  }
+
   async requestChatAI(endpoint, options = {}) {
     // if (this.isRedirecting) {
     //   throw new Error('Authentication required')

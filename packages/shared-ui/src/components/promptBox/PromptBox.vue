@@ -8,7 +8,7 @@
         ref="promptInputRef"
         v-model="prompt"
         type="text"
-        :placeholder="isListening ? 'Listening… speak now' : 'What\'s on your mind?'"
+        :placeholder="isListening ? 'Listening… speak now' : (placeholder || 'What\'s on your mind?')"
         class="w-full border-none outline-none label_1_regular"
         :class="[
           prompt ? 'primary_text_color' : 'secondary_text_color',
@@ -65,7 +65,7 @@
             <input type="file" class="hidden" multiple @change="handleFiles" />
           </label>
 
-          <div class="relative" ref="modelsDropdownRef">
+          <div v-if="showModelsDropdown !== false" class="relative" ref="modelsDropdownRef">
             <button
               @click="toggleModels"
               class="flex items-center gap-md rounded-md border primary_border_color bg_secondary_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
@@ -160,7 +160,7 @@ import {
   getPromptBoxConfig,
 } from '@app/services/promptBox/promptBox.js'
 
-const { allProductsLabel } = getPromptBoxConfig()
+const { allProductsLabel, placeholder, showModelsDropdown } = getPromptBoxConfig()
 const allProductsOption = { id: null, name: allProductsLabel }
 
 const props = defineProps({
@@ -552,7 +552,9 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', handleResize, true)
   fetchProducts()
-  fetchModels()
+  if (showModelsDropdown !== false) {
+    fetchModels()
+  }
 })
 
 onUnmounted(() => {

@@ -20,7 +20,7 @@
         <div
           class="h-6 w-6 rounded-full bg-gradient-to-r from-pink-500 to-purple-600"
         ></div>
-        Genius AI
+        {{ sidebarConfig.brandName || 'Genius AI' }}
       </div>
       <button @click="$emit('close')" class="text-xl secondary_text_color">✕</button>
     </div>
@@ -38,7 +38,7 @@
     <!-- Chat History -->
     <p class="mt-6xl label_3_semibold primary_text_color">Chat history</p>
     <div
-      class="mt-xl max-h-[155px] md:max-h-[200px] overflow-y-auto custom_scrollbar pr-1"
+      class="mt-xl max-h-[155px] overflow-x-hidden overflow-y-auto custom_scrollbar pr-1 md:max-h-[200px]"
       @scroll.passive="closeChatSessionMenu"
     >
       <!-- Dynamic Chat Sessions from API -->
@@ -47,7 +47,7 @@
         :key="session.id"
         :data-session-id="session.id"
         @click="handleSessionRowClick(session)"
-        class="cursor-pointer mt-lg p-md md:mt-xl md:p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+        class="cursor-pointer mt-lg min-w-0 p-md md:mt-xl md:p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
       >
         <!-- Title Display or Edit Input -->
         <div class="flex-1 min-w-0">
@@ -61,7 +61,7 @@
             class="w-full bg-transparent border-none outline-none label_2_regular primary_text_color"
             placeholder="Enter chat title..."
           />
-          <span v-else class="truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
+          <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
         </div>
         <div class="relative shrink-0 flex items-center">
           <button

@@ -9,8 +9,8 @@ import ResetLink from '../../../../packages/shared-ui/src/views/auth/ResetLink.v
 import ResetPassword from '../../../../packages/shared-ui/src/views/auth/ResetPassword.vue'
 import PasswordUpdation from '../../../../packages/shared-ui/src/views/auth/PasswordUpdation.vue'
 import AccountDeleted from '../../../../packages/shared-ui/src/views/AccountDeleted.vue'
+import { DashboardView as Dashboard } from '@ai-suite/shared-ui'
 
-import Home from '../views/home.vue'
 import VerifyEmail from '../views/verify-email.vue'
 import VerifyEmailToken from '../views/verify-email-token.vue'
 import GoogleCallback from '../views/auth/google/callback.vue'
@@ -68,7 +68,11 @@ const routes = [
   { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
   { path: '/verify-email-token', name: 'VerifyEmailToken', component: VerifyEmailToken },
 
-  { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true } },
+  { path: '/home', name: 'Home', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/agents', name: 'Agents', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/tasks', name: 'Tasks', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/phone-number', name: 'PhoneNumber', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/settings', name: 'Settings', component: Dashboard, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({

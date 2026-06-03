@@ -24,7 +24,7 @@
           </div>
 
           <span v-if="!isCollapsed" class="heading_h5_semibold gradient_text_color">
-            Genius AI
+            {{ sidebarConfig.brandName || 'Genius AI' }}
           </span>
         </div>
 
@@ -81,7 +81,7 @@
       <div v-if="!isCollapsed" class="mt-6xl">
         <p class="label_3_semibold primary_text_color">Chat history</p>
         <div
-          class="max-h-[180px] overflow-y-auto custom_scrollbar pr-1"
+          class="max-h-[180px] overflow-x-hidden overflow-y-auto custom_scrollbar pr-1"
           @scroll.passive="closeChatSessionMenu"
         >
           <!-- Dynamic Chat Sessions from API -->
@@ -90,7 +90,7 @@
             :key="session.id"
             :data-session-id="session.id"
             @click="handleSessionRowClick(session)"
-            class="cursor-pointer mt-xl p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+            class="cursor-pointer mt-xl min-w-0 p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
           >
             <!-- Title Display or Edit Input -->
             <div class="flex-1 min-w-0">
@@ -104,7 +104,7 @@
                 class="w-full bg-transparent border-none outline-none label_2_regular primary_text_color"
                 placeholder="Enter chat title..."
               />
-              <span v-else class="truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
+              <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
             </div>
             <div class="relative shrink-0 flex items-center">
               <button
