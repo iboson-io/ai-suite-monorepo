@@ -1,11 +1,22 @@
 import SignOutIcon from '../../assets/images/SignOutIcon.svg'
+import LanguageIcon from '../../assets/images/LanguageIcon.svg'
+import SupportIcon from '../../assets/images/SupportIcon.svg'
 
 export function getUserAccountConfig() {
   return {
-    showProfileHeader: true,
-    popupWidthClass: 'lg:w-52',
+    showProfileHeader: false,
+    popupWidthClass: 'w-64',
     menuItems: [
-      { id: 'logout', label: 'Sign out', icon: SignOutIcon, action: 'logout' },
+      { id: 'support', label: 'Support', icon: SupportIcon, action: 'none' },
+      {
+        id: 'language',
+        label: 'Language',
+        icon: LanguageIcon,
+        action: 'none',
+        trailingLabel: 'English',
+        showChevron: true,
+      },
+      { id: 'logout', label: 'Logout', icon: SignOutIcon, action: 'logout', dividerBefore: true },
     ],
   }
 }
