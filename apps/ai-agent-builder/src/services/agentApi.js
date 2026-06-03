@@ -753,23 +753,18 @@ class ApiService {
     })
   }
 
-  async getMultiAgents(page = 1, limit = 10, status = null, search = null) {
+  async getMultiAgents(page = 1, limit = 12, status = 'MultiAgents', search = null) {
     const queryParams = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      is_active: 'true'
+      is_active: 'true',
+      status: status || 'MultiAgents',
     })
-    
-    // Add status filter if provided
-    if (status && status !== 'All Agents') {
-      queryParams.append('status', status)
-    }
-    
-    // Add search parameter if provided
+
     if (search && search.trim()) {
       queryParams.append('search', search.trim())
     }
-    
+
     return this.requestAgent(`/api/agent-groups?${queryParams}`, {
       method: 'GET'
     })

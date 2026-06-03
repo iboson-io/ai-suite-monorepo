@@ -141,6 +141,7 @@ export default {
         '5xl': '1.25rem',
         '6xl': '1.5rem',
         '7xl': '1.75rem',
+        '7.5xl': '1.875rem',
         '8xl': '2rem',
         '9xl': '2.25rem',
         '10xl': '2.5rem',
