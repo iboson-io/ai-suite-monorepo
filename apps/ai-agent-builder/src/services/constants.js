@@ -1,33 +1,31 @@
 // API Configuration Constants
-//for production
-export const API_BASE_URL = 'ENV_API_BASE_URL'
-export const SOCKET_BASE_URL = 'wss://dev-multi-agent.aiagents.dev/ws'
-export const WORKFLOW_SOCKET_BASE_URL = 'wss://dev-multi-agent.aiagents.dev'
-// export const API_BASE_URL = 'https://api.dev.aiagents.dev'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+export const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_BASE_URL ?? ''
+export const WORKFLOW_SOCKET_BASE_URL = import.meta.env.VITE_WORKFLOW_SOCKET_BASE_URL ?? ''
 
-//   export const USER_API_URL=API_BASE_URL
-//   export const AGENT_API_URL=API_BASE_URL
-//   export const CHAT_API_URL=API_BASE_URL
-//   export const API_DEPLOYMENT_URL=API_BASE_URL
-//   export const PAYMENT_API_URL=API_BASE_URL
-//   export const NOTIFICATION_API_URL=API_BASE_URL
-//   export const CHAT_AI_API_URL=API_BASE_URL
-//   export const CHAT_AI_API_URL_WS=SOCKET_BASE_URL
-//   export const WORKFLOW_API_URL = API_BASE_URL
-//  export const WORKFLOW_AGENT_WS_URL = WORKFLOW_SOCKET_BASE_URL
-//  export const WORKFLOW_AGENT_WS_PATH = '/workflow-agent'
+  export const USER_API_URL=API_BASE_URL
+  export const AGENT_API_URL=API_BASE_URL
+  export const CHAT_API_URL=API_BASE_URL
+  export const API_DEPLOYMENT_URL=API_BASE_URL
+  export const PAYMENT_API_URL=API_BASE_URL
+  export const NOTIFICATION_API_URL=API_BASE_URL
+  export const CHAT_AI_API_URL=API_BASE_URL
+  export const CHAT_AI_API_URL_WS=SOCKET_BASE_URL
+  export const WORKFLOW_API_URL = API_BASE_URL
+ export const WORKFLOW_AGENT_WS_URL = WORKFLOW_SOCKET_BASE_URL
+ export const WORKFLOW_AGENT_WS_PATH = '/workflow-agent'
 // for testing locally
-export const USER_API_URL = 'http://localhost:3001'
-export const AGENT_API_URL = 'http://localhost:3006'
-export const CHAT_API_URL = 'http://localhost:3003'
-export const API_DEPLOYMENT_URL = 'http://localhost:3004'
-export const PAYMENT_API_URL = 'http://localhost:3005'
-export const NOTIFICATION_API_URL = 'http://localhost:3007'
-export const CHAT_AI_API_URL = 'http://localhost:3003'
-export const CHAT_AI_API_URL_WS = 'ws://localhost:8000'
-export const WORKFLOW_API_URL = 'http://localhost:3010'
-export const WORKFLOW_AGENT_WS_URL = 'ws://localhost:8000'
-export const WORKFLOW_AGENT_WS_PATH = '/workflow-agent'
+// export const USER_API_URL = 'http://localhost:3001'
+// export const AGENT_API_URL = 'http://localhost:3006'
+// export const CHAT_API_URL = 'http://localhost:3003'
+// export const API_DEPLOYMENT_URL = 'http://localhost:3004'
+// export const PAYMENT_API_URL = 'http://localhost:3005'
+// export const NOTIFICATION_API_URL = 'http://localhost:3007'
+// export const CHAT_AI_API_URL = 'http://localhost:3003'
+// export const CHAT_AI_API_URL_WS = 'ws://localhost:8000'
+// export const WORKFLOW_API_URL = 'http://localhost:3010'
+// export const WORKFLOW_AGENT_WS_URL = 'ws://localhost:8000'
+// export const WORKFLOW_AGENT_WS_PATH = '/workflow-agent'
 
 // Google OAuth Configuration (client secret belongs on the server only)
 export const GOOGLE_CONFIG = {
