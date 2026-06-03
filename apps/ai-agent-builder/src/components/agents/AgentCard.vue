@@ -57,6 +57,20 @@
       </Teleport>
     </div>
 
+    <DeletePostModal
+      :open="isDeleteModalOpen"
+      :loading="isDeleting"
+      :error-message="deleteError"
+      show-header-icon
+      title="Delete Agent"
+      message="Are you sure you want to delete this agent? This action cannot be undone."
+      warning-message=""
+      confirm-label="Delete Agent"
+      confirm-button-class="bg-error-600 hover:bg-error-700 primary_2_text_color label_1_semibold"
+      @close="closeDeleteModal"
+      @confirm="confirmDelete"
+    />
+
     <h3
       class="label_1_semibold primary_text_color min-w-0 break-all pr-10 line-clamp-2"
       :title="agent.name"
@@ -84,8 +98,10 @@
 
 <script setup>
 import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
-import TrashIcon from '../../assets/images/trash.svg'
+import { DeletePostModal } from '@ai-suite/shared-ui'
+import TrashIcon from '../../assets/images/delete.svg'
 import {
+  deleteAgentRecord,
   formatLastUpdated,
   getStatusBadgeClass,
   getStatusLabel,
@@ -103,6 +119,9 @@ const emit = defineEmits(['toggle-active', 'delete'])
 const menuTriggerRef = ref(null)
 const menuRef = ref(null)
 const isMenuOpen = ref(false)
+const isDeleteModalOpen = ref(false)
+const isDeleting = ref(false)
+const deleteError = ref('')
 const menuStyle = ref({})
 
 const MENU_WIDTH = 220
@@ -160,9 +179,34 @@ function handleToggleActive() {
   })
 }
 
+function closeDeleteModal() {
+  if (isDeleting.value) return
+  isDeleteModalOpen.value = false
+  deleteError.value = ''
+}
+
 function handleDelete() {
-  emit('delete', props.agent)
+  deleteError.value = ''
+  isDeleteModalOpen.value = true
   closeMenu()
+}
+
+async function confirmDelete() {
+  if (isDeleting.value) return
+
+  isDeleting.value = true
+  deleteError.value = ''
+
+  try {
+    await deleteAgentRecord(props.agent)
+    isDeleteModalOpen.value = false
+    emit('delete', props.agent)
+  } catch (error) {
+    deleteError.value =
+      error?.message || 'Failed to delete agent. Please try again.'
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 function handleClickOutside(event) {

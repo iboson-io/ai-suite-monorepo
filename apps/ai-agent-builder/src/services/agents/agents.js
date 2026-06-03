@@ -180,6 +180,14 @@ export function statusFromActive(active) {
   return active ? 'published' : 'archived'
 }
 
+export async function deleteAgentRecord(agent) {
+  if (agent.kind === 'multi') {
+    return apiService.deleteAgentGroupById(agent.id)
+  }
+
+  return apiService.deleteAgent(agent.id)
+}
+
 export async function setAgentActiveStatus(agent, active) {
   const status = statusFromActive(active)
 
