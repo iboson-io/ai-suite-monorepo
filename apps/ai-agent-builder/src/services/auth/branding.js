@@ -1,7 +1,8 @@
 export function getBrandingSectionConfig() {
   return {
-    headline: 'Build AI Agents That Work for You',
+    headline: 'Let AI Agents Handle Your Work',
     description:
-      'Design, deploy, and manage intelligent agents with workflows that automate tasks and scale your operations.',
-  }
+      'Create, automate, and manage tasks and ',
+      description2: 'conversations effortlessly.',
+    }
 }
