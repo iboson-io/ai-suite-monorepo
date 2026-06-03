@@ -441,7 +441,9 @@ const handleNewChatClick = () => {
 const handleSidebarClick = (tab) => {
   showUserAccount.value = false;
   if (tab === "notifications") {
-    showNotifications.value = !showNotifications.value;
+    showNotifications.value = false;
+    emit("changeTab", tab);
+    emit("close");
     return;
   }
   showNotifications.value = false;

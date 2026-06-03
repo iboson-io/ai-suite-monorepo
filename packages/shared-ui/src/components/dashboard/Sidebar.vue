@@ -275,7 +275,13 @@
       </div>
     </div>
     <!-- 🔔 NOTIFICATION POPUP -->
-    <NotificationPopup :open="showNotifications" :isCollapsed="isCollapsed" @close="showNotifications = false" @notificationRead="refreshNotifications" />
+    <NotificationPopup
+      v-if="showNotifications"
+      :open="true"
+      :isCollapsed="isCollapsed"
+      @close="showNotifications = false"
+      @notificationRead="refreshNotifications"
+    />
     <!-- 👤 USER ACCOUNT POPUP -->
     <UserAccountPopup
       :open="showUserAccount"
