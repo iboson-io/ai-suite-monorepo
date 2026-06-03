@@ -34,17 +34,19 @@
 
     <!-- Text -->
     <h2 class="heading_h4_bold gradient_text_color">
-      Let AI Run Your Marketing
+      {{ headline }}
     </h2>
 
     <p class="label_1_regular primary_text_color text-center mt-6xl">
-      Create, schedule, and optimize social media posts automatically with
-      AI-powered intelligence.
+      {{ description }}
     </p>
   </div>
 </template>
 <script setup>
 import Logo from "../common/Logo.vue";
+import { getBrandingSectionConfig } from "@app/services/auth/branding.js";
+
+const { headline, description } = getBrandingSectionConfig();
 
 /** Optional hex colors (e.g. product `brandColors`) to tint the sphere; auth pages omit this. */
 const props = defineProps({
