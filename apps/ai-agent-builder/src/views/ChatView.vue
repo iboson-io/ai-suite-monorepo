@@ -104,8 +104,11 @@ const chatId = ref(null)
 const selectedAgentId = ref(null)
 const isLoading = ref(false)
 
-function goToAgents() {
-  router.push('/agents')
+function goToAgents(type) {
+  router.push({
+    path: '/agents',
+    query: type ? { type } : {},
+  })
 }
 
 function readChatId(payload) {
