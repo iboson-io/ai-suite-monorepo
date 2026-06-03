@@ -13,14 +13,14 @@
       </div>
 
       <div
-        class="mt-6xl flex shrink-0 flex-col gap-4xl rounded-2xl border primary_border_color bg_secondary_color p-5xl lg:flex-row lg:items-center lg:justify-between"
+        class="mt-6xl flex shrink-0 flex-col gap-4xl rounded-2xl border primary_border_color bg_secondary_color p-md lg:flex-row lg:items-center lg:justify-between"
       >
         <div class="flex flex-wrap gap-md rounded-lg p-xs">
           <button
             v-for="tab in categoryTabs"
             :key="tab.key"
             type="button"
-            class="inline-flex items-center gap-md rounded-md px-4xl py-md label_2_semibold transition-colors hover:bg-info-50"
+            class="inline-flex items-center gap-md rounded-xl px-3xl py-3xl label_2_semibold transition-colors hover:bg-info-50"
             :class="activeCategory === tab.key ? 'bg-info-50 primary_text_color' : 'bg-transparent secondary_text_color'"
             @click="activeCategory = tab.key"
           >
