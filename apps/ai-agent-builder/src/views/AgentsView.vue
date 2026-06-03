@@ -118,30 +118,48 @@
         </div>
       </div>
 
-      <div v-if="loading" class="mt-10xl flex justify-center py-20">
+      <div v-if="loading" class="flex min-h-0 flex-1 items-center justify-center">
         <div class="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
       </div>
 
       <div
         v-else-if="errorMessage"
-        class="mt-10xl rounded-2xl border primary_border_color bg_secondary_color p-6xl text-center label_2_regular secondary_text_color"
+        class="mt-6xl flex min-h-0 flex-1 flex-col"
       >
-        {{ errorMessage }}
+        <div
+          class="flex min-h-0 flex-1 w-full items-center justify-center rounded-2xl border primary_border_color bg_secondary_color p-6xl text-center label_2_regular secondary_text_color"
+        >
+          {{ errorMessage }}
+        </div>
       </div>
 
       <div
         v-else-if="agents.length === 0"
-        class="mt-10xl rounded-2xl border primary_border_color bg_secondary_color p-6xl text-center"
+        class="mt-6xl flex min-h-[min(68vh,calc(100dvh-17rem))] flex-1 flex-col"
       >
-        <p class="label_1_semibold primary_text_color">No agents found</p>
-        <p class="body_3_regular secondary_text_color mt-md">
-          Create your first agent to get started.
-        </p>
+        <div
+          class="flex min-h-0 flex-1 w-full items-center justify-center rounded-2xl border primary_border_color bg-white px-6xl py-10xl"
+        >
+          <div class="flex max-w-md flex-col items-center text-center">
+            <img
+              :src="categoryTabIcons.agents"
+              alt=""
+              class="mb-5xl h-16 w-16 opacity-40"
+              aria-hidden="true"
+            />
+            <h2 class="label_1_semibold primary_text_color">
+              {{ emptyStateTitle }}
+            </h2>
+            <p class="body_3_regular secondary_text_color mt-md">
+              {{ emptyStateDescription }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div
         v-else
-        class="agents-grid-scroll mt-6xl max-h-[calc(100dvh-18rem)] overflow-y-auto overflow-x-hidden rounded-[18px] bg-white p-6 pr-3"
+        class="agents-grid-scroll mt-6xl max-h-[calc(100dvh-17rem)] overflow-y-auto overflow-x-hidden rounded-[18px] bg-white p-6 pr-3"
         @scroll="handleGridScroll"
       >
         <div class="grid grid-cols-1 gap-5xl md:grid-cols-2 xl:grid-cols-3">
@@ -242,6 +260,24 @@ const statusFilterLabel = computed(() => {
     return match?.label ?? 'All statuses'
   }
   return `${appliedStatuses.value.length} statuses`
+})
+
+const hasActiveFilters = computed(
+  () => Boolean(searchQuery.value.trim()) || appliedStatuses.value.length > 0
+)
+
+const emptyStateTitle = computed(() =>
+  hasActiveFilters.value ? 'No agents found' : 'No agents yet'
+)
+
+const emptyStateDescription = computed(() => {
+  if (searchQuery.value.trim()) {
+    return 'Try a different search term or clear the search box.'
+  }
+  if (appliedStatuses.value.length > 0) {
+    return 'Try adjusting your status filters or select all statuses.'
+  }
+  return 'Create your first agent to get started.'
 })
 
 function mapRouteTypeToCategory(type) {
