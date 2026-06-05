@@ -19,7 +19,7 @@
         <option value="oracle">Oracle</option>
         <option value="mssql">MSSQL</option>
       </select>
-      <p v-if="validationErrors.type" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.type" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.type }}
       </p>
     </div>
@@ -36,7 +36,7 @@
         :class="validationErrors.host ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('host', $event.target.value)"
       />
-      <p v-if="validationErrors.host" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.host" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.host }}
       </p>
     </div>
@@ -53,7 +53,7 @@
         :class="validationErrors.port ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('port', $event.target.value)"
       />
-      <p v-if="validationErrors.port" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.port" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.port }}
       </p>
     </div>
@@ -70,7 +70,7 @@
         :class="validationErrors.database ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('database', $event.target.value)"
       />
-      <p v-if="validationErrors.database" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.database" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.database }}
       </p>
     </div>
@@ -88,7 +88,7 @@
         :class="validationErrors.username ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('username', $event.target.value)"
       />
-      <p v-if="validationErrors.username" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.username" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.username }}
       </p>
     </div>
@@ -115,7 +115,7 @@
           {{ showDbPassword ? 'Hide' : 'Show' }}
         </button>
       </div>
-      <p v-if="validationErrors.password" class="caption_1_regular text-error-600 mt-sm">
+      <p v-if="validationErrors.password" class="label_3_regular text-error-600 mt-sm">
         {{ validationErrors.password }}
       </p>
     </div>

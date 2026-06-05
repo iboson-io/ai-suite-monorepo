@@ -12,7 +12,7 @@
         class="flex w-auto flex-col overflow-hidden rounded-2xl border primary_border_color bg_secondary_color shadow-2xl"
         :class="
           isCreateMode && createStep === 2
-            ? 'h-[518px] max-h-[518px]'
+            ? 'h-[560px] max-h-[560px]'
             : 'max-h-[min(90vh,720px)] '
         "
         @click.stop
@@ -123,7 +123,7 @@
                 :class="nameValidationError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
                 @blur="nameTouched = true"
               />
-              <p v-if="nameValidationError" class="caption_1_regular text-error-600 mt-sm">
+              <p v-if="nameValidationError" class="label_3_regular text-error-600 mt-sm">
                 {{ nameValidationError }}
               </p>
             </div>
@@ -230,7 +230,7 @@
                     Improve prompt with AI
                   </span>
                 </div>
-                <p v-if="enhanceError" class="caption_1_regular text-error-600 mt-sm">
+                <p v-if="enhanceError" class="label_3_regular text-error-600 mt-sm">
                   {{ enhanceError }}
                 </p>
               </div>
@@ -354,18 +354,19 @@
           v-if="isCreateMode && !loading && !errorMessage"
           class="shrink-0 border-t primary_border_color px-6xl py-5xl"
         >
-          <button
-            v-if="createStep === 1"
-            type="button"
-            class="primary_add_button flex w-full items-center justify-center gap-md rounded-lg py-md label_2_semibold primary_2_text_color disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="!canProceedToNextStep || isSubmitting"
-            @click="handleNextStep"
-          >
-            Next Step
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <div v-if="createStep === 1" class="flex justify-end">
+            <button
+              type="button"
+              class="primary_add_button inline-flex items-center justify-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="!canProceedToNextStep || isSubmitting"
+              @click="handleNextStep"
+            >
+              Next Step
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
 
           <div v-else class="flex w-full items-center">
             <button

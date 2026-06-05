@@ -58,7 +58,7 @@
         </button>
       </div>
 
-      <p v-if="validationError" class="caption_1_regular text-error-600 mt-md whitespace-pre-line">
+      <p v-if="validationError" class=" label_3_regular caption_1_regular text-error-600 mt-md whitespace-pre-line">
         {{ validationError }}
       </p>
 
@@ -91,14 +91,14 @@
         <input
           :value="baseUrl"
           type="url"
-          placeholder="https://api.yourservice.com"
+          placeholder="https://multi-agent.aiagents."
           autocomplete="off"
           class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none transition-colors focus:border-info-500"
           :class="baseUrlValidationError ? 'border-error-200' : 'primary_border_color'"
           @input="$emit('update:base-url', $event.target.value)"
           @blur="$emit('validate-base-url')"
         />
-        <p v-if="baseUrlValidationError" class="caption_1_regular text-error-600 mt-sm">
+        <p v-if="baseUrlValidationError" class="label_3_regular text-error-600 mt-sm">
           {{ baseUrlValidationError }}
         </p>
       </div>
