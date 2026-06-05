@@ -27,21 +27,27 @@ export function validateAgentPromptForEnhance(prompt) {
   return { valid: true, message: '' }
 }
 
-export function validateApiBaseUrl(url) {
+export function validateApiBaseUrl(url, { required = true } = {}) {
   const trimmed = String(url ?? '').trim()
 
   if (!trimmed) {
-    return { valid: false, message: 'API Base URL is required.' }
+    return required
+      ? { valid: false, message: 'API Base URL is required.' }
+      : { valid: true, message: '' }
+  }
+
+  if (trimmed.length > 255) {
+    return { valid: false, message: 'Base URL cannot exceed 255 characters.' }
   }
 
   try {
     const parsed = new URL(trimmed)
     if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { valid: false, message: 'API base URL must start with http:// or https://' }
+      return { valid: false, message: 'Base URL must be a valid HTTP or HTTPS URL.' }
     }
     return { valid: true, message: '' }
   } catch {
-    return { valid: false, message: 'Enter a valid API base URL.' }
+    return { valid: false, message: 'Base URL must be a valid HTTP or HTTPS URL.' }
   }
 }
 

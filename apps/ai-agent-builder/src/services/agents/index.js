@@ -14,6 +14,7 @@ export {
 } from './validation.js'
 
 export {
+  validateApiSchemaFiles,
   validateSchemaFiles,
   validateDocumentFiles,
   validateCreateKnowledgeStep,

@@ -25,6 +25,36 @@ function getExtension(fileName) {
   return index >= 0 ? String(fileName).toLowerCase().slice(index) : ''
 }
 
+export async function validateApiSchemaFiles(files) {
+  const validFiles = []
+  const errors = []
+
+  for (const file of files) {
+    const extension = getExtension(file.name)
+
+    if (extension !== '.json') {
+      errors.push(`${file.name}: Please upload a JSON file.`)
+      continue
+    }
+
+    if (file.size > SCHEMA_MAX_BYTES) {
+      errors.push(`${file.name}: File must be under 5 MB.`)
+      continue
+    }
+
+    try {
+      JSON.parse(await file.text())
+    } catch {
+      errors.push(`${file.name}: Invalid JSON format.`)
+      continue
+    }
+
+    validFiles.push(file)
+  }
+
+  return { validFiles, errors }
+}
+
 export async function validateSchemaFiles(files) {
   const validFiles = []
   const errors = []
@@ -97,11 +127,11 @@ export function validateCreateKnowledgeStep({
       if (schemaFiles.length === 0) {
         return {
           valid: false,
-          message: 'Upload at least one API schema file.',
+          message: 'Please upload API schema files.',
           field: 'schema',
         }
       }
-      const baseUrlResult = validateApiBaseUrl(baseUrl)
+      const baseUrlResult = validateApiBaseUrl(baseUrl, { required: true })
       if (!baseUrlResult.valid) {
         return { valid: false, message: baseUrlResult.message, field: 'baseUrl' }
       }
@@ -118,7 +148,7 @@ export function validateCreateKnowledgeStep({
       }
       const trimmedBaseUrl = String(baseUrl ?? '').trim()
       if (trimmedBaseUrl) {
-        const baseUrlResult = validateApiBaseUrl(trimmedBaseUrl)
+        const baseUrlResult = validateApiBaseUrl(trimmedBaseUrl, { required: false })
         if (!baseUrlResult.valid) {
           return { valid: false, message: baseUrlResult.message, field: 'baseUrl' }
         }

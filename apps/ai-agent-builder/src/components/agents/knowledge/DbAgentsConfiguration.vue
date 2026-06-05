@@ -19,9 +19,6 @@
         <option value="oracle">Oracle</option>
         <option value="mssql">MSSQL</option>
       </select>
-      <p v-if="validationErrors.type" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.type }}
-      </p>
     </div>
 
     <div>
@@ -36,9 +33,6 @@
         :class="validationErrors.host ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('host', $event.target.value)"
       />
-      <p v-if="validationErrors.host" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.host }}
-      </p>
     </div>
 
     <div>
@@ -53,9 +47,6 @@
         :class="validationErrors.port ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('port', $event.target.value)"
       />
-      <p v-if="validationErrors.port" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.port }}
-      </p>
     </div>
 
     <div>
@@ -70,9 +61,6 @@
         :class="validationErrors.database ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('database', $event.target.value)"
       />
-      <p v-if="validationErrors.database" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.database }}
-      </p>
     </div>
 
     <div>
@@ -88,9 +76,6 @@
         :class="validationErrors.username ? 'border-error-200' : 'primary_border_color'"
         @input="updateField('username', $event.target.value)"
       />
-      <p v-if="validationErrors.username" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.username }}
-      </p>
     </div>
 
     <div>
@@ -115,9 +100,6 @@
           {{ showDbPassword ? 'Hide' : 'Show' }}
         </button>
       </div>
-      <p v-if="validationErrors.password" class="label_3_regular text-error-600 mt-sm">
-        {{ validationErrors.password }}
-      </p>
     </div>
   </div>
 </template>

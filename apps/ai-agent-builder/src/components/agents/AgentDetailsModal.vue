@@ -71,12 +71,10 @@
             :active-tab="knowledgeTab"
             :schema-files="schemaFiles"
             :document-files="documentFiles"
-            :schema-validation-error="schemaValidationError"
-            :document-validation-error="documentValidationError"
+            :validation-field="knowledgeValidationField"
             :base-url="baseUrl"
             :access-token="accessToken"
             :show-access-token="showAccessToken"
-            :base-url-validation-error="baseUrlValidationError"
             :db-config="dbConfig"
             :show-db-password="showDbPassword"
             :db-validation-errors="dbValidationErrors"
@@ -89,7 +87,7 @@
             @update:base-url="baseUrl = $event"
             @update:access-token="accessToken = $event"
             @toggle-access-token="showAccessToken = !showAccessToken"
-            @validate-base-url="validateBaseUrlField"
+            @knowledge-validation-error="setKnowledgeValidationError"
             @update:db-config="dbConfig = $event"
             @toggle-db-password="showDbPassword = !showDbPassword"
             @validate-db-field="validateDbField"
@@ -411,11 +409,10 @@ import {
   getStatusLabel,
   validateAgentName,
   validateAgentPromptForEnhance,
-  validateApiBaseUrl,
   validateCreateKnowledgeStep,
   validateDbConfig,
+  validateApiSchemaFiles,
   validateDocumentFiles,
-  validateSchemaFiles,
 } from '../../services/agents/agents.js'
 
 const CREATE_FORM_STORAGE_KEY = 'agent_creation_form_data'
@@ -486,12 +483,10 @@ const knowledgeTab = ref('documents')
 const documentFiles = ref([])
 const schemaFiles = ref([])
 const knowledgeValidationError = ref('')
-const schemaValidationError = ref('')
-const documentValidationError = ref('')
+const knowledgeValidationField = ref('')
 const baseUrl = ref('')
 const accessToken = ref('')
 const showAccessToken = ref(false)
-const baseUrlValidationError = ref('')
 const dbConfig = ref(emptyDbConfig())
 const showDbPassword = ref(false)
 const dbValidationErrors = ref({})
@@ -561,37 +556,44 @@ const canProceedToNextStep = computed(
   () => validateAgentName(formName.value).valid && !isSubmitting.value
 )
 
+function clearKnowledgeValidation() {
+  knowledgeValidationError.value = ''
+  knowledgeValidationField.value = ''
+}
+
+function setKnowledgeValidationError({ message, field }) {
+  knowledgeValidationError.value = message
+  knowledgeValidationField.value = field || ''
+}
+
 async function addDocumentFiles(files) {
-  documentValidationError.value = ''
   const { validFiles, errors } = validateDocumentFiles(files)
   if (errors.length) {
-    documentValidationError.value = errors.join('\n')
+    setKnowledgeValidationError({ message: errors.join('\n'), field: 'documents' })
     return
   }
   documentFiles.value = [...documentFiles.value, ...validFiles]
+  if (knowledgeValidationField.value === 'documents') {
+    clearKnowledgeValidation()
+  }
 }
 
 async function addSchemaFiles(files) {
-  schemaValidationError.value = ''
-  const { validFiles, errors } = await validateSchemaFiles(files)
+  const { validFiles, errors } = await validateApiSchemaFiles(files)
   if (errors.length) {
-    schemaValidationError.value = errors.join('\n')
+    setKnowledgeValidationError({ message: errors.join('\n'), field: 'schema' })
     return
   }
   schemaFiles.value = [...schemaFiles.value, ...validFiles]
+  if (knowledgeValidationField.value === 'schema') {
+    clearKnowledgeValidation()
+  }
 }
 
 function switchKnowledgeTab(tabId) {
   knowledgeTab.value = tabId
-  knowledgeValidationError.value = ''
-  schemaValidationError.value = ''
-  documentValidationError.value = ''
-  baseUrlValidationError.value = ''
-}
-
-function validateBaseUrlField() {
-  const result = validateApiBaseUrl(baseUrl.value)
-  baseUrlValidationError.value = result.valid ? '' : result.message
+  clearKnowledgeValidation()
+  dbValidationErrors.value = {}
 }
 
 function validateDbField(fieldName) {
@@ -663,13 +665,13 @@ function handleNextStep() {
   nameTouched.value = true
   if (!canProceedToNextStep.value || isSubmitting.value) return
   createStep.value = 2
-  knowledgeValidationError.value = ''
+  clearKnowledgeValidation()
 }
 
 function handleBackStep() {
   if (isSubmitting.value) return
   createStep.value = 1
-  knowledgeValidationError.value = ''
+  clearKnowledgeValidation()
 }
 
 async function handleEnhancePrompt() {
@@ -709,13 +711,10 @@ function resetCreateForm() {
   knowledgeTab.value = 'documents'
   documentFiles.value = []
   schemaFiles.value = []
-  knowledgeValidationError.value = ''
-  schemaValidationError.value = ''
-  documentValidationError.value = ''
+  clearKnowledgeValidation()
   baseUrl.value = ''
   accessToken.value = ''
   showAccessToken.value = false
-  baseUrlValidationError.value = ''
   dbConfig.value = emptyDbConfig()
   showDbPassword.value = false
   dbValidationErrors.value = {}
@@ -743,7 +742,8 @@ function handleOverlayClick() {
 function handleCreateSubmit() {
   if (isSubmitting.value) return
 
-  knowledgeValidationError.value = ''
+  clearKnowledgeValidation()
+
   const knowledgeResult = validateCreateKnowledgeStep({
     knowledgeTab: knowledgeTab.value,
     schemaFiles: schemaFiles.value,
@@ -754,18 +754,12 @@ function handleCreateSubmit() {
   })
 
   if (!knowledgeResult.valid) {
-    knowledgeValidationError.value = knowledgeResult.message
-    if (knowledgeResult.field === 'baseUrl') {
-      baseUrlValidationError.value = knowledgeResult.message
-    }
+    setKnowledgeValidationError({
+      message: knowledgeResult.message,
+      field: knowledgeResult.field || '',
+    })
     if (knowledgeResult.field === 'db' && knowledgeResult.errors) {
       dbValidationErrors.value = knowledgeResult.errors
-    }
-    if (knowledgeResult.field === 'schema') {
-      schemaValidationError.value = knowledgeResult.message
-    }
-    if (knowledgeResult.field === 'documents') {
-      documentValidationError.value = knowledgeResult.message
     }
     return
   }
@@ -784,6 +778,37 @@ function handleCreateSubmit() {
     selectedComposioApps: [...selectedComposioApps.value],
   })
 }
+
+watch(baseUrl, () => {
+  if (knowledgeValidationField.value === 'baseUrl') {
+    clearKnowledgeValidation()
+  }
+})
+
+watch(documentFiles, () => {
+  if (knowledgeValidationField.value === 'documents') {
+    clearKnowledgeValidation()
+  }
+})
+
+watch(schemaFiles, () => {
+  if (knowledgeValidationField.value === 'schema') {
+    clearKnowledgeValidation()
+  }
+})
+
+watch(dbConfig, () => {
+  if (knowledgeValidationField.value === 'db') {
+    clearKnowledgeValidation()
+    dbValidationErrors.value = {}
+  }
+}, { deep: true })
+
+watch(selectedComposioApps, () => {
+  if (knowledgeValidationField.value === 'composio') {
+    clearKnowledgeValidation()
+  }
+}, { deep: true })
 
 watch(formPrompt, () => {
   if (enhanceError.value) {
