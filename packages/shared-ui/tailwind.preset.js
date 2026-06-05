@@ -127,6 +127,9 @@ export default {
           900: '#46484b',
         },
       },
+      borderRadius: {
+        '5xl': '1.25rem',
+      },
       spacing: {
         none: '0rem',
         xxs: '0.125rem',

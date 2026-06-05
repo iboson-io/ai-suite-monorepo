@@ -169,6 +169,7 @@
             :agent="agent"
             @toggle-active="handleToggleAgentActive"
             @delete="handleDeleteAgent"
+            @select="handleSelectAgent"
           />
         </div>
 
@@ -180,6 +181,19 @@
         </div>
       </div>
     </div>
+
+    <AgentDetailsModal
+      :open="isAgentModalOpen"
+      :mode="agentModalMode"
+      :loading="agentDetailsLoading"
+      :submitting="agentCreateSubmitting"
+      :error-message="agentModalError"
+      :agent="agentDetails"
+      :fallback-agent="selectedAgent"
+      :agent-id="agentDetails?.id ?? selectedAgent?.id ?? null"
+      @close="closeAgentModal"
+      @create="handleCreateAgentSubmit"
+    />
   </main>
 </template>
 
@@ -192,11 +206,14 @@ import ListIcon from '../assets/images/list.svg'
 import UserIcon from '../assets/images/user.svg'
 import UsersGroupIcon from '../assets/images/users-group.svg'
 import AgentCard from '../components/agents/AgentCard.vue'
+import AgentDetailsModal from '../components/agents/AgentDetailsModal.vue'
 import CreateAgentDropdown from '../components/agents/CreateAgentDropdown.vue'
 import {
   AGENT_CATEGORY_TABS,
   AGENT_STATUS_OPTIONS,
   AGENTS_PAGE_LIMIT,
+  createSingleAgent,
+  fetchAgentDetails,
   fetchAgentsList,
   setAgentActiveStatus,
   statusFromActive,
@@ -224,8 +241,16 @@ const currentPage = ref(1)
 const errorMessage = ref('')
 const isStatusDropdownOpen = ref(false)
 const statusFilterRef = ref(null)
+const isAgentModalOpen = ref(false)
+const agentModalMode = ref('view')
+const selectedAgent = ref(null)
+const agentDetails = ref(null)
+const agentDetailsLoading = ref(false)
+const agentModalError = ref('')
+const agentCreateSubmitting = ref(false)
 
 const SCROLL_LOAD_THRESHOLD_PX = 120
+let agentModalGeneration = 0
 
 let fetchGeneration = 0
 let searchDebounceTimer = null
@@ -357,9 +382,101 @@ function applyStatusFilter() {
   loadAgents()
 }
 
+function openCreateAgentModal() {
+  agentModalGeneration += 1
+  agentModalMode.value = 'create'
+  selectedAgent.value = null
+  agentDetails.value = null
+  agentModalError.value = ''
+  agentDetailsLoading.value = false
+  agentCreateSubmitting.value = false
+  isAgentModalOpen.value = true
+}
+
 function handleCreateAgent(type) {
-  // Placeholder for create flow navigation
-  console.log('Create agent:', type)
+  if (type !== 'single') return
+  openCreateAgentModal()
+}
+
+async function handleCreateAgentSubmit({
+  name,
+  prompt,
+  role,
+  rules,
+  knowledgeTab,
+  schemaFiles,
+  documentFiles,
+  baseUrl,
+  accessToken,
+  dbConfig,
+  selectedComposioApps,
+}) {
+  if (agentCreateSubmitting.value) return
+
+  agentCreateSubmitting.value = true
+  agentModalError.value = ''
+
+  try {
+    await createSingleAgent({
+      name,
+      prompt,
+      role,
+      rules,
+      knowledgeTab,
+      schemaFiles,
+      documentFiles,
+      baseUrl,
+      accessToken,
+      dbConfig,
+      selectedComposioApps,
+    })
+    closeAgentModal()
+    loadAgents()
+  } catch (error) {
+    agentModalError.value =
+      error?.message || 'Failed to create agent. Please try again.'
+  } finally {
+    agentCreateSubmitting.value = false
+  }
+}
+
+async function handleSelectAgent(agent) {
+  if (agent.kind !== 'single') return
+
+  const generation = ++agentModalGeneration
+  agentModalMode.value = 'view'
+  selectedAgent.value = agent
+  isAgentModalOpen.value = true
+  agentDetails.value = null
+  agentModalError.value = ''
+  agentDetailsLoading.value = true
+  agentCreateSubmitting.value = false
+
+  try {
+    const details = await fetchAgentDetails(agent.id)
+    if (generation !== agentModalGeneration) return
+    agentDetails.value = details
+  } catch (error) {
+    if (generation !== agentModalGeneration) return
+    agentModalError.value =
+      error?.message || 'Failed to load agent details. Please try again.'
+  } finally {
+    if (generation === agentModalGeneration) {
+      agentDetailsLoading.value = false
+    }
+  }
+}
+
+function closeAgentModal() {
+  if (agentCreateSubmitting.value) return
+  agentModalGeneration += 1
+  isAgentModalOpen.value = false
+  agentModalMode.value = 'view'
+  selectedAgent.value = null
+  agentDetails.value = null
+  agentModalError.value = ''
+  agentDetailsLoading.value = false
+  agentCreateSubmitting.value = false
 }
 
 async function handleToggleAgentActive({ agent, active }) {
@@ -413,10 +530,20 @@ onMounted(() => {
   activeCategory.value = mapRouteTypeToCategory(route.query.type)
   loadAgents()
   document.addEventListener('click', handleClickOutside, true)
+
+  const returningFromComposio =
+    typeof sessionStorage !== 'undefined' &&
+    (sessionStorage.getItem('agent_creation_form_data') ||
+      sessionStorage.getItem('composio_pending_app'))
+
+  if (returningFromComposio) {
+    openCreateAgentModal()
+  }
 })
 
 onUnmounted(() => {
   fetchGeneration += 1
+  agentModalGeneration += 1
   clearTimeout(searchDebounceTimer)
   document.removeEventListener('click', handleClickOutside, true)
 })

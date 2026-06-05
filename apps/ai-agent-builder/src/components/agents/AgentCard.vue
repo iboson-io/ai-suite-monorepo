@@ -1,6 +1,8 @@
 <template>
   <article
     class="relative flex min-h-[168px] min-w-0 flex-col rounded-2xl border primary_border_color bg_secondary_color p-5xl text-left"
+    :class="isSingleAgent ? 'cursor-pointer transition-[border-color,box-shadow] hover:border-info-100 hover:shadow-sm' : ''"
+    @click="handleCardClick"
   >
     <div ref="menuTriggerRef" class="agent-card-menu absolute right-4 top-4 z-10">
       <button
@@ -114,7 +116,9 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['toggle-active', 'delete'])
+const emit = defineEmits(['toggle-active', 'delete', 'select'])
+
+const isSingleAgent = computed(() => props.agent.kind === 'single')
 
 const menuTriggerRef = ref(null)
 const menuRef = ref(null)
@@ -170,6 +174,12 @@ async function toggleMenu() {
 
 function closeMenu() {
   isMenuOpen.value = false
+}
+
+function handleCardClick(event) {
+  if (!isSingleAgent.value) return
+  if (event.target.closest('.agent-card-menu') || isDeleteModalOpen.value) return
+  emit('select', props.agent)
 }
 
 function handleToggleActive() {
