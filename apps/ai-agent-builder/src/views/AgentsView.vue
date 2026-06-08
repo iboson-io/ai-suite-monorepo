@@ -546,6 +546,9 @@ onMounted(() => {
 
   if (returningFromComposio) {
     openCreateAgentModal()
+  } else if (route.query.type === 'single') {
+    openCreateAgentModal()
+    router.replace({ path: route.path })
   }
 })
 
