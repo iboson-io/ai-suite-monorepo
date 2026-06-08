@@ -1,7 +1,7 @@
 <template>
   <article
     class="relative flex min-h-[168px] min-w-0 flex-col rounded-2xl border primary_border_color bg_secondary_color p-5xl text-left"
-    :class="isSingleAgent ? 'cursor-pointer transition-[border-color,box-shadow] hover:border-info-100 hover:shadow-sm' : ''"
+    :class="isNavigable ? 'cursor-pointer transition-[border-color,box-shadow] hover:border-info-100 hover:shadow-sm' : ''"
     @click="handleCardClick"
   >
     <div ref="menuTriggerRef" class="agent-card-menu absolute right-4 top-4 z-10">
@@ -119,6 +119,8 @@ const props = defineProps({
 const emit = defineEmits(['toggle-active', 'delete', 'select'])
 
 const isSingleAgent = computed(() => props.agent.kind === 'single')
+const isMultiAgent = computed(() => props.agent.kind === 'multi')
+const isNavigable = computed(() => isSingleAgent.value || isMultiAgent.value)
 
 const menuTriggerRef = ref(null)
 const menuRef = ref(null)
@@ -177,7 +179,7 @@ function closeMenu() {
 }
 
 function handleCardClick(event) {
-  if (!isSingleAgent.value) return
+  if (!isNavigable.value) return
   if (event.target.closest('.agent-card-menu') || isDeleteModalOpen.value) return
   emit('select', props.agent)
 }

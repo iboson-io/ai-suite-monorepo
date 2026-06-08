@@ -195,6 +195,14 @@
       @create="handleCreateAgentSubmit"
       @clear-error="agentModalError = ''"
     />
+
+    <MultiAgentCreationModal
+      :open="isMultiAgentModalOpen"
+      :submitting="multiAgentCreateSubmitting"
+      :error-message="multiAgentModalError"
+      @close="closeMultiAgentModal"
+      @create="handleCreateMultiAgentSubmit"
+    />
   </main>
 </template>
 
@@ -209,16 +217,17 @@ import UsersGroupIcon from '../assets/images/users-group.svg'
 import AgentCard from '../components/agents/AgentCard.vue'
 import AgentDetailsModal from '../components/agents/AgentDetailsModal.vue'
 import CreateAgentDropdown from '../components/agents/CreateAgentDropdown.vue'
+import MultiAgentCreationModal from '../components/agents/multi/MultiAgentCreationModal.vue'
 import {
   AGENT_CATEGORY_TABS,
   AGENT_STATUS_OPTIONS,
   AGENTS_PAGE_LIMIT,
   createSingleAgent,
-  fetchAgentDetails,
   fetchAgentsList,
   setAgentActiveStatus,
   statusFromActive,
 } from '../services/agents/agents.js'
+import { createMultiAgentGroup } from '../services/agents/multi/create.js'
 import {
   setCreatedAgentContext,
   setSelectedAgentId,
@@ -254,6 +263,53 @@ const agentDetails = ref(null)
 const agentDetailsLoading = ref(false)
 const agentModalError = ref('')
 const agentCreateSubmitting = ref(false)
+const isMultiAgentModalOpen = ref(false)
+const multiAgentCreateSubmitting = ref(false)
+const multiAgentModalError = ref('')
+
+function openCreateMultiAgentModal() {
+  multiAgentModalError.value = ''
+  multiAgentCreateSubmitting.value = false
+  isMultiAgentModalOpen.value = true
+}
+
+function closeMultiAgentModal() {
+  if (multiAgentCreateSubmitting.value) return
+  isMultiAgentModalOpen.value = false
+  multiAgentModalError.value = ''
+}
+
+async function handleCreateMultiAgentSubmit({ groupName, description, agentIds }) {
+  if (multiAgentCreateSubmitting.value) return
+
+  multiAgentCreateSubmitting.value = true
+  multiAgentModalError.value = ''
+
+  try {
+    const created = await createMultiAgentGroup({
+      groupName,
+      description,
+      agentIds,
+    })
+
+    if (!created?.id) {
+      throw new Error('Multi-agent system was created but no group id was returned.')
+    }
+
+    closeMultiAgentModal()
+    loadAgents()
+
+    await router.push({
+      path: '/multi-agent-dashboard',
+      query: { group_id: String(created.id), created: '1' },
+    })
+  } catch (err) {
+    multiAgentModalError.value =
+      err?.message || 'Failed to create multi-agent system. Please try again.'
+  } finally {
+    multiAgentCreateSubmitting.value = false
+  }
+}
 
 const SCROLL_LOAD_THRESHOLD_PX = 120
 let agentModalGeneration = 0
@@ -400,8 +456,14 @@ function openCreateAgentModal() {
 }
 
 function handleCreateAgent(type) {
-  if (type !== 'single') return
-  openCreateAgentModal()
+  if (type === 'single') {
+    openCreateAgentModal()
+    return
+  }
+
+  if (type === 'multi') {
+    openCreateMultiAgentModal()
+  }
 }
 
 async function handleCreateAgentSubmit({
@@ -466,13 +528,21 @@ async function handleCreateAgentSubmit({
 }
 
 async function handleSelectAgent(agent) {
-  if (agent.kind !== 'single') return
+  if (agent.kind === 'single') {
+    setSelectedAgentId(agent.id)
+    await router.push({
+      path: '/agent-dashboard',
+      query: { agent_id: String(agent.id) },
+    })
+    return
+  }
 
-  setSelectedAgentId(agent.id)
-  await router.push({
-    path: '/agent-dashboard',
-    query: { agent_id: String(agent.id) },
-  })
+  if (agent.kind === 'multi') {
+    await router.push({
+      path: '/multi-agent-dashboard',
+      query: { group_id: String(agent.id) },
+    })
+  }
 }
 
 function closeAgentModal() {
@@ -548,6 +618,9 @@ onMounted(() => {
     openCreateAgentModal()
   } else if (route.query.type === 'single') {
     openCreateAgentModal()
+    router.replace({ path: route.path })
+  } else if (route.query.type === 'multi') {
+    openCreateMultiAgentModal()
     router.replace({ path: route.path })
   }
 })

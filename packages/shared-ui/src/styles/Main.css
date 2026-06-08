@@ -390,7 +390,7 @@
 
   .selected_platform_border {
     position: relative;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
   }
 
   .selected_platform_border::before {

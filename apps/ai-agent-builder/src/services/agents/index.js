@@ -64,6 +64,24 @@ export {
   enhanceAgentPrompt,
 } from './create.js'
 
+export { createMultiAgentGroup } from './multi/create.js'
+export {
+  fetchGroupDetails,
+  updateMultiAgentGroup,
+  updateGroupName,
+} from './multi/details.js'
+export {
+  fetchGroupChats,
+  createGroupChat,
+  deleteGroupChat,
+  renameGroupChat,
+} from './multi/chats.js'
+export { fetchPublishedAgentsForPicker } from './multi/picker.js'
+export {
+  fetchGroupDeployment,
+  createGroupDeployment,
+} from './multi/deployment.js'
+
 // Legacy export used during migration
 export function deriveAgentNameFromPrompt(prompt) {
   const trimmed = String(prompt ?? '').trim()

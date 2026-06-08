@@ -57,6 +57,23 @@
           </article>
 
           <article
+            v-if="mode === 'multi' && !hasMessages"
+            class="flex items-start gap-3"
+          >
+            <img
+              :src="AgentAvatarIcon"
+              alt=""
+              class="h-8 w-8 shrink-0 rounded-full"
+              aria-hidden="true"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="Body_2_regular primary_text_color whitespace-pre-wrap lg:px-3xl pt-sm pb-md">
+                {{ welcomeMessage }}
+              </p>
+            </div>
+          </article>
+
+          <article
             v-for="(message, index) in chatMessages"
             :key="`chat-${message.id ?? index}`"
           >
@@ -113,12 +130,12 @@
             v-if="isReconnecting && !isConnected"
             class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
           >
-            Connecting to agent<span class="loading-dots" />
+            {{ connectingLabel }}<span class="loading-dots" />
           </p>
 
           <PromptBox
             :is-ai-generating="isLoading || isReconnecting"
-            :initial-product-id="agent?.id"
+            :initial-product-id="promptProductId"
             @send-message="handleSendMessage"
           />
 
@@ -139,14 +156,24 @@ import { useRoute } from 'vue-router'
 import { Cards, ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
 import AgentAvatarIcon from '../../../assets/images/AiIcon.svg'
 import AgentChatIcon from '../../../assets/images/agents/dashboard/chatIcon.svg'
-import { useAgentChatWebSocket } from '../../../composables/useAgentChatWebSocket.js'
+import { useDashboardChatWebSocket } from '../../../composables/useDashboardChatWebSocket.js'
 import { apiService } from '../../../services/agentApi.js'
 import { extractChatFromCreateResponse } from '../../../services/agents/chats.js'
+import { createGroupChat } from '../../../services/agents/multi/chats.js'
 import { getAgentToolCards } from '../../../services/chat/starterCards.js'
 import { clearCreatedAgentContext } from '../../../services/agents/selectedAgent.js'
 
 const props = defineProps({
+  mode: {
+    type: String,
+    default: 'single',
+    validator: (value) => ['single', 'multi'].includes(value),
+  },
   agent: {
+    type: Object,
+    default: null,
+  },
+  group: {
     type: Object,
     default: null,
   },
@@ -172,6 +199,24 @@ const loadingHistory = ref(false)
 const promptSectionRef = ref(null)
 const scrollAnchor = ref(null)
 
+const scopeId = computed(() =>
+  props.mode === 'multi' ? props.group?.id : props.agent?.id
+)
+
+const connectingLabel = computed(() =>
+  props.mode === 'multi' ? 'Connecting to multi-agent system' : 'Connecting to agent'
+)
+
+const promptProductId = computed(() =>
+  props.mode === 'single' ? props.agent?.id : undefined
+)
+
+const welcomeMessage = computed(() => {
+  const name = props.group?.name ?? 'Multi-agent system'
+  const count = props.group?.agents?.length ?? 0
+  return `${name} is ready with ${count} agent${count === 1 ? '' : 's'}. Ask a question and the system will route it to the right agent.`
+})
+
 const {
   isConnected,
   isReconnecting,
@@ -181,14 +226,14 @@ const {
   ensureConnected,
   send,
   setOnMessage,
-} = useAgentChatWebSocket()
+} = useDashboardChatWebSocket(props.mode)
 
 const hasMessages = computed(
   () => onboardingMessages.value.length > 0 || chatMessages.value.length > 0
 )
 
 const onboardingMessagesFromContext = computed(() => {
-  if (!props.createdContext) return []
+  if (props.mode !== 'single' || !props.createdContext) return []
 
   const prompt = String(props.createdContext.prompt ?? '').trim()
   const promptEcho =
@@ -220,6 +265,19 @@ watch(
 )
 
 setOnMessage((data) => {
+  if (data.type === 'streaming_chunk' && data.content) {
+    const pendingMessage = [...chatMessages.value]
+      .reverse()
+      .find((message) => message.isLoading)
+
+    if (!pendingMessage) return
+
+    pendingMessage.isLoading = false
+    pendingMessage.aiResponse = (pendingMessage.aiResponse || '') + data.content
+    scrollToBottom()
+    return
+  }
+
   if (data.type !== 'agent_response') return
 
   const pendingMessage = [...chatMessages.value]
@@ -254,11 +312,11 @@ watch(
     chatId.value = nextChatId
     await loadChatHistory(nextChatId)
 
-    if (props.agent?.id) {
+    if (scopeId.value) {
       try {
-        await reconnect(props.agent.id, nextChatId)
+        await reconnect(scopeId.value, nextChatId)
       } catch {
-        connect(props.agent.id, nextChatId)
+        connect(scopeId.value, nextChatId)
       }
     }
   },
@@ -405,6 +463,25 @@ async function scrollToBottom() {
 async function ensureChatForMessage(messageData) {
   if (chatId.value) return chatId.value
 
+  if (props.mode === 'multi') {
+    const created = await createGroupChat(
+      props.group.id,
+      messageData.text.slice(0, 80) || 'New Chat'
+    )
+
+    const id = created?.id ?? created?.chat_id
+    if (!id) throw new Error('Could not create chat.')
+
+    chatId.value = id
+    emit('chat-created', { id, name: created?.name ?? 'New Chat' })
+
+    if (scopeId.value) {
+      await reconnect(scopeId.value, id)
+    }
+
+    return id
+  }
+
   const created = await apiService.createChat(
     props.agent.id,
     messageData.text.slice(0, 80) || 'New Chat'
@@ -416,15 +493,15 @@ async function ensureChatForMessage(messageData) {
   chatId.value = chat.id
   emit('chat-created', created)
 
-  if (props.agent?.id) {
-    await reconnect(props.agent.id, chat.id)
+  if (scopeId.value) {
+    await reconnect(scopeId.value, chat.id)
   }
 
   return chat.id
 }
 
 async function handleSendMessage(messageData) {
-  if (isLoading.value || !props.agent?.id) return
+  if (isLoading.value || !scopeId.value) return
 
   isLoading.value = true
   const nextIndex = chatMessages.value.length
@@ -437,7 +514,7 @@ async function handleSendMessage(messageData) {
     isDisliked: false,
   })
 
-  if (route.query.created === '1') {
+  if (props.mode === 'single' && route.query.created === '1') {
     clearCreatedAgentContext()
     onboardingMessages.value = []
   }
@@ -448,7 +525,7 @@ async function handleSendMessage(messageData) {
     const activeChatId = await ensureChatForMessage(messageData)
     emit('chat-used', activeChatId)
 
-    await ensureConnected(props.agent.id, activeChatId)
+    await ensureConnected(scopeId.value, activeChatId)
     send(messageData.text)
   } catch (err) {
     chatMessages.value[nextIndex].isLoading = false
@@ -461,7 +538,7 @@ async function handleSendMessage(messageData) {
 
 async function handleRegenerate(index) {
   const message = chatMessages.value[index]
-  if (!message?.text || isLoading.value || !props.agent?.id || !chatId.value) return
+  if (!message?.text || isLoading.value || !scopeId.value || !chatId.value) return
 
   message.isLoading = true
   message.aiResponse = null
@@ -470,7 +547,7 @@ async function handleRegenerate(index) {
   isLoading.value = true
 
   try {
-    await ensureConnected(props.agent.id, chatId.value)
+    await ensureConnected(scopeId.value, chatId.value)
     send(message.text)
   } catch (err) {
     message.isLoading = false

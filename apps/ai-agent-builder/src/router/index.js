@@ -11,6 +11,7 @@ import PasswordUpdation from '../../../../packages/shared-ui/src/views/auth/Pass
 import AccountDeleted from '../../../../packages/shared-ui/src/views/AccountDeleted.vue'
 import { DashboardView as Dashboard } from '@ai-suite/shared-ui'
 import AgentDashboardView from '../views/AgentDashboardView.vue'
+import MultiAgentDashboardView from '../views/MultiAgentDashboardView.vue'
 
 import VerifyEmail from '../views/verify-email.vue'
 import VerifyEmailToken from '../views/verify-email-token.vue'
@@ -74,6 +75,12 @@ const routes = [
     path: '/agent-dashboard',
     name: 'AgentDashboard',
     component: AgentDashboardView,
+    meta: { requiresAuth: true, standaloneAgentView: true },
+  },
+  {
+    path: '/multi-agent-dashboard',
+    name: 'MultiAgentDashboard',
+    component: MultiAgentDashboardView,
     meta: { requiresAuth: true, standaloneAgentView: true },
   },
   { path: '/agents', name: 'Agents', component: Dashboard, meta: { requiresAuth: true } },
