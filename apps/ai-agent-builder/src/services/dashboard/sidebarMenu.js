@@ -8,6 +8,7 @@ import NotificationIcon from '../../assets/images/NotificationIcon.svg'
 export function getSidebarConfig() {
   return {
     brandName: 'AI Agent',
+    brandIcon: AgentsIcon,
     enableSessionRename: true,
     enableNotificationBadge: true,
     chatRoute: '/home',

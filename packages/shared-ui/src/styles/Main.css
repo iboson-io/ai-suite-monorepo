@@ -271,6 +271,15 @@
   .tertiary_text_color{
     @apply text-[#9c9da6]
   }
+  .action_icon_color {
+    @apply secondary_text_color transition-colors hover:primary_text_color;
+  }
+  .liked_icon_color {
+    @apply text-[#7950F2];
+  }
+  .disliked_icon_color {
+    @apply text-error-600;
+  }
 /* new design system end*/
   .text_subtle_color {
     @apply text-[#44546F]
@@ -580,7 +589,7 @@
 
 .custom_scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #00000021  transparent;
+  scrollbar-color: #000000a3 transparent
 }
 
 .custom_scrollbar::-webkit-scrollbar {

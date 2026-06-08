@@ -4,10 +4,12 @@ export {
   AGENTS_PAGE_LIMIT,
   MIN_AGENT_PROMPT_LENGTH,
   KNOWLEDGE_TABS,
+  KNOWLEDGE_TYPE_LABELS,
 } from './constants.js'
 
 export {
   validateAgentName,
+  validateAgentPromptOptional,
   validateAgentPromptForEnhance,
   validateApiBaseUrl,
   validateDbConfig,
@@ -31,6 +33,29 @@ export {
 } from './list.js'
 
 export { fetchAgentDetails } from './details.js'
+
+export {
+  fetchAgentChats,
+  deleteAgentChat,
+  renameAgentChat,
+  createAgentChat,
+  fetchChatHistory,
+} from './chats.js'
+
+export {
+  fetchAgentDeployment,
+  createAgentDeployment,
+  updateAgentDeployment,
+  regenerateDeploymentApiKey,
+  getDeploymentForEnvironment,
+} from './deployment.js'
+
+export {
+  updateAgentInfo,
+  updateAgentKnowledge,
+  deleteAgentKnowledgeFile,
+  refreshAgentDetails,
+} from './update.js'
 
 export {
   resolveKnowledgeType,

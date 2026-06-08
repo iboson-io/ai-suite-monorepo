@@ -193,13 +193,14 @@
       :agent-id="agentDetails?.id ?? selectedAgent?.id ?? null"
       @close="closeAgentModal"
       @create="handleCreateAgentSubmit"
+      @clear-error="agentModalError = ''"
     />
   </main>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DownArrow from '../assets/images/DownArrow.svg'
 import SearchIcon from '../assets/images/search.svg'
 import ListIcon from '../assets/images/list.svg'
@@ -218,8 +219,13 @@ import {
   setAgentActiveStatus,
   statusFromActive,
 } from '../services/agents/agents.js'
+import {
+  setCreatedAgentContext,
+  setSelectedAgentId,
+} from '../services/agents/selectedAgent.js'
 
 const route = useRoute()
+const router = useRouter()
 
 const categoryTabs = AGENT_CATEGORY_TABS
 const categoryTabIcons = {
@@ -417,7 +423,7 @@ async function handleCreateAgentSubmit({
   agentModalError.value = ''
 
   try {
-    await createSingleAgent({
+    const created = await createSingleAgent({
       name,
       prompt,
       role,
@@ -430,8 +436,27 @@ async function handleCreateAgentSubmit({
       dbConfig,
       selectedComposioApps,
     })
+
+    if (!created?.id) {
+      throw new Error('Agent was created but no agent id was returned.')
+    }
+
+    setSelectedAgentId(created.id)
+    setCreatedAgentContext({
+      id: created.id,
+      name: created.name ?? name,
+      prompt,
+      knowledgeTab,
+      selectedComposioApps,
+    })
+
     closeAgentModal()
     loadAgents()
+
+    await router.push({
+      path: '/agent-dashboard',
+      query: { agent_id: String(created.id), created: '1' },
+    })
   } catch (error) {
     agentModalError.value =
       error?.message || 'Failed to create agent. Please try again.'
@@ -443,28 +468,11 @@ async function handleCreateAgentSubmit({
 async function handleSelectAgent(agent) {
   if (agent.kind !== 'single') return
 
-  const generation = ++agentModalGeneration
-  agentModalMode.value = 'view'
-  selectedAgent.value = agent
-  isAgentModalOpen.value = true
-  agentDetails.value = null
-  agentModalError.value = ''
-  agentDetailsLoading.value = true
-  agentCreateSubmitting.value = false
-
-  try {
-    const details = await fetchAgentDetails(agent.id)
-    if (generation !== agentModalGeneration) return
-    agentDetails.value = details
-  } catch (error) {
-    if (generation !== agentModalGeneration) return
-    agentModalError.value =
-      error?.message || 'Failed to load agent details. Please try again.'
-  } finally {
-    if (generation === agentModalGeneration) {
-      agentDetailsLoading.value = false
-    }
-  }
+  setSelectedAgentId(agent.id)
+  await router.push({
+    path: '/agent-dashboard',
+    query: { agent_id: String(agent.id) },
+  })
 }
 
 function closeAgentModal() {

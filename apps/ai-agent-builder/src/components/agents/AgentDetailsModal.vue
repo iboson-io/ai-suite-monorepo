@@ -349,7 +349,7 @@
         </div>
 
         <div
-          v-if="isCreateMode && !loading && !errorMessage"
+          v-if="isCreateMode && !loading"
           class="shrink-0 border-t primary_border_color px-6xl py-5xl"
         >
           <div v-if="createStep === 1" class="flex justify-end">
@@ -464,7 +464,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close', 'create'])
+const emit = defineEmits(['close', 'create', 'clear-error'])
 
 const titleId = 'agent-details-modal-title'
 const nameFieldId = 'agent-create-name'
@@ -742,6 +742,7 @@ function handleOverlayClick() {
 function handleCreateSubmit() {
   if (isSubmitting.value) return
 
+  emit('clear-error')
   clearKnowledgeValidation()
 
   const knowledgeResult = validateCreateKnowledgeStep({

@@ -1,0 +1,523 @@
+<template>
+  <div class="flex min-h-0 flex-1 flex-col">
+    <div
+      v-if="loadingHistory"
+      class="flex min-h-0 flex-1 items-center justify-center"
+    >
+      <div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-info-500" />
+    </div>
+
+    <template v-else>
+      <div class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl">
+        <div class="mx-auto flex w-full max-w-3xl flex-col gap-7">
+          <article
+            v-for="(message, index) in onboardingMessages"
+            :key="`onboarding-${index}`"
+          >
+            <div class="flex items-start gap-3">
+              <img
+                :src="AgentAvatarIcon"
+                alt=""
+                class="h-8 w-8 shrink-0 rounded-full"
+                aria-hidden="true"
+              />
+
+              <div class="min-w-0 flex-1">
+                <p class="Body_2_regular primary_text_color whitespace-pre-wrap lg:px-3xl pt-sm pb-md">
+                  {{ message.text }}
+                </p>
+
+                <p
+                  v-if="message.showKnowledgeSuccess"
+                  class="label_2_medium mb-md inline-flex items-center gap-sm rounded-lg border border-success-200 bg-success-50 px-md py-xs text-success-600 lg:mx-3xl"
+                >
+                  <span aria-hidden="true">✓</span>
+                  Knowledge added successfully.
+                </p>
+
+                <Cards
+                  v-if="message.toolCards?.length"
+                  embedded
+                  :columns="2"
+                  :cards="message.toolCards"
+                  class="lg:px-3xl"
+                />
+
+                <ChatActionBar
+                  :is-liked="message.isLiked"
+                  :is-disliked="message.isDisliked"
+                  :padded="false"
+                  compact-icons
+                  @copy="handleCopy(message.text)"
+                  @like="toggleOnboardingReaction(index, 'like')"
+                  @dislike="toggleOnboardingReaction(index, 'dislike')"
+                />
+              </div>
+            </div>
+          </article>
+
+          <article
+            v-for="(message, index) in chatMessages"
+            :key="`chat-${message.id ?? index}`"
+          >
+            <div v-if="message.text" class="flex justify-end">
+              <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
+                <p class="Body_2_regular primary_text_color">{{ message.text }}</p>
+              </div>
+            </div>
+
+            <div class="mt-xl flex items-start gap-3">
+              <img
+                :src="AgentChatIcon"
+                alt=""
+                class="h-8 w-8 shrink-0 rounded-full"
+                aria-hidden="true"
+              />
+
+              <div class="min-w-0 flex-1">
+                <div v-if="message.isLoading" class="rounded-2xl lg:px-3xl py-xs">
+                  <p class="primary_text_color body_3_regular">
+                    Got it, give me a moment<span class="loading-dots" />
+                  </p>
+                </div>
+
+                <div v-else-if="message.aiResponse">
+                  <div
+                    class="Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                    v-html="formatMarkdownToHtml(message.aiResponse)"
+                  />
+
+                  <ChatActionBar
+                    :is-liked="message.isLiked"
+                    :is-disliked="message.isDisliked"
+                    :padded="false"
+                    compact-icons
+                    show-regenerate
+                    @copy="handleCopy(message.aiResponse)"
+                    @like="toggleChatReaction(index, 'like')"
+                    @dislike="toggleChatReaction(index, 'dislike')"
+                    @regenerate="handleRegenerate(index)"
+                  />
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <div ref="scrollAnchor" class="h-px" />
+        </div>
+      </div>
+
+      <div ref="promptSectionRef" class="shrink-0 px-6xl pb-2xl pt-2">
+        <div class="mx-auto max-w-3xl">
+          <p
+            v-if="isReconnecting && !isConnected"
+            class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
+          >
+            Connecting to agent<span class="loading-dots" />
+          </p>
+
+          <PromptBox
+            :is-ai-generating="isLoading || isReconnecting"
+            :initial-product-id="agent?.id"
+            @send-message="handleSendMessage"
+          />
+
+          <div class="text-center p-xl">
+            <p class="body_4_regular tertiary_text_color">
+              Genius AI can make mistakes. Please check for accuracy.
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { Cards, ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
+import AgentAvatarIcon from '../../../assets/images/AiIcon.svg'
+import AgentChatIcon from '../../../assets/images/agents/dashboard/chatIcon.svg'
+import { useAgentChatWebSocket } from '../../../composables/useAgentChatWebSocket.js'
+import { apiService } from '../../../services/agentApi.js'
+import { extractChatFromCreateResponse } from '../../../services/agents/chats.js'
+import { getAgentToolCards } from '../../../services/chat/starterCards.js'
+import { clearCreatedAgentContext } from '../../../services/agents/selectedAgent.js'
+
+const props = defineProps({
+  agent: {
+    type: Object,
+    default: null,
+  },
+  createdContext: {
+    type: Object,
+    default: null,
+  },
+  selectedChatId: {
+    type: [String, Number],
+    default: null,
+  },
+})
+
+const emit = defineEmits(['chat-created', 'chat-used'])
+
+const route = useRoute()
+
+const chatMessages = ref([])
+const onboardingMessages = ref([])
+const chatId = ref(null)
+const isLoading = ref(false)
+const loadingHistory = ref(false)
+const promptSectionRef = ref(null)
+const scrollAnchor = ref(null)
+
+const {
+  isConnected,
+  isReconnecting,
+  connect,
+  disconnect,
+  reconnect,
+  ensureConnected,
+  send,
+  setOnMessage,
+} = useAgentChatWebSocket()
+
+const hasMessages = computed(
+  () => onboardingMessages.value.length > 0 || chatMessages.value.length > 0
+)
+
+const onboardingMessagesFromContext = computed(() => {
+  if (!props.createdContext) return []
+
+  const prompt = String(props.createdContext.prompt ?? '').trim()
+  const promptEcho =
+    prompt ||
+    'This agent is ready. You can start chatting and connect tools to automate workflows.'
+
+  return [
+    {
+      text: promptEcho,
+      showKnowledgeSuccess: true,
+      isLiked: false,
+      isDisliked: false,
+    },
+    {
+      text: 'Connect your tools (Gmail, CRM, etc.) to automate support tickets.',
+      toolCards: getAgentToolCards(),
+      isLiked: false,
+      isDisliked: false,
+    },
+  ]
+})
+
+watch(
+  onboardingMessagesFromContext,
+  (messages) => {
+    onboardingMessages.value = messages.map((message) => ({ ...message }))
+  },
+  { immediate: true }
+)
+
+setOnMessage((data) => {
+  if (data.type !== 'agent_response') return
+
+  const pendingMessage = [...chatMessages.value]
+    .reverse()
+    .find((message) => message.isLoading)
+
+  if (!pendingMessage) return
+
+  pendingMessage.isLoading = false
+  isLoading.value = false
+
+  if (data.success) {
+    pendingMessage.aiResponse = data.response || 'No response received'
+  } else {
+    pendingMessage.aiResponse =
+      data.response || 'Sorry, I encountered an error while processing your message.'
+  }
+
+  scrollToBottom()
+})
+
+watch(
+  () => props.selectedChatId,
+  async (nextChatId) => {
+    if (!nextChatId) {
+      chatId.value = null
+      chatMessages.value = []
+      disconnect()
+      return
+    }
+
+    chatId.value = nextChatId
+    await loadChatHistory(nextChatId)
+
+    if (props.agent?.id) {
+      try {
+        await reconnect(props.agent.id, nextChatId)
+      } catch {
+        connect(props.agent.id, nextChatId)
+      }
+    }
+  },
+  { immediate: true }
+)
+
+function extractHistory(response) {
+  if (response?.data?.conversations) return response.data.conversations
+  if (response?.conversations) return response.conversations
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response)) return response
+  return []
+}
+
+function mapHistoryToMessages(history) {
+  const messages = []
+
+  history.forEach((item, index) => {
+    const userText =
+      item.user_message ??
+      item.userMessage ??
+      (item.role === 'user' ? item.content?.value ?? item.content : null)
+
+    const aiText =
+      item.agent_response ??
+      item.agentResponse ??
+      item.ai_response ??
+      (item.role === 'assistant' ? item.content?.value ?? item.content : null)
+
+    if (userText) {
+      messages.push({
+        id: `user_${item.id ?? index}`,
+        text: String(userText),
+        isLoading: false,
+        aiResponse: null,
+        isLiked: false,
+        isDisliked: false,
+        historyOnly: true,
+      })
+    }
+
+    if (aiText) {
+      const last = messages[messages.length - 1]
+      if (last && !last.aiResponse && last.text) {
+        last.aiResponse = String(aiText)
+      } else {
+        messages.push({
+          id: `ai_${item.id ?? index}`,
+          text: '',
+          isLoading: false,
+          aiResponse: String(aiText),
+          isLiked: false,
+          isDisliked: false,
+          historyOnly: true,
+        })
+      }
+    }
+  })
+
+  return messages
+}
+
+async function loadChatHistory(activeChatId) {
+  loadingHistory.value = true
+  chatMessages.value = []
+
+  try {
+    const response = await apiService.getChatHistory(activeChatId)
+    chatMessages.value = mapHistoryToMessages(extractHistory(response))
+    await scrollToBottom()
+  } catch {
+    chatMessages.value = []
+  } finally {
+    loadingHistory.value = false
+  }
+}
+
+function formatMarkdownToHtml(text) {
+  if (text == null || text === '') return ''
+
+  let html = String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+  html = html.replace(/\n/g, '<br>')
+
+  return html
+}
+
+async function handleCopy(text) {
+  if (!text) return
+
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-9999px'
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+  }
+}
+
+function toggleOnboardingReaction(index, type) {
+  const message = onboardingMessages.value[index]
+  if (!message) return
+
+  if (type === 'like') {
+    message.isLiked = !message.isLiked
+    if (message.isLiked) message.isDisliked = false
+    return
+  }
+
+  message.isDisliked = !message.isDisliked
+  if (message.isDisliked) message.isLiked = false
+}
+
+function toggleChatReaction(index, type) {
+  const message = chatMessages.value[index]
+  if (!message) return
+
+  if (type === 'like') {
+    message.isLiked = !message.isLiked
+    if (message.isLiked) message.isDisliked = false
+    return
+  }
+
+  message.isDisliked = !message.isDisliked
+  if (message.isDisliked) message.isLiked = false
+}
+
+async function scrollToBottom() {
+  await nextTick()
+  scrollAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+}
+
+async function ensureChatForMessage(messageData) {
+  if (chatId.value) return chatId.value
+
+  const created = await apiService.createChat(
+    props.agent.id,
+    messageData.text.slice(0, 80) || 'New Chat'
+  )
+
+  const chat = extractChatFromCreateResponse(created)
+  if (!chat?.id) throw new Error('Could not create chat.')
+
+  chatId.value = chat.id
+  emit('chat-created', created)
+
+  if (props.agent?.id) {
+    await reconnect(props.agent.id, chat.id)
+  }
+
+  return chat.id
+}
+
+async function handleSendMessage(messageData) {
+  if (isLoading.value || !props.agent?.id) return
+
+  isLoading.value = true
+  const nextIndex = chatMessages.value.length
+  chatMessages.value.push({
+    id: `pending_${Date.now()}`,
+    text: messageData.text,
+    isLoading: true,
+    aiResponse: null,
+    isLiked: false,
+    isDisliked: false,
+  })
+
+  if (route.query.created === '1') {
+    clearCreatedAgentContext()
+    onboardingMessages.value = []
+  }
+
+  await scrollToBottom()
+
+  try {
+    const activeChatId = await ensureChatForMessage(messageData)
+    emit('chat-used', activeChatId)
+
+    await ensureConnected(props.agent.id, activeChatId)
+    send(messageData.text)
+  } catch (err) {
+    chatMessages.value[nextIndex].isLoading = false
+    chatMessages.value[nextIndex].aiResponse =
+      err?.message || 'Sorry, something went wrong. Please try again.'
+    isLoading.value = false
+    await scrollToBottom()
+  }
+}
+
+async function handleRegenerate(index) {
+  const message = chatMessages.value[index]
+  if (!message?.text || isLoading.value || !props.agent?.id || !chatId.value) return
+
+  message.isLoading = true
+  message.aiResponse = null
+  message.isLiked = false
+  message.isDisliked = false
+  isLoading.value = true
+
+  try {
+    await ensureConnected(props.agent.id, chatId.value)
+    send(message.text)
+  } catch (err) {
+    message.isLoading = false
+    message.aiResponse =
+      err?.message || 'Sorry, something went wrong. Please try again.'
+    isLoading.value = false
+    await scrollToBottom()
+  }
+}
+
+function focusPrompt() {
+  promptSectionRef.value?.querySelector('textarea, input')?.focus()
+}
+
+onUnmounted(() => {
+  disconnect()
+})
+
+defineExpose({ focusPrompt, hasMessages })
+</script>
+
+<style scoped>
+.connecting-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: '';
+  }
+  40% {
+    content: '.';
+  }
+  60% {
+    content: '..';
+  }
+  80%,
+  100% {
+    content: '...';
+  }
+}
+</style>

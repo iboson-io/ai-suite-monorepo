@@ -10,6 +10,23 @@ export function validateAgentName(name) {
   return { valid: true, message: '' }
 }
 
+export function validateAgentPromptOptional(prompt) {
+  const trimmed = String(prompt ?? '').trim()
+
+  if (!trimmed) {
+    return { valid: true, message: '' }
+  }
+
+  if (trimmed.length < MIN_AGENT_PROMPT_LENGTH) {
+    return {
+      valid: false,
+      message: 'Agent prompt must be at least 10 characters long.',
+    }
+  }
+
+  return { valid: true, message: '' }
+}
+
 export function validateAgentPromptForEnhance(prompt) {
   const trimmed = String(prompt ?? '').trim()
 
@@ -20,7 +37,7 @@ export function validateAgentPromptForEnhance(prompt) {
   if (trimmed.length < MIN_AGENT_PROMPT_LENGTH) {
     return {
       valid: false,
-      message: 'Prompt must be at least 10 characters long.',
+      message: 'Agent prompt must be at least 10 characters long.',
     }
   }
 

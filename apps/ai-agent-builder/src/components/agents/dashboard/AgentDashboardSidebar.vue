@@ -1,0 +1,211 @@
+<template>
+  <div ref="sidebarContainer" class="relative flex h-full shrink-0" data-sidebar-container>
+    <nav
+      class="z-10 flex h-full w-20 shrink-0 flex-col items-center gap-md border-r primary_border_color bg_secondary_color py-4xl shadow-sm"
+    >
+      <button
+        type="button"
+        class="mb-md flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-gray-25"
+        aria-label="Back to agents"
+        @click="goToAgents"
+      >
+        <img :src="AiAgentIcon" alt="" class="h-7 w-auto" />
+      </button>
+
+      <button
+        v-for="tab in visibleTabs"
+        :key="tab.id"
+        type="button"
+        class="group relative flex w-full flex-col items-center rounded-xl px-md py-xl transition-colors"
+        :class="
+          activeTab === tab.id
+            ? 'bg-info-50 text-info-600'
+            : 'secondary_text_color hover:bg-gray-25 hover:text-info-600'
+        "
+        :aria-label="tab.label"
+        :aria-pressed="activeTab === tab.id"
+        @click="setActiveTab(tab.id)"
+      >
+        <img
+          :src="tab.icon"
+          alt=""
+          class="h-6 w-6 transition-opacity"
+          :class="activeTab === tab.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'"
+        />
+        <span
+          class="pointer-events-none absolute left-full z-50 ml-sm whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color opacity-0 transition-opacity group-hover:opacity-100"
+        >
+          {{ tab.label }}
+        </span>
+      </button>
+    </nav>
+
+    <div v-show="activeTab === 'chat'" class="h-full shrink-0">
+      <AgentChatSidebar
+        :is-open="showSubSidebar && activeTab === 'chat'"
+        :chats="chats"
+        :loading="loadingChats"
+        :loading-more="loadingMoreChats"
+        :creating="creatingChat"
+        :selected-chat-id="selectedChatId"
+        :pagination="pagination"
+        @close="closeSubSidebar"
+        @select-chat="$emit('select-chat', $event)"
+        @create-chat="$emit('create-chat')"
+        @delete-chat="$emit('delete-chat', $event)"
+        @rename-chat="$emit('rename-chat', $event)"
+        @page-change="$emit('page-change', $event)"
+      />
+    </div>
+
+    <div v-show="activeTab === 'ai'" class="h-full shrink-0">
+      <AgentKnowledgeSidebar
+        :is-open="showSubSidebar && activeTab === 'ai'"
+        :agent="agent"
+        @close="closeSubSidebar"
+        @updated="$emit('agent-updated', $event)"
+      />
+    </div>
+
+    <div v-show="activeTab === 'deployment'" class="h-full shrink-0">
+      <AgentDeploymentSidebar
+        :is-open="showSubSidebar && activeTab === 'deployment'"
+        :agent="agent"
+        @close="closeSubSidebar"
+      />
+    </div>
+
+    <div v-show="activeTab === 'documents'" class="h-full shrink-0">
+      <AgentInfoSidebar
+        :is-open="showSubSidebar && activeTab === 'documents'"
+        :agent="agent"
+        @close="closeSubSidebar"
+        @updated="$emit('agent-updated', $event)"
+      />
+    </div>
+
+    <div v-show="activeTab === 'settings'" class="h-full shrink-0">
+      <AgentSettingsSidebar
+        :is-open="showSubSidebar && activeTab === 'settings'"
+        @close="closeSubSidebar"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import ChatIcon from '../../../assets/images/agents/dashboard/chat.svg'
+import KnowledgeIcon from '../../../assets/images/agents/dashboard/agent.svg'
+import DeploymentIcon from '../../../assets/images/agents/dashboard/deployment.svg'
+import AgentInfoIcon from '../../../assets/images/agents/dashboard/agentinfo.svg'
+import SettingsIcon from '../../../assets/images/agents/dashboard/advanced.svg'
+import AiAgentIcon from '../../../assets/images/agents/dashboard/aiagenticon.svg'
+import AgentChatSidebar from './sidebars/AgentChatSidebar.vue'
+import AgentKnowledgeSidebar from './sidebars/AgentKnowledgeSidebar.vue'
+import AgentDeploymentSidebar from './sidebars/AgentDeploymentSidebar.vue'
+import AgentInfoSidebar from './sidebars/AgentInfoSidebar.vue'
+import AgentSettingsSidebar from './sidebars/AgentSettingsSidebar.vue'
+
+const props = defineProps({
+  agent: { type: Object, default: null },
+  chats: { type: Array, default: () => [] },
+  loadingChats: { type: Boolean, default: false },
+  loadingMoreChats: { type: Boolean, default: false },
+  creatingChat: { type: Boolean, default: false },
+  selectedChatId: { type: [String, Number], default: null },
+  pagination: {
+    type: Object,
+    default: () => ({
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      itemsPerPage: 50,
+      hasNext: false,
+      hasPrev: false,
+    }),
+  },
+  initialTab: { type: String, default: null },
+})
+
+const emit = defineEmits([
+  'tab-changed',
+  'select-chat',
+  'create-chat',
+  'delete-chat',
+  'rename-chat',
+  'page-change',
+  'agent-updated',
+])
+
+const router = useRouter()
+
+const activeTab = ref(null)
+const showSubSidebar = ref(false)
+const sidebarContainer = ref(null)
+
+const tabs = [
+  { id: 'chat', label: 'Chat', icon: ChatIcon },
+  { id: 'ai', label: 'Agent Knowledge', icon: KnowledgeIcon },
+  { id: 'deployment', label: 'Deployment', icon: DeploymentIcon },
+  { id: 'documents', label: 'Agent Info', icon: AgentInfoIcon },
+  { id: 'settings', label: 'Settings', icon: SettingsIcon },
+]
+
+const visibleTabs = computed(() => tabs)
+
+function goToAgents() {
+  router.push('/agents')
+}
+
+function setActiveTab(tab) {
+  nextTick(() => {
+    if (activeTab.value === tab && showSubSidebar.value) {
+      showSubSidebar.value = false
+      activeTab.value = null
+      emit('tab-changed', null)
+      return
+    }
+
+    activeTab.value = tab
+    showSubSidebar.value = true
+    emit('tab-changed', tab)
+  })
+}
+
+function closeSubSidebar() {
+  nextTick(() => {
+    showSubSidebar.value = false
+    activeTab.value = null
+    emit('tab-changed', null)
+  })
+}
+
+function handleClickOutside(event) {
+  if (!showSubSidebar.value) return
+
+  const container = sidebarContainer.value
+  if (container?.contains(event.target)) return
+
+  closeSubSidebar()
+}
+
+watch(
+  () => props.initialTab,
+  (tab) => {
+    if (tab) setActiveTab(tab)
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside)
+})
+
+defineExpose({ setActiveTab, closeSubSidebar })
+</script>

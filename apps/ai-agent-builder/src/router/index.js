@@ -10,6 +10,7 @@ import ResetPassword from '../../../../packages/shared-ui/src/views/auth/ResetPa
 import PasswordUpdation from '../../../../packages/shared-ui/src/views/auth/PasswordUpdation.vue'
 import AccountDeleted from '../../../../packages/shared-ui/src/views/AccountDeleted.vue'
 import { DashboardView as Dashboard } from '@ai-suite/shared-ui'
+import AgentDashboardView from '../views/AgentDashboardView.vue'
 
 import VerifyEmail from '../views/verify-email.vue'
 import VerifyEmailToken from '../views/verify-email-token.vue'
@@ -69,6 +70,12 @@ const routes = [
   { path: '/verify-email-token', name: 'VerifyEmailToken', component: VerifyEmailToken },
 
   { path: '/home', name: 'Home', component: Dashboard, meta: { requiresAuth: true } },
+  {
+    path: '/agent-dashboard',
+    name: 'AgentDashboard',
+    component: AgentDashboardView,
+    meta: { requiresAuth: true, standaloneAgentView: true },
+  },
   { path: '/agents', name: 'Agents', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/tasks', name: 'Tasks', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/phone-number', name: 'PhoneNumber', component: Dashboard, meta: { requiresAuth: true } },

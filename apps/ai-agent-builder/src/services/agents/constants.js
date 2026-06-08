@@ -19,3 +19,10 @@ export const KNOWLEDGE_TABS = [
   { id: 'db', label: 'Data Base' },
   { id: 'composio', label: 'Composio' },
 ]
+
+export const KNOWLEDGE_TYPE_LABELS = {
+  api: 'API Schema Agent',
+  documents: 'Document Agent',
+  db: 'DB Agent',
+  composio: 'Composio Agent',
+}

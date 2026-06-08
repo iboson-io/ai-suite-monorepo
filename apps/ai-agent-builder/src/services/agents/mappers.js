@@ -29,7 +29,66 @@ export function parseAgentRules(raw) {
 
 export function extractAgentPayload(response) {
   if (!response || typeof response !== 'object') return null
-  return response.data ?? response.agent ?? response
+
+  const data = response.data ?? response
+
+  if (data?.agent && typeof data.agent === 'object') {
+    return data.agent
+  }
+
+  if (response.agent && typeof response.agent === 'object') {
+    return response.agent
+  }
+
+  return data
+}
+
+export function extractCreatedAgentId(response) {
+  if (!response || typeof response !== 'object') return null
+
+  const id =
+    response.data?.agent?.id ??
+    response.data?.agent?._id ??
+    response.agent?.id ??
+    response.agent?._id
+
+  if (id != null) return id
+
+  const payload = extractAgentPayload(response)
+  return payload?.id ?? payload?._id ?? null
+}
+
+export function resolveAgentKnowledgeType(raw) {
+  if (!raw || typeof raw !== 'object') return 'api'
+
+  const agentTypeValue = String(raw.agent_type ?? '').toLowerCase()
+  const authType = String(raw.auth_type ?? '').toLowerCase()
+
+  if (agentTypeValue === 'composio' || authType === 'composio_creds') {
+    return 'composio'
+  }
+
+  switch (authType) {
+    case 'bearer_token':
+      return 'api'
+    case 'document_access':
+      return 'documents'
+    case 'db_credentials':
+      return 'db'
+    default:
+      if (Array.isArray(raw.schema_files) && raw.schema_files.length > 0) return 'api'
+      if (Array.isArray(raw.document_files) && raw.document_files.length > 0) return 'documents'
+      if (raw.db_config) return 'db'
+      return 'api'
+  }
+}
+
+export function knowledgeTabFromType(type) {
+  const normalized = String(type ?? 'api').toLowerCase()
+  if (normalized === 'documents' || normalized === 'doc') return 'documents'
+  if (normalized === 'db') return 'db'
+  if (normalized === 'composio') return 'composio'
+  return 'api'
 }
 
 export function mapAgentDetails(raw) {
@@ -38,24 +97,43 @@ export function mapAgentDetails(raw) {
   const id = raw.id ?? raw._id
   if (id == null) return null
 
-  const descriptionSource =
-    raw.description ?? raw.summary ?? raw.system_prompt ?? raw.prompt
+  const promptSource = raw.prompt ?? raw.system_prompt ?? raw.description ?? raw.summary
+  const prompt = promptSource != null ? String(promptSource).trim() : ''
 
+  const descriptionSource = raw.description ?? raw.summary ?? prompt
   const description =
     descriptionSource != null && String(descriptionSource).trim()
       ? String(descriptionSource).trim()
       : ''
 
   const role = raw.role != null ? String(raw.role).trim() : ''
+  const authConfig = raw.auth_config && typeof raw.auth_config === 'object' ? raw.auth_config : {}
 
   return {
     id,
     name: raw.name ?? raw.title ?? 'Untitled Agent',
     description,
+    prompt,
     role,
     rules: parseAgentRules(raw.rules),
+    language: raw.language ?? 'english',
     status: normalizeStatus(raw.status),
     updatedAt: raw.updated_at ?? raw.updatedAt ?? raw.created_at ?? raw.createdAt,
+    agentType: resolveAgentKnowledgeType(raw),
+    knowledgeTab: knowledgeTabFromType(resolveAgentKnowledgeType(raw)),
+    baseUrl: raw.base_url ?? authConfig.base_url ?? '',
+    accessToken: raw.token ?? authConfig.token ?? '',
+    authType: raw.auth_type ?? '',
+    authConfig,
+    dbConfig: raw.db_config ?? null,
+    schemaFiles: Array.isArray(raw.schema_files) ? raw.schema_files : [],
+    documentFiles: Array.isArray(raw.document_files) ? raw.document_files : [],
+    connectedApps: Array.isArray(raw.connected_apps) ? raw.connected_apps : [],
+    selectedComposioApps: Array.isArray(raw.auth_config)
+      ? raw.auth_config
+      : Array.isArray(raw.connected_apps)
+        ? raw.connected_apps
+        : [],
   }
 }
 

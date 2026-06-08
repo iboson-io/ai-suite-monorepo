@@ -1,5 +1,5 @@
 import { API_ENDPOINTS, USER_API_URL, AGENT_API_URL, CHAT_API_URL, API_DEPLOYMENT_URL,PAYMENT_API_URL,NOTIFICATION_API_URL ,CHAT_AI_API_URL, WORKFLOW_API_URL} from './constants.js'
-import { flattenWorkflowValidationErrors } from '@app/utils/workflowApiErrors'
+import { flattenWorkflowValidationErrors, formatWorkflowValidationToast } from '@app/utils/workflowApiErrors'
 
 class ApiService {
   constructor() {
@@ -126,6 +126,10 @@ class ApiService {
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
+        }
+
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
         }
         
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)

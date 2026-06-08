@@ -1,6 +1,10 @@
 <template>
-  <div class="flex min-h-0 min-w-0 flex-1 gap-5xl overflow-hidden">
+  <div
+    class="flex min-h-0 min-w-0 flex-1"
+    :class="editMode ? 'flex-col' : 'gap-5xl overflow-hidden'"
+  >
     <nav
+      v-if="!editMode"
       class="flex w-[263px] shrink-0 flex-col gap-xs rounded-2xl border primary_border_color bg-white p-md"
     >
       <button
@@ -24,13 +28,48 @@
       </button>
     </nav>
 
-    <div class="flex min-h-0 w-[820px] shrink-0 flex-col overflow-hidden">
+    <div
+      class="flex min-h-0 flex-col"
+      :class="editMode ? 'w-full min-w-0 flex-1' : 'w-[820px] shrink-0 overflow-hidden'"
+    >
       <!-- Documents -->
-      <template v-if="activeTab === 'documents'">
-        <div class="flex min-h-0 h-full w-[820px] flex-1 overflow-hidden gap-2">
+      <template v-if="effectiveActiveTab === 'documents'">
+        <div
+          v-if="editMode && existingDocumentFiles.length"
+          class="custom_scrollbar mb-4xl max-h-48 space-y-sm overflow-y-auto"
+        >
+          <p class="label_2_semibold primary_text_color">Uploaded documents</p>
           <div
-            class="flex h-full flex-col"
-            :class="showFilePartition ? 'min-w-0 flex-1' : 'w-[820px] shrink-0'"
+            v-for="file in existingDocumentFiles"
+            :key="file.id || file.file_id || file.name"
+            class="flex items-center justify-between rounded-lg border primary_border_color px-3xl py-md"
+          >
+            <span class="label_3_regular primary_text_color truncate">
+              {{ file.original_filename || file.name || file.filename || 'Document' }}
+            </span>
+            <button
+              type="button"
+              class="label_3_medium text-error-600"
+              @click="$emit('delete-existing-file', file)"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="flex min-h-0 gap-2"
+          :class="editMode ? 'w-full flex-col' : 'h-full w-[820px] flex-1 overflow-hidden'"
+        >
+          <div
+            class="flex flex-col"
+            :class="
+              editMode
+                ? 'w-full'
+                : showFilePartition
+                  ? 'h-full min-w-0 flex-1'
+                  : 'h-full w-[820px] shrink-0'
+            "
           >
             <input
               ref="documentInputRef"
@@ -41,12 +80,16 @@
               @change="onDocumentInputChange"
             />
             <div
-              class="flex h-full min-h-0 w-full flex-1 cursor-pointer flex-col rounded-2xl border-2 border-dashed primary_border_color bg-white px-6xl py-5xl text-center transition-colors hover:border-info-200 hover:bg-info-50"
+              class="flex w-full cursor-pointer flex-col rounded-2xl border-2 border-dashed primary_border_color bg-white text-center transition-colors hover:border-info-200 hover:bg-info-50"
+              :class="editMode ? 'min-h-[152px] px-4xl py-4xl' : 'h-full min-h-0 flex-1 px-6xl py-5xl'"
               @click="triggerDocumentUpload"
               @dragover.prevent
               @drop.prevent="onDocumentDrop"
             >
-              <div class="flex flex-1 flex-col items-center justify-center">
+              <div
+                class="flex flex-col items-center justify-center"
+                :class="editMode ? '' : 'flex-1'"
+              >
                 <div
                   class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-25"
                   aria-hidden="true"
@@ -67,7 +110,8 @@
 
           <aside
             v-if="documentUploadItems.length"
-            class="custom_scrollbar flex h-full w-[398px] shrink-0 flex-col gap-sm overflow-y-auto   pl-4xl"
+            class="custom_scrollbar flex shrink-0 flex-col gap-sm overflow-y-auto"
+            :class="editMode ? 'w-full' : 'h-full w-[398px] pl-4xl'"
           >
             <KnowledgeUploadedFileCard
               v-for="item in documentUploadItems"
@@ -82,9 +126,12 @@
       </template>
 
       <!-- API Schema -->
-      <template v-else-if="activeTab === 'api'">
-        <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div class="mb-4xl flex shrink-0 gap-md">
+      <template v-else-if="effectiveActiveTab === 'api'">
+        <div class="flex min-h-0 flex-col" :class="editMode ? '' : 'flex-1 overflow-hidden'">
+          <div
+            class="mb-4xl flex shrink-0 gap-md"
+            :class="editMode ? 'flex-col' : ''"
+          >
             <button
               v-for="section in apiSchemaSections"
               :key="section.id"
@@ -102,10 +149,42 @@
           </div>
 
           <template v-if="apiSchemaSection === 'upload'">
-            <div class="flex min-h-0 w-[820px] flex-1 overflow-hidden gap-2">
+            <div
+              v-if="editMode && existingSchemaFiles.length"
+              class="custom_scrollbar mb-4xl max-h-48 space-y-sm overflow-y-auto"
+            >
+              <p class="label_2_semibold primary_text_color">Uploaded schemas</p>
               <div
-                class="flex h-full flex-col"
-                :class="showFilePartition ? 'min-w-0 flex-1' : 'w-[820px] shrink-0'"
+                v-for="file in existingSchemaFiles"
+                :key="file.id || file.file_id || file.name"
+                class="flex items-center justify-between rounded-lg border primary_border_color px-3xl py-md"
+              >
+                <span class="label_3_regular primary_text_color truncate">
+                  {{ file.original_filename || file.name || file.filename || 'Schema' }}
+                </span>
+                <button
+                  type="button"
+                  class="label_3_medium text-error-600"
+                  @click="$emit('delete-existing-file', file)"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="flex min-h-0 gap-2"
+              :class="editMode ? 'w-full flex-col' : 'w-[820px] flex-1 overflow-hidden'"
+            >
+              <div
+                class="flex flex-col"
+                :class="
+                  editMode
+                    ? 'w-full'
+                    : showFilePartition
+                      ? 'min-w-0 flex-1 h-full'
+                      : 'h-full w-[820px] shrink-0'
+                "
               >
                 <input
                   ref="schemaInputRef"
@@ -116,12 +195,16 @@
                   @change="onSchemaInputChange"
                 />
                 <div
-                  class="flex h-full min-h-0 w-full flex-1 cursor-pointer flex-col rounded-2xl border-2 border-dashed primary_border_color bg-white px-6xl py-5xl text-center transition-colors hover:border-info-200 hover:bg-info-50"
+                  class="flex w-full cursor-pointer flex-col rounded-2xl border-2 border-dashed primary_border_color bg-white text-center transition-colors hover:border-info-200 hover:bg-info-50"
+                  :class="editMode ? 'min-h-[152px] px-4xl py-4xl' : 'h-full min-h-0 flex-1 px-6xl py-5xl'"
                   @click="triggerSchemaUpload"
                   @dragover.prevent
                   @drop.prevent="onSchemaDrop"
                 >
-                  <div class="flex flex-1 flex-col items-center justify-center">
+                  <div
+                    class="flex flex-col items-center justify-center"
+                    :class="editMode ? '' : 'flex-1'"
+                  >
                     <div
                       class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-25"
                       aria-hidden="true"
@@ -142,7 +225,8 @@
 
               <aside
                 v-if="schemaUploadItems.length"
-                class="custom_scrollbar flex h-full w-[398px] shrink-0 flex-col gap-sm overflow-y-auto pl-4xl"
+                class="custom_scrollbar flex shrink-0 flex-col gap-sm overflow-y-auto"
+                :class="editMode ? 'w-full' : 'h-full w-[398px] pl-4xl'"
               >
                 <KnowledgeUploadedFileCard
                   v-for="item in schemaUploadItems"
@@ -158,7 +242,8 @@
 
           <div
             v-else-if="apiSchemaSection === 'credentials'"
-            class="custom_scrollbar min-h-0 w-[820px] flex-1 overflow-y-auto"
+            class="custom_scrollbar min-h-0 flex-1 overflow-y-auto"
+            :class="editMode ? 'w-full' : 'w-[820px]'"
           >
             <div class="flex w-full flex-col gap-5xl">
               <div>
@@ -172,7 +257,7 @@
                     <span class="caption_1_medium tertiary_text_color leading-none">?</span>
                   </span>
                 </label>
-                <div class="relative mt-md w-1/2">
+                <div class="relative mt-md" :class="editMode ? 'w-full' : 'w-1/2'">
                   <img
                     :src="ApiBaseUrlIcon"
                     alt=""
@@ -198,7 +283,7 @@
                 <label class="label_2_semibold primary_text_color">
                   Access Token (Optional)
                 </label>
-                <div class="relative mt-md w-1/2">
+                <div class="relative mt-md" :class="editMode ? 'w-full' : 'w-1/2'">
                   <img
                     :src="AccessTokenIcon"
                     alt=""
@@ -267,7 +352,7 @@
       </template>
 
       <!-- Database -->
-      <template v-else-if="activeTab === 'db'">
+      <template v-else-if="effectiveActiveTab === 'db'">
         <DbAgentsConfiguration
           :db-config="dbConfig"
           :show-db-password="showDbPassword"
@@ -279,7 +364,7 @@
       </template>
 
       <!-- Composio -->
-      <template v-else-if="activeTab === 'composio'">
+      <template v-else-if="effectiveActiveTab === 'composio'">
         <ComposioAppsList
           :selected-apps="selectedComposioApps"
           @update:selected-apps="$emit('update:selected-composio-apps', $event)"
@@ -308,6 +393,10 @@ import { useSimulatedFileUpload } from './useSimulatedFileUpload.js'
 
 const props = defineProps({
   activeTab: { type: String, default: 'documents' },
+  editMode: { type: Boolean, default: false },
+  lockedTab: { type: String, default: '' },
+  existingSchemaFiles: { type: Array, default: () => [] },
+  existingDocumentFiles: { type: Array, default: () => [] },
   schemaFiles: { type: Array, default: () => [] },
   documentFiles: { type: Array, default: () => [] },
   validationField: { type: String, default: '' },
@@ -345,7 +434,13 @@ const emit = defineEmits([
   'validate-db-field',
   'update:selected-composio-apps',
   'store-form-data-before-redirect',
+  'delete-existing-file',
 ])
+
+const effectiveActiveTab = computed(() => {
+  if (props.editMode && props.lockedTab) return props.lockedTab
+  return props.activeTab
+})
 
 const documentInputRef = ref(null)
 const schemaInputRef = ref(null)
@@ -509,8 +604,9 @@ watch(
 )
 
 const showFilePartition = computed(() => {
-  if (props.activeTab === 'documents') return documentUploadItems.value.length > 0
-  if (props.activeTab === 'api') return schemaUploadItems.value.length > 0
+  if (props.editMode) return false
+  if (effectiveActiveTab.value === 'documents') return documentUploadItems.value.length > 0
+  if (effectiveActiveTab.value === 'api') return schemaUploadItems.value.length > 0
   return false
 })
 

@@ -17,7 +17,14 @@
     <!-- Header -->
     <div class=" flex items-center justify-between">
       <div class="flex items-center gap-lg heading_h5_semibold gradient_text_color">
+        <img
+          v-if="sidebarConfig.brandIcon"
+          :src="sidebarConfig.brandIcon"
+          alt=""
+          class="h-6 w-auto shrink-0"
+        />
         <div
+          v-else
           class="h-6 w-6 rounded-full bg-gradient-to-r from-pink-500 to-purple-600"
         ></div>
         {{ sidebarConfig.brandName || 'Genius AI' }}

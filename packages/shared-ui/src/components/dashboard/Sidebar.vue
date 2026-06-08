@@ -14,10 +14,21 @@
         @mouseleave="hoveredItem = null"
         :ref="el => { if (el) menuItemRefs['logo'] = el }">
         <div class="flex items-center gap-lg">
-          <div @click="handleToggleCollapse" @mouseenter="() => { if (isCollapsed) hoverLogo = true }"
+          <div
+            v-if="sidebarConfig.brandIcon"
+            @click="handleToggleCollapse"
+            class="relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center"
+          >
+            <img :src="sidebarConfig.brandIcon" alt="" class="h-7 w-auto" />
+          </div>
+          <div
+            v-else
+            @click="handleToggleCollapse"
+            @mouseenter="() => { if (isCollapsed) hoverLogo = true }"
             @mouseleave="() => { if (isCollapsed) hoverLogo = false }"
             class="relative h-7 w-7 rounded-full cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200"
-            :class="isCollapsed ? (hoverLogo ? 'opacity-100 bg-transparent' : 'bg-gradient-to-r from-pink-500 to-purple-600') : 'bg-gradient-to-r from-pink-500 to-purple-600'">
+            :class="isCollapsed ? (hoverLogo ? 'opacity-100 bg-transparent' : 'bg-gradient-to-r from-pink-500 to-purple-600') : 'bg-gradient-to-r from-pink-500 to-purple-600'"
+          >
             <img v-if="isCollapsed" :src="SidebarIcon" alt=""
               class="h-4 w-4 transition-opacity duration-200 relative z-10"
               :class="hoverLogo ? 'opacity-100' : 'opacity-0'" />

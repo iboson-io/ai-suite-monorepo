@@ -2,6 +2,7 @@ import { apiService } from '../agentApi.js'
 import { USER_KEY } from '../api.js'
 import {
   extractAgentPayload,
+  extractCreatedAgentId,
   extractEnhancedPrompt,
   mapAgentDetails,
   mapAgentItem,
@@ -186,7 +187,13 @@ export async function createSingleAgent({
     knowledgeType
   )
 
-  const raw = extractAgentPayload(response) ?? response
+  const agentId = extractCreatedAgentId(response)
+  if (!agentId) {
+    throw new Error(response?.message || 'Failed to create agent.')
+  }
+
+  const agentResponse = await apiService.getAgentById(agentId)
+  const raw = extractAgentPayload(agentResponse) ?? agentResponse
   return mapAgentItem(raw, 'single') ?? mapAgentDetails(raw)
 }
 

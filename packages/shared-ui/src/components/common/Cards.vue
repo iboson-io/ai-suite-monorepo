@@ -1,11 +1,21 @@
 <template>
-  <div class="mx-auto max-w-3xl hidden md:inline">
-    <p v-if="sectionHeading" class="mt-9xl text-left label_2_semibold text_primary_color">
+  <div
+    class="mx-auto max-w-3xl"
+    :class="embedded ? 'block w-full' : 'hidden md:inline'"
+  >
+    <p
+      v-if="sectionHeading"
+      class="text-left label_2_semibold text_primary_color"
+      :class="embedded ? 'mt-0' : 'mt-9xl'"
+    >
       {{ sectionHeading }}
     </p>
 
-    <section class="mt-xl max-w-3xl">
-      <div class="grid grid-cols-1 gap-5xl md:grid-cols-3">
+    <section :class="embedded ? 'mt-md max-w-none' : 'mt-xl max-w-3xl'">
+      <div
+        class="grid grid-cols-1 gap-5xl"
+        :class="columns === 2 ? 'sm:grid-cols-2' : 'md:grid-cols-3'"
+      >
         <div
           v-for="(card, index) in resolvedCards"
           :key="card.prompt ?? card.title ?? index"
@@ -44,6 +54,15 @@ const props = defineProps({
   cards: {
     type: Array,
     default: null,
+  },
+  embedded: {
+    type: Boolean,
+    default: false,
+  },
+  columns: {
+    type: Number,
+    default: 3,
+    validator: (value) => value === 2 || value === 3,
   },
 })
 

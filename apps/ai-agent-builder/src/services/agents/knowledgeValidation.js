@@ -121,10 +121,12 @@ export function validateCreateKnowledgeStep({
   baseUrl = '',
   dbConfig = null,
   selectedComposioApps = [],
+  existingSchemaCount = 0,
+  existingDocumentCount = 0,
 }) {
   switch (knowledgeTab) {
     case 'api': {
-      if (schemaFiles.length === 0) {
+      if (schemaFiles.length === 0 && existingSchemaCount === 0) {
         return {
           valid: false,
           message: 'Please upload API schema files.',
@@ -139,7 +141,7 @@ export function validateCreateKnowledgeStep({
     }
 
     case 'documents': {
-      if (documentFiles.length === 0) {
+      if (documentFiles.length === 0 && existingDocumentCount === 0) {
         return {
           valid: false,
           message: 'Upload at least one document.',
