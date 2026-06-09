@@ -99,7 +99,6 @@ import MultiAgentDashboardSidebar from '../components/agents/multi/MultiAgentDas
 import AgentDashboardChat from '../components/agents/dashboard/AgentDashboardChat.vue'
 import {
   createGroupChat,
-  deleteGroupChat,
   fetchGroupChats,
   renameGroupChat,
 } from '../services/agents/multi/chats.js'
@@ -283,13 +282,7 @@ function handleChatUsed(chatId) {
   }
 }
 
-async function handleDeleteChat(chatId) {
-  try {
-    await deleteGroupChat(chatId)
-  } catch {
-    // still remove from local list on failure to keep UI responsive
-  }
-
+function handleDeleteChat(chatId) {
   chats.value = chats.value.filter((chat) => String(chat.id) !== String(chatId))
 
   if (String(selectedChatId.value) === String(chatId)) {

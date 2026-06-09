@@ -59,12 +59,12 @@ export async function fetchGroupChats(groupId, page = 1, limit = 50) {
 }
 
 export async function createGroupChat(groupId, chatName = 'New Chat') {
-  const response = await apiService.createMultiAgentChat(groupId, chatName)
+  const response = await apiService.createChat(null, chatName, groupId)
   return extractChatFromCreateResponse(response) ?? response
 }
 
 export async function deleteGroupChat(chatId) {
-  return apiService.deleteMultiAgentChat(chatId)
+  return apiService.deleteChat(chatId)
 }
 
 export async function renameGroupChat(chatId, name) {

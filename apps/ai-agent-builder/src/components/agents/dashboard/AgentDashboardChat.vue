@@ -16,7 +16,7 @@
           >
             <div class="flex items-start gap-3">
               <img
-                :src="AgentAvatarIcon"
+                :src="AgentChatIcon"
                 alt=""
                 class="h-8 w-8 shrink-0 rounded-full"
                 aria-hidden="true"
@@ -61,7 +61,7 @@
             class="flex items-start gap-3"
           >
             <img
-              :src="AgentAvatarIcon"
+              :src="AgentChatIcon"
               alt=""
               class="h-8 w-8 shrink-0 rounded-full"
               aria-hidden="true"
@@ -154,7 +154,6 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Cards, ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
-import AgentAvatarIcon from '../../../assets/images/AiIcon.svg'
 import AgentChatIcon from '../../../assets/images/agents/dashboard/chatIcon.svg'
 import { useDashboardChatWebSocket } from '../../../composables/useDashboardChatWebSocket.js'
 import { apiService } from '../../../services/agentApi.js'
@@ -266,38 +265,103 @@ watch(
 )
 
 setOnMessage((data) => {
+  console.log('[AgentDashboardChat] WS message received:', data)
   if (data.type === 'streaming_chunk' && data.content) {
-    const pendingMessage = [...chatMessages.value]
-      .reverse()
-      .find((message) => message.isLoading)
+    let pendingIndex = -1
+    for (let i = chatMessages.value.length - 1; i >= 0; i--) {
+      if (chatMessages.value[i].isLoading || chatMessages.value[i].isStreaming) {
+        pendingIndex = i
+        break
+      }
+    }
+    console.log('[AgentDashboardChat] streaming_chunk pendingIndex:', pendingIndex)
 
-    if (!pendingMessage) return
+    if (pendingIndex === -1) return
+    const pendingMessage = chatMessages.value[pendingIndex]
 
-    pendingMessage.isLoading = false
-    pendingMessage.aiResponse = (pendingMessage.aiResponse || '') + data.content
+    chatMessages.value[pendingIndex] = {
+      ...pendingMessage,
+      isLoading: false,
+      isStreaming: true,
+      aiResponse: (pendingMessage.aiResponse || '') + data.content
+    }
     scrollToBottom()
     return
   }
 
-  if (data.type !== 'agent_response') return
+  if (data.type === 'streaming_complete') {
+    let pendingIndex = -1
+    for (let i = chatMessages.value.length - 1; i >= 0; i--) {
+      if (chatMessages.value[i].isLoading || chatMessages.value[i].isStreaming) {
+        pendingIndex = i
+        break
+      }
+    }
+    console.log('[AgentDashboardChat] streaming_complete pendingIndex:', pendingIndex)
 
-  const pendingMessage = [...chatMessages.value]
-    .reverse()
-    .find((message) => message.isLoading)
-
-  if (!pendingMessage) return
-
-  pendingMessage.isLoading = false
-  isLoading.value = false
-
-  if (data.success) {
-    pendingMessage.aiResponse = data.response || 'No response received'
-  } else {
-    pendingMessage.aiResponse =
-      data.response || 'Sorry, I encountered an error while processing your message.'
+    if (pendingIndex !== -1) {
+      const pendingMessage = chatMessages.value[pendingIndex]
+      chatMessages.value[pendingIndex] = {
+        ...pendingMessage,
+        isLoading: false,
+        isStreaming: false,
+        aiResponse: data.content || pendingMessage.aiResponse
+      }
+    }
+    isLoading.value = false
+    scrollToBottom()
+    return
   }
 
-  scrollToBottom()
+  if (data.type === 'agent_response') {
+    let pendingIndex = -1
+    for (let i = chatMessages.value.length - 1; i >= 0; i--) {
+      if (chatMessages.value[i].isLoading || chatMessages.value[i].isStreaming) {
+        pendingIndex = i
+        break
+      }
+    }
+    console.log('[AgentDashboardChat] agent_response pendingIndex:', pendingIndex)
+
+    if (pendingIndex !== -1) {
+      const pendingMessage = chatMessages.value[pendingIndex]
+      chatMessages.value[pendingIndex] = {
+        ...pendingMessage,
+        isLoading: false,
+        isStreaming: false,
+        aiResponse: data.success
+          ? (data.response || 'No response received')
+          : (data.response || 'Sorry, I encountered an error while processing your message.')
+      }
+    }
+    isLoading.value = false
+    scrollToBottom()
+    return
+  }
+
+  if (data.type === 'error') {
+    let pendingIndex = -1
+    for (let i = chatMessages.value.length - 1; i >= 0; i--) {
+      if (chatMessages.value[i].isLoading || chatMessages.value[i].isStreaming) {
+        pendingIndex = i
+        break
+      }
+    }
+    console.log('[AgentDashboardChat] error pendingIndex:', pendingIndex)
+
+    if (pendingIndex !== -1) {
+      const pendingMessage = chatMessages.value[pendingIndex]
+      chatMessages.value[pendingIndex] = {
+        ...pendingMessage,
+        isLoading: false,
+        isStreaming: false,
+        aiResponse: data.message || 'Sorry, I encountered an error while processing your message.'
+      }
+    }
+    isLoading.value = false
+    scrollToBottom()
+    return
+  }
 })
 
 watch(
@@ -387,12 +451,13 @@ async function loadChatHistory(activeChatId) {
   try {
     const response = await apiService.getChatHistory(activeChatId)
     chatMessages.value = mapHistoryToMessages(extractHistory(response))
-    await scrollToBottom()
   } catch {
     chatMessages.value = []
   } finally {
     loadingHistory.value = false
   }
+
+  await scrollToBottom()
 }
 
 async function handleCopy(text) {
@@ -494,6 +559,7 @@ async function handleSendMessage(messageData) {
     id: `pending_${Date.now()}`,
     text: messageData.text,
     isLoading: true,
+    isStreaming: false,
     aiResponse: null,
     isLiked: false,
     isDisliked: false,
@@ -513,9 +579,12 @@ async function handleSendMessage(messageData) {
     await ensureConnected(scopeId.value, activeChatId)
     send(messageData.text)
   } catch (err) {
-    chatMessages.value[nextIndex].isLoading = false
-    chatMessages.value[nextIndex].aiResponse =
-      err?.message || 'Sorry, something went wrong. Please try again.'
+    chatMessages.value[nextIndex] = {
+      ...chatMessages.value[nextIndex],
+      isLoading: false,
+      isStreaming: false,
+      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.'
+    }
     isLoading.value = false
     await scrollToBottom()
   }
@@ -525,19 +594,25 @@ async function handleRegenerate(index) {
   const message = chatMessages.value[index]
   if (!message?.text || isLoading.value || !scopeId.value || !chatId.value) return
 
-  message.isLoading = true
-  message.aiResponse = null
-  message.isLiked = false
-  message.isDisliked = false
+  chatMessages.value[index] = {
+    ...message,
+    isLoading: true,
+    isStreaming: false,
+    aiResponse: null,
+    isLiked: false,
+    isDisliked: false
+  }
   isLoading.value = true
 
   try {
     await ensureConnected(scopeId.value, chatId.value)
     send(message.text)
   } catch (err) {
-    message.isLoading = false
-    message.aiResponse =
-      err?.message || 'Sorry, something went wrong. Please try again.'
+    chatMessages.value[index] = {
+      ...chatMessages.value[index],
+      isLoading: false,
+      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.'
+    }
     isLoading.value = false
     await scrollToBottom()
   }

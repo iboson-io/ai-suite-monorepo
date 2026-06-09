@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, USER_API_URL, AGENT_API_URL, CHAT_API_URL, API_DEPLOYMENT_URL,PAYMENT_API_URL,NOTIFICATION_API_URL ,CHAT_AI_API_URL, WORKFLOW_API_URL} from './constants.js'
+import { API_ENDPOINTS, USER_API_URL, AGENT_API_URL, CHAT_API_URL, API_DEPLOYMENT_URL, PAYMENT_API_URL, NOTIFICATION_API_URL, CHAT_AI_API_URL, WORKFLOW_API_URL } from './constants.js'
 import { flattenWorkflowValidationErrors, formatWorkflowValidationToast } from '@app/utils/workflowApiErrors'
 
 class ApiService {
@@ -33,7 +33,7 @@ class ApiService {
     this.isRedirecting = true
     this.authErrorHandled = true
     this.clearAuthToken()
-    
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
@@ -51,9 +51,9 @@ class ApiService {
     // }
 
     const url = `${this.baseURL}${endpoint}`
-    
+
     const defaultOptions = {
-      credentials: 'include', 
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...this.getAuthHeader(),
@@ -68,24 +68,24 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        if(errorData.errors && errorData.errors.email){
+        if (errorData.errors && errorData.errors.email) {
           throw new Error(errorData.errors.email)
         }
-        if(errorData.errors && errorData.errors.password){
+        if (errorData.errors && errorData.errors.password) {
           throw new Error(errorData.errors.password)
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -102,7 +102,7 @@ class ApiService {
     // }
 
     const url = `${this.agentBaseURL}${endpoint}`
-    
+
     const defaultOptions = {
       credentials: 'include',
       headers: {
@@ -119,10 +119,10 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
@@ -131,10 +131,10 @@ class ApiService {
         if (errorData.errors) {
           throw new Error(formatWorkflowValidationToast(errorData.errors))
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -151,7 +151,7 @@ class ApiService {
     // }
 
     const url = `${this.paymentBaseURL}${endpoint}`
-    
+
     const defaultOptions = {
       credentials: 'include',
       headers: {
@@ -168,18 +168,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -233,7 +233,7 @@ class ApiService {
     // }
 
     const url = `${this.chatAiBaseURL}${endpoint}`
-    
+
     const defaultOptions = {
       credentials: 'include',
       headers: {
@@ -250,18 +250,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -652,7 +652,7 @@ class ApiService {
       const response = await this.request('/api/auth/google?auth_type=signup', {
         method: 'GET'
       })
-      
+
       if (response.status && response.data && response.data.auth_url) {
         if (typeof window !== 'undefined') {
           window.location.href = response.data.auth_url
@@ -665,13 +665,13 @@ class ApiService {
       throw error
     }
   }
-  
+
   async googleAuth() {
     try {
       const response = await this.request('/api/auth/google?auth_type=login', {
         method: 'GET'
       })
-      
+
       if (response.status && response.data && response.data.auth_url) {
         if (typeof window !== 'undefined') {
           window.location.href = response.data.auth_url
@@ -735,11 +735,11 @@ class ApiService {
       page: page.toString(),
       limit: limit.toString()
     })
-    
+
     if (status && status !== 'All Agents') {
       const statusMap = {
         'Published': 'published',
-        'Draft': 'draft', 
+        'Draft': 'draft',
         'Archived': 'archived'
       }
       const apiStatus = statusMap[status]
@@ -747,11 +747,11 @@ class ApiService {
         queryParams.append('status', apiStatus)
       }
     }
-    
+
     if (search && search.trim()) {
       queryParams.append('search', search.trim())
     }
-    
+
     return this.requestAgent(`${API_ENDPOINTS.GET_AGENT_DATA}?${queryParams}`, {
       method: 'GET'
     })
@@ -773,18 +773,18 @@ class ApiService {
       method: 'GET'
     })
   }
-  async getAgentDataWithStatusAndSearch(page = 1, limit = 5, status, search ) {
+  async getAgentDataWithStatusAndSearch(page = 1, limit = 5, status, search) {
     const queryParams = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
       status: status,
       search: search
     })
-    
+
     if (status && status !== 'All Agents') {
       const statusMap = {
         'Published': 'published',
-        'Draft': 'draft', 
+        'Draft': 'draft',
         'Archived': 'archived'
       }
       const apiStatus = statusMap[status]
@@ -792,11 +792,11 @@ class ApiService {
         queryParams.append('status', apiStatus)
       }
     }
-    
+
     if (search && search.trim()) {
       queryParams.append('search', search.trim())
     }
-    
+
     return this.requestAgent(`${API_ENDPOINTS.GET_AGENT_DATA}?${queryParams}`, {
       method: 'GET'
     })
@@ -858,7 +858,7 @@ class ApiService {
     const payload = {
       agent_ids: agentIds
     }
-    
+
     // Add group name and description if provided
     if (groupName !== null) {
       payload.group_name = groupName
@@ -872,7 +872,7 @@ class ApiService {
     if (redirectionRules !== undefined) {
       payload.redirection_rules = redirectionRules
     }
-    
+
     return this.requestAgent(`/api/agent-groups/${groupId}`, {
       method: 'PUT',
       body: JSON.stringify(payload)
@@ -881,21 +881,21 @@ class ApiService {
 
   async updateGroupName(groupId, newName, token) {
     console.log('API: Updating group name for ID:', groupId, 'New name:', newName)
-    
+
     const response = await this.requestAgent(`/api/agent-groups/${groupId}`, {
       method: 'PUT',
       body: JSON.stringify({
         group_name: newName
       })
     })
-    
+
     console.log('API: Update group name response:', response)
     return response
   }
 
   async createAgentWithFiles(agentData, schemaFiles = [], documentFiles = [], knowledgeType = 'api') {
     const formData = new FormData()
-    
+
     // Base agent data
     formData.append('name', agentData.name)
     const promptTrimmed = agentData.prompt != null ? String(agentData.prompt).trim() : ''
@@ -905,15 +905,15 @@ class ApiService {
     formData.append('status', agentData.status || 'published')
     // Use agent_type from agentData if provided (for composio), otherwise use knowledgeType
     formData.append('agent_type', agentData.agent_type || knowledgeType)
-    formData.append('auth_type',agentData.auth_type)
-    if(agentData.base_url!==''){ 
+    formData.append('auth_type', agentData.auth_type)
+    if (agentData.base_url !== '') {
       formData.append('base_url', agentData.base_url)
     }
-    if(agentData.token!==''){
+    if (agentData.token !== '') {
       formData.append('token', agentData.token)
     }
-   
-    
+
+
     // Add system type if available (single/multi)
     if (agentData.system_type) {
       formData.append('system_type', agentData.system_type)
@@ -928,7 +928,7 @@ class ApiService {
         formData.append('rules', JSON.stringify(cleanedRules))
       }
     }
-    
+
     // Handle different knowledge types
     switch (knowledgeType) {
       case 'api':
@@ -937,15 +937,15 @@ class ApiService {
         })
         formData.append('auth_config', JSON.stringify(agentData.auth_config))
         break
-        
+
       case 'doc':
-       
+
         documentFiles.forEach((file) => {
           formData.append('document_files', file)
         })
         formData.append('auth_config', JSON.stringify(agentData.auth_config))
         break
-        
+
       case 'db':
         // Database type payload: name, prompt, agent_type=db, auth_config
         if (agentData.db_config) {
@@ -959,7 +959,7 @@ class ApiService {
           }))
         }
         break
-        
+
       case 'composio':
         // Composio type payload: name, prompt, agent_type=composio, auth_config as array
         if (agentData.auth_config && Array.isArray(agentData.auth_config)) {
@@ -967,9 +967,9 @@ class ApiService {
         }
         break
     }
-    
+
     const url = `${this.agentBaseURL}${API_ENDPOINTS.CREATE_AGENT}`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1016,7 +1016,7 @@ class ApiService {
         this.clearAuthToken()
         if (typeof window !== 'undefined') {
           navigateTo('/login')
-        } 
+        }
         throw new Error(error.message)
       }
       throw error
@@ -1026,9 +1026,9 @@ class ApiService {
   async updateProfilePicture(file) {
     const formData = new FormData()
     formData.append('profile_picture', file)
-    
+
     const url = `${this.baseURL}${API_ENDPOINTS.UPDATE_PROFILE_PICTURE}`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1039,12 +1039,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Profile picture upload failed:', error)
@@ -1058,7 +1058,7 @@ class ApiService {
     // }
 
     const url = `${this.notificationBaseURL}/api/notifications`
-    
+
     const config = {
       method: 'GET',
       headers: {
@@ -1069,18 +1069,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -1093,7 +1093,7 @@ class ApiService {
 
   async markNotificationAsRead(notificationId) {
     const url = `${this.notificationBaseURL}/api/notifications/${notificationId}/read`
-    
+
     const config = {
       method: 'PATCH',
       headers: {
@@ -1104,12 +1104,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Mark notification as read failed:', error)
@@ -1119,7 +1119,7 @@ class ApiService {
 
   async markNotificationAsUnread(notificationId) {
     const url = `${this.notificationBaseURL}/api/notifications/${notificationId}/unread`
-    
+
     const config = {
       method: 'PATCH',
       headers: {
@@ -1130,12 +1130,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Mark notification as unread failed:', error)
@@ -1145,7 +1145,7 @@ class ApiService {
 
   async markAllNotificationsAsRead() {
     const url = `${this.notificationBaseURL}/api/notifications/mark-all-read`
-    
+
     const config = {
       method: 'PATCH',
       headers: {
@@ -1156,12 +1156,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Mark all notifications as read failed:', error)
@@ -1171,7 +1171,7 @@ class ApiService {
 
   async deleteNotification(notificationId) {
     const url = `${this.notificationBaseURL}/api/notifications/${notificationId}`
-    
+
     const config = {
       method: 'DELETE',
       headers: {
@@ -1182,12 +1182,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Delete notification failed:', error)
@@ -1197,7 +1197,7 @@ class ApiService {
 
   async clearAllNotifications() {
     const url = `${this.notificationBaseURL}/api/notifications/all`
-    
+
     const config = {
       method: 'DELETE',
       headers: {
@@ -1208,12 +1208,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Clear all notifications failed:', error)
@@ -1250,7 +1250,7 @@ class ApiService {
 
   async updateAgentWithFiles(agentId, agentData, schemaFiles = [], documentFiles = []) {
     const formData = new FormData()
-    
+
     Object.keys(agentData).forEach(key => {
       if (key !== 'schema_files' && key !== 'document_files') {
         let val = agentData[key]
@@ -1260,17 +1260,17 @@ class ApiService {
         formData.append(key, val)
       }
     })
-    
+
     schemaFiles.forEach((file, index) => {
       formData.append('schema_files', file)
     })
-    
+
     documentFiles.forEach((file, index) => {
       formData.append('document_files', file)
     })
-    
+
     const url = `${this.agentBaseURL}${API_ENDPOINTS.UPDATE_AGENT}/${agentId}`
-    
+
     const config = {
       method: 'PUT',
       headers: {
@@ -1281,12 +1281,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Agent update with files failed:', error)
@@ -1303,9 +1303,9 @@ class ApiService {
   async updateAgentFile(agentId, fileId, fileType, fileContent) {
     return this.requestAgent(`${API_ENDPOINTS.DELETE_AGENT_FILE}/${agentId}/files/${fileId}`, {
       method: 'PUT',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         file_type: fileType,
-        file_content: fileContent 
+        file_content: fileContent
       })
     })
   }
@@ -1313,9 +1313,9 @@ class ApiService {
   async enhancePrompt(agentId, prompt) {
     return this.requestAgent(`${API_ENDPOINTS.ENHANCE_PROMPT}`, {
       method: 'POST',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         agent_id: agentId,
-        prompt: prompt 
+        prompt: prompt
       })
     })
   }
@@ -1333,7 +1333,7 @@ class ApiService {
       page: page.toString(),
       limit: limit.toString()
     })
-    
+
     const endpoint = `${API_ENDPOINTS.GET_PURCHASE_HISTORY}?${queryParams}`
     return this.requestPayment(endpoint)
   }
@@ -1355,8 +1355,8 @@ class ApiService {
   }
 
   async getDeployment(agentId) {
-     const url = `${this.deploymentBaseURL}/api/deployments/agent/${agentId}`
-    
+    const url = `${this.deploymentBaseURL}/api/deployments/agent/${agentId}`
+
     const config = {
       method: 'GET',
       headers: {
@@ -1367,12 +1367,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Deployment API request failed:', error)
@@ -1382,7 +1382,7 @@ class ApiService {
 
   async getGroupDeployment(groupId) {
     const url = `${this.deploymentBaseURL}/api/deployments/groups/${groupId}`
-    
+
     const config = {
       method: 'GET',
       headers: {
@@ -1393,12 +1393,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Group deployment API request failed:', error)
@@ -1408,7 +1408,7 @@ class ApiService {
 
   async createDeployment(agentId, deploymentData = {}) {
     const url = `${this.deploymentBaseURL}/api/deployments`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1424,12 +1424,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Create deployment failed:', error)
@@ -1438,7 +1438,7 @@ class ApiService {
   }
   async createGroupDeployment(groupId, deploymentData = {}) {
     const url = `${this.deploymentBaseURL}/api/deployments/groups`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1453,12 +1453,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Create deployment failed:', error)
@@ -1468,10 +1468,10 @@ class ApiService {
 
   async regenerateApiKey(deploymentId) {
     const url = `${this.deploymentBaseURL}/api/deployments/${deploymentId}/regenerate-key`
-    
+
     const config = {
       method: 'POST',
-      credentials: 'include', 
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...this.getAuthHeader()
@@ -1483,16 +1483,16 @@ class ApiService {
       console.log('Regenerating API key for deployment:', deploymentId)
       console.log('Request URL:', url)
       console.log('Auth header:', this.getAuthHeader())
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('Regenerate API key failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Regenerate API key failed:', error)
@@ -1502,16 +1502,16 @@ class ApiService {
 
   async updateDeployment(deploymentId, deploymentData = {}) {
     const url = `${this.deploymentBaseURL}/api/deployments/${deploymentId}`
-    
+
     // Check if files are present (logoFile or iconFile)
     const hasFiles = deploymentData.logoFile || deploymentData.iconFile
-    
+
     let config
-    
+
     if (hasFiles) {
       // Use FormData for file uploads
       const formData = new FormData()
-      
+
       // Add text fields
       if (deploymentData.color) {
         formData.append('color', deploymentData.color)
@@ -1519,7 +1519,7 @@ class ApiService {
       if (deploymentData.company_name) {
         formData.append('company_name', deploymentData.company_name)
       }
-      
+
       // Add files if present
       if (deploymentData.logoFile) {
         formData.append('logo_file', deploymentData.logoFile)
@@ -1527,7 +1527,7 @@ class ApiService {
       if (deploymentData.iconFile) {
         formData.append('icon_file', deploymentData.iconFile)
       }
-      
+
       config = {
         method: 'PUT',
         credentials: 'include',
@@ -1558,22 +1558,22 @@ class ApiService {
       console.log('Request URL:', url)
       console.log('Has files:', hasFiles)
       console.log('Request payload:', hasFiles ? 'FormData' : deploymentData)
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        
+
         console.error('Update deployment failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       if (error.message === 'Authentication required') {
@@ -1584,9 +1584,9 @@ class ApiService {
     }
   }
 
-  async createChat(agentId, chatName = 'New Chat',groupId) {
+  async createChat(agentId, chatName = 'New Chat', groupId) {
     const url = `${this.chatBaseURL}/api/chats`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1603,16 +1603,16 @@ class ApiService {
       console.log('Creating chat for agent:', agentId)
       console.log('Request URL:', url)
       console.log('Request payload:', { agent_id: agentId, name: chatName })
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('Create chat failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Create chat failed:', error)
@@ -1622,7 +1622,7 @@ class ApiService {
 
   async getChats(agentId, page = 1, limit = 50) {
     const url = `${this.chatBaseURL}/api/chats/agents/${agentId}`
-    
+
     const config = {
       method: 'GET',
       headers: {
@@ -1633,12 +1633,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Get chats failed:', error)
@@ -1647,7 +1647,7 @@ class ApiService {
   }
   async getGroupChats(groupId, page = 1, limit = 50) {
     const url = `${this.chatBaseURL}/api/chats/groups/${groupId}`
-    
+
     const config = {
       method: 'GET',
       headers: {
@@ -1658,12 +1658,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Get chats failed:', error)
@@ -1673,7 +1673,7 @@ class ApiService {
 
   async deleteChat(chatId) {
     const url = `${this.chatBaseURL}/api/chats/${chatId}`
-    
+
     const config = {
       method: 'DELETE',
       headers: {
@@ -1684,12 +1684,12 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Delete chat failed:', error)
@@ -1703,82 +1703,15 @@ class ApiService {
     })
   }
 
- 
 
- 
 
-  // Create multi-agent chat
-  async createMultiAgentChat(groupId, chatName = 'New Multi-Agent Chat') {
-    const url = `${this.chatAiBaseURL}/api/multi-agent/chats`
-    
-    const config = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.getAuthHeader()
-      },
-      body: JSON.stringify({
-        group_id: groupId,
-        name: chatName
-      })
-    }
 
-    try {
-      console.log('Creating multi-agent chat for group:', groupId)
-      console.log('Request URL:', url)
-      console.log('Request payload:', { group_id: groupId, name: chatName })
-      
-      const response = await fetch(url, config)
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Create multi-agent chat failed with status:', response.status)
-        console.error('Error data:', errorData)
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-      }
-      
-      return await response.json()
-    } catch (error) {
-      console.error('Create multi-agent chat failed:', error)
-      throw error
-    }
-  }
 
-  // Delete multi-agent chat
-  async deleteMultiAgentChat(chatId) {
-    const url = `${this.chatAiBaseURL}/api/multi-agent/chats/${chatId}`
-    
-    const config = {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.getAuthHeader()
-      }
-    }
 
-    try {
-      console.log('Deleting multi-agent chat:', chatId)
-      console.log('Request URL:', url)
-      
-      const response = await fetch(url, config)
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Delete multi-agent chat failed with status:', response.status)
-        console.error('Error data:', errorData)
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-      }
-      
-      return await response.json()
-    } catch (error) {
-      console.error('Delete multi-agent chat failed:', error)
-      throw error
-    }
-  }
 
   async sendMessage(chatId, message) {
     const url = `${this.chatBaseURL}/api/chats/${chatId}/messages`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1798,16 +1731,16 @@ class ApiService {
       console.log('Sending message to chat:', chatId)
       console.log('Request URL:', url)
       console.log('Message payload:', message)
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('Send message failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Send message failed:', error)
@@ -1817,7 +1750,7 @@ class ApiService {
 
   async updateChat(chatId, chatData) {
     const url = `${this.chatBaseURL}/api/chats/${chatId}`
-    
+
     const config = {
       method: 'PUT',
       headers: {
@@ -1831,16 +1764,16 @@ class ApiService {
       console.log('Updating chat:', chatId)
       console.log('Request URL:', url)
       console.log('Request payload:', chatData)
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('Update chat failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Update chat failed:', error)
@@ -1877,7 +1810,7 @@ class ApiService {
 
   async sendMessageToAIStream(message, chatId, onChunk, onComplete, onError) {
     const url = `${this.chatAiBaseURL}/api/chat/stream`
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -1895,49 +1828,49 @@ class ApiService {
       console.log('Chat ID:', chatId)
       console.log('Request URL:', url)
       console.log('Request payload:', { query: message, chat_id: chatId })
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        
+
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let fullResponse = ''
-      
+
       while (true) {
         const { done, value } = await reader.read()
-        
+
         if (done) {
           break
         }
-        
+
         const chunk = decoder.decode(value)
         const lines = chunk.split('\n')
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-              
+
               if (data.error) {
                 onError(data.error)
                 return
               }
-              
+
               if (data.chunk) {
                 fullResponse += data.chunk
                 onChunk(data.chunk)
               }
-              
+
               if (data.done) {
                 onComplete(fullResponse)
                 return
@@ -1956,7 +1889,7 @@ class ApiService {
 
   async updateChatMessage(chatId, messageId, messageData) {
     const url = `${this.chatBaseURL}/api/chats/${chatId}/messages/${messageId}`
-    
+
     const config = {
       method: 'PUT',
       headers: {
@@ -1970,16 +1903,16 @@ class ApiService {
       console.log('Updating chat message:', messageId)
       console.log('Request URL:', url)
       console.log('Request payload:', messageData)
-      
+
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         console.error('Update chat message failed with status:', response.status)
         console.error('Error data:', errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Update chat message failed:', error)
@@ -1993,11 +1926,11 @@ class ApiService {
       page: page.toString(),
       limit: limit.toString()
     })
-    
+
     if (search && search.trim()) {
       queryParams.append('search', search.trim())
     }
-    
+
     return this.requestAgent(`/api/composio-apps?${queryParams}`, {
       method: 'GET'
     })

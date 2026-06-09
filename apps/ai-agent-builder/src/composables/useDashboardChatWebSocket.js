@@ -9,6 +9,8 @@ export function useDashboardChatWebSocket(mode = 'single') {
 
   let onMessageHandler = null
   let reconnectTimeout = null
+  let activeScopeId = null
+  let activeChatId = null
 
   function setOnMessage(handler) {
     onMessageHandler = handler
@@ -32,6 +34,9 @@ export function useDashboardChatWebSocket(mode = 'single') {
   }
 
   function disconnect() {
+    activeScopeId = null
+    activeChatId = null
+
     if (reconnectTimeout) {
       clearTimeout(reconnectTimeout)
       reconnectTimeout = null
@@ -49,6 +54,9 @@ export function useDashboardChatWebSocket(mode = 'single') {
 
   function connect(scopeId, chatId = null) {
     if (!scopeId) return
+
+    activeScopeId = scopeId
+    activeChatId = chatId
 
     if (reconnectTimeout) {
       clearTimeout(reconnectTimeout)
@@ -87,10 +95,20 @@ export function useDashboardChatWebSocket(mode = 'single') {
         isReconnecting.value = false
       }
 
-      websocket.value.onclose = () => {
+      websocket.value.onclose = (event) => {
         isConnected.value = false
         isReconnecting.value = false
         websocket.value = null
+
+        // Auto-reconnect if unexpectedly closed (code !== 1000)
+        if (event && event.code !== 1000 && activeScopeId) {
+          isReconnecting.value = true
+          reconnectTimeout = setTimeout(() => {
+            if (activeScopeId) {
+              connect(activeScopeId, activeChatId)
+            }
+          }, 3000)
+        }
       }
     } catch {
       isReconnecting.value = false
