@@ -85,7 +85,6 @@ const routes = [
   },
   { path: '/agents', name: 'Agents', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/tasks', name: 'Tasks', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/phone-number', name: 'PhoneNumber', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/settings', name: 'Settings', component: Dashboard, meta: { requiresAuth: true } },
 ]
 

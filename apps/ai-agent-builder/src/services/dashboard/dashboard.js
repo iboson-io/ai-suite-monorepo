@@ -1,7 +1,6 @@
 import ChatView from '../../views/ChatView.vue'
 import AgentsView from '../../views/AgentsView.vue'
 import TasksView from '../../views/TasksView.vue'
-import PhoneNumberView from '../../views/PhoneNumberView.vue'
 
 export function getDashboardConfig() {
   return {
@@ -9,7 +8,6 @@ export function getDashboardConfig() {
       chat: '/home',
       agents: '/agents',
       tasks: '/tasks',
-      phone: '/phone-number',
       settings: '/settings',
     },
     routeToTabMap: {
@@ -17,11 +15,10 @@ export function getDashboardConfig() {
       '/chat': 'chat',
       '/agents': 'agents',
       '/tasks': 'tasks',
-      '/phone-number': 'phone',
       '/settings': 'settings',
       '/dashboard': 'chat',
     },
-    remountOnReselectTabs: ['agents', 'tasks', 'phone', 'settings'],
+    remountOnReselectTabs: ['agents', 'tasks', 'settings'],
     resetChatOnReselectChat: true,
     mobileFixedHeader: false,
     rootLayoutClass: 'flex min-h-screen bg_secondary_color overflow-hidden',
@@ -36,7 +33,6 @@ export function getDashboardViews() {
     chat: ChatView,
     agents: AgentsView,
     tasks: TasksView,
-    phone: PhoneNumberView,
   }
 }
 
