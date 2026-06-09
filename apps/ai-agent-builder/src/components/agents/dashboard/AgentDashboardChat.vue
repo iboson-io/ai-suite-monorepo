@@ -100,7 +100,7 @@
 
                 <div v-else-if="message.aiResponse">
                   <div
-                    class="Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                    class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
                     v-html="formatMarkdownToHtml(message.aiResponse)"
                   />
 
@@ -162,6 +162,7 @@ import { extractChatFromCreateResponse } from '../../../services/agents/chats.js
 import { createGroupChat } from '../../../services/agents/multi/chats.js'
 import { getAgentToolCards } from '../../../services/chat/starterCards.js'
 import { clearCreatedAgentContext } from '../../../services/agents/selectedAgent.js'
+import { formatMarkdownToHtml } from '../../../utils/formatMarkdownToHtml.js'
 
 const props = defineProps({
   mode: {
@@ -394,22 +395,6 @@ async function loadChatHistory(activeChatId) {
   }
 }
 
-function formatMarkdownToHtml(text) {
-  if (text == null || text === '') return ''
-
-  let html = String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>')
-  html = html.replace(/\n/g, '<br>')
-
-  return html
-}
-
 async function handleCopy(text) {
   if (!text) return
 
@@ -570,6 +555,116 @@ defineExpose({ focusPrompt, hasMessages })
 </script>
 
 <style scoped>
+.chat-markdown :deep(p) {
+  margin: 0 0 0.75em;
+}
+
+.chat-markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.chat-markdown :deep(h1),
+.chat-markdown :deep(h2),
+.chat-markdown :deep(h3),
+.chat-markdown :deep(h4),
+.chat-markdown :deep(h5),
+.chat-markdown :deep(h6) {
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+}
+
+.chat-markdown :deep(h1) {
+  font-size: 1.375em;
+}
+
+.chat-markdown :deep(h2) {
+  font-size: 1.25em;
+}
+
+.chat-markdown :deep(h3) {
+  font-size: 1.125em;
+}
+
+.chat-markdown :deep(ul),
+.chat-markdown :deep(ol) {
+  margin: 0.5em 0 0.75em;
+  padding-left: 1.5em;
+}
+
+.chat-markdown :deep(li + li) {
+  margin-top: 0.25em;
+}
+
+.chat-markdown :deep(blockquote) {
+  margin: 0.75em 0;
+  padding-left: 1em;
+  border-left: 3px solid rgb(209 213 219);
+}
+
+.chat-markdown :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  background: rgb(243 244 246);
+}
+
+.chat-markdown :deep(pre) {
+  margin: 0.75em 0;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: rgb(243 244 246);
+}
+
+.chat-markdown :deep(pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+.chat-markdown :deep(table) {
+  display: block;
+  width: 100%;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.chat-markdown :deep(th),
+.chat-markdown :deep(td) {
+  padding: 0.5em 0.75em;
+  border: 1px solid rgb(229 231 235);
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-markdown :deep(th) {
+  font-weight: 600;
+  background: rgb(249 250 251);
+}
+
+.chat-markdown :deep(hr) {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid rgb(229 231 235);
+}
+
+.chat-markdown :deep(a) {
+  color: rgb(37 99 235);
+  text-decoration: underline;
+}
+
+.chat-markdown :deep(a:hover) {
+  color: rgb(29 78 216);
+}
+
+.chat-markdown :deep(img) {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5em 0;
+  border-radius: 0.5rem;
+}
+
 .connecting-status {
   display: flex;
   align-items: center;
