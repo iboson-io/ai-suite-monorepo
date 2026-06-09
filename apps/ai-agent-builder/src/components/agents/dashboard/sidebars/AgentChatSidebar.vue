@@ -13,17 +13,18 @@
       <li
         v-for="chat in chats"
         :key="chat.id"
-        class="group relative rounded-xl border px-3xl py-xl transition-colors"
+        class="group cursor-pointer relative rounded-xl border px-3xl py-xl transition-colors"
         :class="
           selectedChatId === chat.id
             ? 'border-info-200 bg-info-50'
             : 'primary_border_color hover:bg-gray-25'
         "
+         @click="$emit('select-chat', chat.id)"
       >
         <button
           type="button"
           class="flex w-[90%] items-center justify-between gap-md text-left"
-          @click="$emit('select-chat', chat.id)"
+         
         >
           <span class="label_2_medium primary_text_color truncate">
             {{ getChatTitle(chat) }}

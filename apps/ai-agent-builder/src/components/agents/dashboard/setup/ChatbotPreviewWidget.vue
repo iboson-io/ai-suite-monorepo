@@ -1,119 +1,126 @@
 <template>
   <div class="relative w-full flex flex-col items-center justify-center">
-    <!-- Chat Customization & Generic Tab Widget Preview -->
-    <div class="w-full max-w-[280px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col justify-between aspect-[9/14]">
-      <!-- Header bar colored by customizationColor -->
-      <div
-        class="px-4 py-3 flex items-center justify-between text-white transition-all shadow-md shrink-0"
-        :style="{ backgroundColor: color }"
-      >
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded-full bg-white/20 border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
-            <img
-              v-if="logoPreviewUrl"
-              :src="logoPreviewUrl"
-              alt="Bot Logo"
-              class="w-full h-full object-contain p-1"
-            />
-            <svg v-else class="w-4.5 h-4.5 text-white" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.73583 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <h4 class="text-xs font-bold truncate leading-tight">
-              {{ name || 'AI Assistant' }}
-            </h4>
-            <span class="text-[9px] text-white/80 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 bg-[#4ADE80] rounded-full inline-block" />
-              Connected
-            </span>
-          </div>
-        </div>
-        <button type="button" class="text-white/60 hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Messages Stream -->
-      <div class="flex-1 bg-white overflow-y-auto p-4 space-y-3 flex flex-col justify-end">
-        <!-- Welcome message -->
-        <div class="flex items-start gap-2 max-w-[85%]">
-          <div class="w-6 h-6 rounded-full  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-            <img
-              v-if="logoPreviewUrl"
-              :src="logoPreviewUrl"
-              alt="Widget Logo"
-              class="w-full h-full object-contain p-0.5"
-            />
-            <svg v-else class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.735 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="bg-[#fafafa] text-gray-700 text-[11px] py-2 px-3 rounded-2xl rounded-tl-none  shadow-sm leading-relaxed">
-            Connected to agent '{{ name || 'AI Assistant' }}' (your_agent)! Started new chat. Agent is ready!
-          </div>
-        </div>
-
-        <!-- User sent message -->
-        <div class="flex items-start gap-2 justify-end max-w-[85%] self-end">
-          <div class="bg-[#1E2238] text-white text-[11px] py-2 px-3 rounded-2xl rounded-tr-none shadow-sm transition-all">
-            hi
-          </div>
-        </div>
-
-        <!-- Bot response message -->
-        <div class="flex items-start gap-2 max-w-[85%]">
-          <div class="w-6 h-6 rounded-full  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-            <img
-              v-if="logoPreviewUrl"
-              :src="logoPreviewUrl"
-              alt="Widget Logo"
-              class="w-full h-full object-contain p-0.5"
-            />
-            <svg v-else class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.735 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="bg-[#fafafa] text-gray-700 text-[11px] py-2 px-3 rounded-2xl rounded-tl-none  shadow-sm leading-relaxed">
-            Hello! How can I assist you today?
-          </div>
-        </div>
-      </div>
-
-      <!-- Input area mock -->
-      <div class="p-3.5 border-t border-gray-100 bg-white flex items-center gap-3 shrink-0">
-        <input
-          type="text"
-          readonly
-          placeholder="Type your message..."
-          class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-400 outline-none"
-        />
-        <button
-          type="button"
-          class="text-gray-500 hover:text-gray-800 shrink-0 p-1 transition-colors"
+    <!-- Scoping container to ensure launcher is absolute positioned relative to the chat widget frame -->
+    <div class="relative w-full max-w-[280px]">
+      <!-- Chat Customization & Generic Tab Widget Preview -->
+      <div class="w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col justify-between aspect-[9/12]">
+        <!-- Header bar colored by customizationColor -->
+        <div
+          class="px-4 py-3 flex items-center justify-between text-white transition-all shadow-md shrink-0"
+          :style="{ backgroundColor: color }"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
-          </svg>
-        </button>
-      </div>
-    </div>
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-white/20 border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
+              <img
+                v-if="logoPreviewUrl"
+                :src="logoPreviewUrl"
+                alt="Bot Logo"
+                class="w-full h-full object-contain p-1"
+              />
+              <svg v-else class="w-4.5 h-4.5 text-white" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.73583 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs font-bold truncate leading-tight">
+                {{ name || 'AI Assistant' }}
+              </h4>
+              <span class="text-[9px] text-white/80 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 bg-[#4ADE80] rounded-full inline-block" />
+                Connected
+              </span>
+            </div>
+          </div>
+          <button type="button" class="text-white/60 hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-    <!-- Bottom right circular widget launcher preview -->
-    <div
-      class="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center transition-all cursor-pointer border border-gray-100 hover:scale-105"
-    >
-      <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+        <!-- Messages Stream -->
+        <div class="flex-1 bg-white overflow-y-auto p-4 space-y-3 flex flex-col justify-end">
+          <!-- Welcome message -->
+          <div class="flex items-start gap-2 max-w-[85%]">
+            <div class="w-6 h-6 rounded-full  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              <img
+                v-if="logoPreviewUrl"
+                :src="logoPreviewUrl"
+                alt="Widget Logo"
+                class="w-full h-full object-contain p-0.5"
+              />
+              <svg v-else class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.735 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="bg-[#fafafa] text-gray-700 text-[11px] py-2 px-3 rounded-2xl rounded-tl-none  shadow-sm leading-relaxed">
+              Connected to agent '{{ name || 'AI Assistant' }}' (your_agent)! Started new chat. Agent is ready!
+            </div>
+          </div>
+
+          <!-- User sent message -->
+          <div class="flex items-start gap-2 justify-end max-w-[85%] self-end">
+            <div class="bg-[#1E2238] text-white text-[11px] py-2 px-3 rounded-2xl rounded-tr-none shadow-sm transition-all">
+              hi
+            </div>
+          </div>
+
+          <!-- Bot response message -->
+          <div class="flex items-start gap-2 max-w-[85%]">
+            <div class="w-6 h-6 rounded-full  flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              <img
+                v-if="logoPreviewUrl"
+                :src="logoPreviewUrl"
+                alt="Widget Logo"
+                class="w-full h-full object-contain p-0.5"
+              />
+              <svg v-else class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                <path d="M6.85417 1.8475C7.20917 0.384167 9.29083 0.384167 9.64583 1.8475C9.6991 2.06733 9.80352 2.27148 9.95059 2.44333C10.0977 2.61518 10.2832 2.74988 10.4922 2.83645C10.7012 2.92303 10.9276 2.95904 11.1532 2.94156C11.3787 2.92407 11.5969 2.85359 11.79 2.73583C13.0758 1.9525 14.5483 3.42417 13.765 4.71083C13.6474 4.90388 13.577 5.12195 13.5596 5.34731C13.5422 5.57267 13.5781 5.79897 13.6646 6.00782C13.7511 6.21666 13.8856 6.40215 14.0573 6.54921C14.2289 6.69627 14.4329 6.80075 14.6525 6.85417C16.1158 7.20917 16.1158 9.29083 14.6525 9.64583C14.4327 9.6991 14.2285 9.80352 14.0567 9.95059C13.8848 10.0977 13.7501 10.2832 13.6635 10.4922C13.577 10.7012 13.541 10.9276 13.5584 11.1532C13.5759 11.3787 13.6464 11.5969 13.7642 11.79C14.5475 13.0758 13.0758 14.5483 11.7892 13.765C11.5961 13.6474 11.3781 13.577 11.1527 13.5596C10.9273 13.5422 10.701 13.5781 10.4922 13.6646C10.2833 13.7511 10.0979 13.8856 9.95079 14.0573C9.80373 14.2289 9.69925 14.4329 9.64583 14.6525C9.29083 16.1158 7.20917 16.1158 6.85417 14.6525C6.8009 14.4327 6.69648 14.2285 6.54941 14.0567C6.40233 13.8848 6.21676 13.7501 6.00779 13.6635C5.79882 13.577 5.57236 13.541 5.34685 13.5584C5.12133 13.5759 4.90313 13.6464 4.71 13.7642C3.42417 14.5475 1.95167 13.0758 2.735 11.7892C2.85258 11.5961 2.92296 11.3781 2.9404 11.1527C2.95785 10.9273 2.92187 10.701 2.83539 10.4922C2.74892 10.2833 2.61438 10.0979 2.44273 9.95079C2.27107 9.80373 2.06714 9.69925 1.8475 9.64583C0.384167 9.29083 0.384167 7.20917 1.8475 6.85417C2.06733 6.8009 2.27148 6.69648 2.44333 6.54941C2.61518 6.40233 2.74988 6.21676 2.83645 6.00779C2.92303 5.79882 2.95904 5.57236 2.94156 5.34685C2.92407 5.12133 2.85359 4.90313 2.735 4.71C1.9525 3.42417 3.42417 1.95167 4.71083 2.735C5.54417 3.24167 6.62417 2.79333 6.85417 1.8475Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.75 8.25C5.75 8.91304 6.01339 9.54893 6.48223 10.0178C6.95107 10.4866 7.58696 10.75 8.25 10.75C8.91304 10.75 9.54893 10.4866 10.0178 10.0178C10.4866 9.54893 10.75 8.91304 10.75 8.25C10.75 7.58696 10.4866 6.95107 10.0178 6.48223C9.54893 6.01339 8.91304 5.75 8.25 5.75C7.58696 5.75 6.95107 6.01339 6.48223 6.48223C6.01339 6.95107 5.75 7.58696 5.75 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="bg-[#fafafa] text-gray-700 text-[11px] py-2 px-3 rounded-2xl rounded-tl-none  shadow-sm leading-relaxed">
+              Hello! How can I assist you today?
+            </div>
+          </div>
+        </div>
+
+        <!-- Input area mock -->
+        <div class="p-3.5 border-t border-gray-100 bg-white flex items-center gap-3 shrink-0">
+          <input
+            type="text"
+            readonly
+            placeholder="Type your message..."
+            class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-400 outline-none"
+          />
+          <button
+            type="button"
+            class="text-gray-500 hover:text-gray-800 shrink-0 p-1 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom right circular widget launcher preview -->
+      <div
+        class="absolute -bottom-16 right-3 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center transition-all cursor-pointer border border-gray-100 hover:scale-105"
+      >
         <img
           v-if="iconPreviewUrl"
           :src="iconPreviewUrl"
-          alt="Launcher Icon"
-          class="w-full h-full object-contain p-1"
+          alt="Launcher"
+          class="w-full h-full object-contain p-1 rounded-full"
+        />
+        <img
+          v-else-if="logoPreviewUrl"
+          :src="logoPreviewUrl"
+          alt="Launcher Fallback"
+          class="w-full h-full object-contain p-1 rounded-full"
         />
         <svg v-else class="w-7 h-7 text-[#006AF1]" viewBox="0 0 125 130" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M44.7268 48.5547C46.0725 48.5547 47.1635 47.4637 47.1635 46.1179C47.1635 44.7722 46.0725 43.6812 44.7268 43.6812C43.381 43.6812 42.29 44.7722 42.29 46.1179C42.29 47.4637 43.381 48.5547 44.7268 48.5547Z" fill="currentColor"/>

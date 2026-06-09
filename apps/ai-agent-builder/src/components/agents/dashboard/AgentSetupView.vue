@@ -161,7 +161,7 @@
         <!-- Right Column: Interactive Widget Mockup Preview -->
         <div
           v-if="activeTab === 'chat'"
-          class="flex-1 w-full bg-info-50 rounded-2xl flex flex-col items-center justify-center relative shadow-inner overflow-hidden min-h-[400px]"
+          class="flex-1 w-full bg-info-50 rounded-2xl flex flex-col items-center justify-center relative shadow-inner min-h-[400px] p-8 pb-24"
         >
           <ChatbotPreviewWidget
             :name="customizationName"
