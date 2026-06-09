@@ -67,13 +67,7 @@
       />
     </div>
 
-    <div v-show="activeTab === 'deployment'" class="h-full shrink-0">
-      <AgentDeploymentSidebar
-        :is-open="showSubSidebar && activeTab === 'deployment'"
-        :agent="agent"
-        @close="closeSubSidebar"
-      />
-    </div>
+
 
     <div v-show="activeTab === 'documents'" class="h-full shrink-0">
       <AgentInfoSidebar
@@ -98,13 +92,11 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatIcon from '../../../assets/images/agents/dashboard/chat.svg'
 import KnowledgeIcon from '../../../assets/images/agents/dashboard/agent.svg'
-import DeploymentIcon from '../../../assets/images/agents/dashboard/deployment.svg'
 import AgentInfoIcon from '../../../assets/images/agents/dashboard/agentinfo.svg'
 import SettingsIcon from '../../../assets/images/agents/dashboard/advanced.svg'
 import AiAgentIcon from '../../../assets/images/agents/dashboard/aiagenticon.svg'
 import AgentChatSidebar from './sidebars/AgentChatSidebar.vue'
 import AgentKnowledgeSidebar from './sidebars/AgentKnowledgeSidebar.vue'
-import AgentDeploymentSidebar from './sidebars/AgentDeploymentSidebar.vue'
 import AgentInfoSidebar from './sidebars/AgentInfoSidebar.vue'
 import AgentSettingsSidebar from './sidebars/AgentSettingsSidebar.vue'
 
@@ -148,7 +140,6 @@ const sidebarContainer = ref(null)
 const tabs = [
   { id: 'chat', label: 'Chat', icon: ChatIcon },
   { id: 'ai', label: 'Agent Knowledge', icon: KnowledgeIcon },
-  { id: 'deployment', label: 'Deployment', icon: DeploymentIcon },
   { id: 'documents', label: 'Agent Info', icon: AgentInfoIcon },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ]

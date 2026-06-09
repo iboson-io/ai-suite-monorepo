@@ -76,13 +76,7 @@
       />
     </div>
 
-    <div v-show="activeTab === 'deployment'" class="h-full shrink-0">
-      <MultiAgentDeploymentSidebar
-        :is-open="showSubSidebar && activeTab === 'deployment'"
-        :group="group"
-        @close="closeSubSidebar"
-      />
-    </div>
+
   </div>
 </template>
 
@@ -91,11 +85,9 @@ import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatIcon from '../../../assets/images/agents/dashboard/chat.svg'
 import AgentInfoIcon from '../../../assets/images/agents/dashboard/agentinfo.svg'
-import DeploymentIcon from '../../../assets/images/agents/dashboard/deployment.svg'
 import AiAgentIcon from '../../../assets/images/agents/dashboard/aiagenticon.svg'
 import AgentChatSidebar from '../dashboard/sidebars/AgentChatSidebar.vue'
 import MultiAgentGroupSidebar from './MultiAgentGroupSidebar.vue'
-import MultiAgentDeploymentSidebar from './MultiAgentDeploymentSidebar.vue'
 
 const props = defineProps({
   group: { type: Object, default: null },
@@ -135,7 +127,6 @@ const router = useRouter()
 const tabs = [
   { id: 'chat', label: 'Chat', icon: ChatIcon },
   { id: 'group', label: 'Agent Info', icon: AgentInfoIcon },
-  { id: 'deployment', label: 'Deployment', icon: DeploymentIcon },
 ]
 
 const activeTab = ref(null)

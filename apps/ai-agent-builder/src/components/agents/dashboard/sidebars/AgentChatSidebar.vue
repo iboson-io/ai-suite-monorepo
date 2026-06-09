@@ -159,6 +159,7 @@
     :open="toastOpen"
     :main-message="toastMessage"
     :secondary-message="toastSecondaryMessage"
+    :type="toastType"
     @close="toastOpen = false"
   />
 </template>
@@ -199,13 +200,12 @@ const newChatTitle = ref('')
 const renameInputRef = ref(null)
 const deletingChatId = ref(null)
 const renamingChat = ref(false)
-const toastOpen = ref(false)
-const toastMessage = ref('')
-const toastSecondaryMessage = ref('')
+const toastType = ref('success')
 
-function showToast(mainMessage, secondaryMessage = '') {
+function showToast(mainMessage, secondaryMessage = '', type = 'success') {
   toastMessage.value = mainMessage
   toastSecondaryMessage.value = secondaryMessage
+  toastType.value = type
   toastOpen.value = true
 }
 
@@ -269,7 +269,7 @@ async function confirmRename() {
     cancelRename()
   } catch (error) {
     console.error('Error renaming chat:', error)
-    showToast('Failed to rename chat', error?.message || 'Please try again.')
+    showToast('Failed to rename chat', error?.message || 'Please try again.', 'error')
   } finally {
     renamingChat.value = false
   }
@@ -293,7 +293,7 @@ async function handleDeleteChat(chatId) {
     emit('delete-chat', chatId)
   } catch (error) {
     console.error('Error deleting chat:', error)
-    showToast('Failed to delete chat', error?.message || 'Please try again.')
+    showToast('Failed to delete chat', error?.message || 'Please try again.', 'error')
   } finally {
     deletingChatId.value = null
   }

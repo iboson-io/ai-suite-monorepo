@@ -38,55 +38,64 @@
         class="flex min-h-0 min-w-0 flex-1 flex-col transition-[margin] duration-500 ease-out"
         :class="isSubSidebarOpen ? 'lg:ml-0' : ''"
       >
-        <header
-          class="flex shrink-0 items-center justify-between gap-4xl border-b primary_border_color px-6xl py-4xl"
-        >
-          <div class="flex min-w-0 items-center gap-4xl">
-            <h1 class="label_1_semibold primary_text_color truncate rounded-xl border primary_border_color px-4xl py-md">
-              {{ group?.name || 'Multi-Agent System' }}
-            </h1>
-            <span
-              class="caption_1_medium shrink-0 rounded-lg border border-info-200 bg-info-50 px-md py-xs text-info-600"
-            >
-              {{ statusLabel }}
-            </span>
-          </div>
+        <template v-if="!showSetupView">
+          <header
+            class="flex shrink-0 items-center justify-between gap-4xl border-b primary_border_color px-6xl py-4xl"
+          >
+            <div class="flex min-w-0 items-center gap-4xl">
+              <h1 class="label_1_semibold primary_text_color truncate rounded-xl border primary_border_color px-4xl py-md">
+                {{ group?.name || 'Multi-Agent System' }}
+              </h1>
+              <span
+                class="caption_1_medium shrink-0 rounded-lg border border-info-200 bg-info-50 px-md py-xs text-info-600"
+              >
+                {{ statusLabel }}
+              </span>
+            </div>
 
-          <div class="flex shrink-0 items-center gap-md">
-            <button
-              v-if="hasChatMessages"
-              type="button"
-              class="inline-flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_medium primary_text_color hover:bg-gray-25 disabled:opacity-50"
-              :disabled="creatingChat"
-              @click="handleCreateChat"
-            >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              New Chat
-            </button>
+            <div class="flex shrink-0 items-center gap-md">
+              <button
+                v-if="hasChatMessages"
+                type="button"
+                class="inline-flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_medium primary_text_color hover:bg-gray-25 disabled:opacity-50"
+                :disabled="creatingChat"
+                @click="handleCreateChat"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                New Chat
+              </button>
 
-            <button
-              type="button"
-              class="primary_add_button inline-flex shrink-0 items-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color"
-              @click="focusPrompt"
-            >
-              Run
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </header>
+              <button
+                type="button"
+                class="primary_add_button inline-flex shrink-0 items-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color"
+                @click="showSetupView = true"
+              >
+                Run
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </header>
 
-        <AgentDashboardChat
-          ref="chatRef"
-          mode="multi"
-          :group="group"
-          :selected-chat-id="selectedChatId"
-          @chat-created="handleChatCreated"
-          @chat-used="handleChatUsed"
-        />
+          <AgentDashboardChat
+            ref="chatRef"
+            mode="multi"
+            :group="group"
+            :selected-chat-id="selectedChatId"
+            @chat-created="handleChatCreated"
+            @chat-used="handleChatUsed"
+          />
+        </template>
+        <template v-else>
+          <AgentSetupView
+            :group="group"
+            mode="multi"
+            @back="showSetupView = false"
+          />
+        </template>
       </div>
     </template>
   </div>
@@ -97,6 +106,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MultiAgentDashboardSidebar from '../components/agents/multi/MultiAgentDashboardSidebar.vue'
 import AgentDashboardChat from '../components/agents/dashboard/AgentDashboardChat.vue'
+import AgentSetupView from '../components/agents/dashboard/AgentSetupView.vue'
 import {
   createGroupChat,
   fetchGroupChats,
@@ -116,6 +126,7 @@ const error = ref('')
 const group = ref(null)
 const chatRef = ref(null)
 const sidebarRef = ref(null)
+const showSetupView = ref(false)
 
 const chats = ref([])
 const loadingChats = ref(false)
