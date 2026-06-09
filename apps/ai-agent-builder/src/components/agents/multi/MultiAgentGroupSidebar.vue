@@ -1,5 +1,10 @@
 <template>
   <AgentDashboardSubSidebarShell title="Agent Group" :is-open="isOpen" @close="$emit('close')">
+    <div class="mb-5xl">
+      <p class="body_3_regular secondary_text_color">Agent Groups allow multiple AI agents to collaborate</p>
+      <div class="mt-4xl border-b primary_border_color" />
+    </div>
+
     <div v-if="loading" class="flex items-center justify-center py-10xl">
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-info-500" />
     </div>
@@ -11,75 +16,60 @@
           v-model="groupName"
           type="text"
           required
-          class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none"
+          placeholder="e.g., Customer Support System"
+          class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none placeholder:text-gray-400 focus:border-info-300 transition-colors"
         />
       </div>
 
       <div>
-        <label class="label_2_medium primary_text_color mb-md block">Description</label>
-        <textarea
-          v-model="groupDescription"
-          rows="2"
-          class="w-full resize-none rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none"
-        />
-      </div>
-
-      <div>
-        <div class="mb-md flex items-center justify-between gap-md">
-          <label class="label_2_medium primary_text_color">Group Agents</label>
-          <button
-            type="button"
-            class="label_3_medium text-info-600 hover:underline"
-            @click="showPicker = !showPicker"
-          >
-            {{ showPicker ? 'Hide picker' : 'Add agents' }}
-          </button>
+        <label class="label_2_medium primary_text_color mb-md block">Select Agents</label>
+        
+        <div class="relative w-full mb-5xl">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-4xl pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search agents."
+            class="w-full rounded-lg border primary_border_color bg-white pl-10xl pr-4xl py-md label_2_regular primary_text_color outline-none placeholder:text-gray-400 focus:border-info-300 transition-colors"
+            @input="handleSearch"
+          />
         </div>
 
-        <ul v-if="selectedAgents.length > 0" class="space-y-sm">
-          <li
-            v-for="agent in selectedAgents"
-            :key="agent.id"
-            class="flex items-center justify-between rounded-xl border primary_border_color px-4xl py-md"
-          >
-            <div class="min-w-0">
-              <p class="label_2_medium primary_text_color truncate">{{ agent.name }}</p>
-              <p class="body_4_regular secondary_text_color truncate">{{ agent.description || 'No description' }}</p>
-            </div>
-            <button
-              type="button"
-              class="shrink-0 rounded-lg p-sm text-error-600 hover:bg-error-50"
-              @click="removeAgent(agent.id)"
-            >
-              Remove
-            </button>
-          </li>
-        </ul>
-        <p v-else class="body_3_regular secondary_text_color">No agents in this group yet.</p>
-      </div>
-
-      <div v-if="showPicker" class="rounded-xl border primary_border_color bg-white p-4xl">
-        <input
-          v-model="searchQuery"
-          type="search"
-          placeholder="Search published agents..."
-          class="mb-md w-full rounded-lg border primary_border_color px-4xl py-md label_2_regular primary_text_color outline-none"
-          @input="handleSearch"
-        />
-
-        <div class="max-h-56 space-y-sm overflow-y-auto" @scroll="handlePickerScroll">
+        <div 
+          v-if="displayedAgents.length > 0" 
+          class="space-y-4xl max-h-[calc(100vh-360px)] overflow-y-auto pr-2 custom_scrollbar" 
+          @scroll="handlePickerScroll"
+        >
           <button
-            v-for="agent in pickerAgents"
+            v-for="agent in displayedAgents"
             :key="agent.id"
             type="button"
-            class="flex w-full items-center justify-between rounded-lg border px-3xl py-md text-left transition-colors"
-            :class="isPickerSelected(agent.id) ? 'border-info-300 bg-info-50' : 'primary_border_color hover:bg-gray-25'"
+            class="multi-agent-card flex w-full flex-col rounded-xl px-4xl py-3xl text-left transition-colors"
+            :class="
+              isPickerSelected(agent.id)
+                ? 'selected_platform_border bg-white'
+                : 'border border-gray-100 bg-white hover:border-info-200 hover:bg-gray-25'
+            "
             @click="togglePickerAgent(agent)"
           >
-            <span class="label_3_medium primary_text_color">{{ agent.name }}</span>
-            <span class="caption_1_regular secondary_text_color">{{ isPickerSelected(agent.id) ? 'Selected' : 'Add' }}</span>
+            <p class="label_2_semibold primary_text_color">{{ agent.name }}</p>
+            <p class="body_4_regular secondary_text_color mt-sm line-clamp-2 leading-relaxed w-full">
+              {{ agent.description || 'No description available' }}
+            </p>
+            <span
+              v-if="getAgentTypeLabel(agent)"
+              class="mt-md inline-flex w-fit rounded-md border border-blue-100 bg-blue-50 px-md py-xs label_3_medium text-blue-200"
+            >
+              {{ getAgentTypeLabel(agent) }}
+            </span>
           </button>
         </div>
+        
+        <p v-else class="body_3_regular secondary_text_color mt-md">No agents found.</p>
       </div>
 
       <p v-if="errorMessage" class="label_3_regular text-error-600">{{ errorMessage }}</p>
@@ -92,14 +82,14 @@
         :disabled="saving || selectedAgents.length < 1 || !groupName.trim()"
         @click="handleSave"
       >
-        {{ saving ? 'Saving...' : 'Save Group' }}
+        {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
     </template>
   </AgentDashboardSubSidebarShell>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AgentDashboardSubSidebarShell from '../dashboard/AgentDashboardSubSidebarShell.vue'
 import { fetchPublishedAgentsForPicker } from '../../../services/agents/multi/picker.js'
 
@@ -113,15 +103,58 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save'])
 
+const AGENT_TYPE_LABELS = {
+  api: 'API Schema',
+  documents: 'Documents',
+  db: 'Database',
+  database: 'Database',
+  composio: 'Composio',
+}
+
 const groupName = ref('')
 const groupDescription = ref('')
 const selectedAgents = ref([])
-const showPicker = ref(false)
 const searchQuery = ref('')
 const pickerAgents = ref([])
 const pickerLoading = ref(false)
 const pickerHasMore = ref(true)
 const pickerPage = ref(1)
+
+const displayedAgents = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  
+  // Filter selected agents by search query
+  const filteredSelected = selectedAgents.value.filter(agent => {
+    if (!query) return true
+    return agent.name.toLowerCase().includes(query) ||
+           (agent.description && agent.description.toLowerCase().includes(query))
+  })
+
+  // Filter picker agents (already filtered by API, but prevent duplicate reference IDs)
+  const list = [...pickerAgents.value]
+
+  // Merge: start with matching selected agents, then append remaining picker agents
+  const result = [...filteredSelected]
+  for (const agent of list) {
+    if (!result.some(a => a.id === agent.id)) {
+      result.push(agent)
+    }
+  }
+  return result
+})
+
+function getAgentTypeLabel(agent) {
+  const raw = String(agent?.agentType ?? '').trim().toLowerCase()
+  if (!raw) return ''
+
+  if (AGENT_TYPE_LABELS[raw]) return AGENT_TYPE_LABELS[raw]
+
+  return raw
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
 
 let searchTimer = null
 
@@ -206,9 +239,41 @@ watch(
   (isOpen) => {
     if (isOpen) {
       syncFromGroup(props.group)
-      showPicker.value = false
       loadPickerAgents()
     }
   }
 )
 </script>
+
+<style scoped>
+.multi-agent-card.selected_platform_border::before {
+  border-radius: 0.75rem;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.custom_scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #dadde1 transparent;
+}
+
+.custom_scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #dadde1;
+  border-radius: 999px;
+}
+</style>
+
+
