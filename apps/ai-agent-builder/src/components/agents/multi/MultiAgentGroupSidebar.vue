@@ -41,7 +41,7 @@
 
         <div 
           v-if="displayedAgents.length > 0" 
-          class="space-y-4xl max-h-[calc(100vh-360px)] overflow-y-auto pr-2 custom_scrollbar" 
+          class="space-y-4xl max-h-[calc(100vh-408px)] overflow-y-auto pr-2 custom_scrollbar" 
           @scroll="handlePickerScroll"
         >
           <button
