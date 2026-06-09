@@ -42,7 +42,7 @@
 
     <div
       v-if="isMobile && showSubSidebar"
-      class="fixed inset-0 z-[9998] bg-black/50 lg:hidden"
+      class="fixed inset-0 z-[9998] bg_overlay lg:hidden"
       @click="closeSubSidebar"
     />
 

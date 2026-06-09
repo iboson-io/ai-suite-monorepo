@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="open"
-    class="fixed top-4 right-4 z-[70] min-w-[min(100vw-2rem,400px)] max-w-[400px] rounded-2xl bg_secondary_color p-5xl shadow-[0_10px_24px_-4px_rgba(15,23,42,0.12)] md:top-6 md:right-6"
+    class="fixed top-4 right-4 z-[70] min-w-[min(100vw-2rem,400px)] max-w-[400px] rounded-2xl bg_secondary_color p-5xl shadow-[0_10px_24px_-4px_rgba(15,23,42,0.12)] md:top-6 md:right-6 overflow-hidden"
     role="status"
     aria-live="polite"
   >
@@ -25,14 +25,21 @@
         </p>
       </div>
     </div>
+
+    <div
+      v-if="duration > 0"
+      class="absolute bottom-0 left-0 h-[3px] bg-[#15BE53] toast-progress-bar"
+      :style="{ animationDuration: duration + 'ms' }"
+    />
   </div>
 </template>
 
 <script setup>
-  import CloseIcon from "../../assets/images/CloseIcon.svg"
-  import ToastIcons from "../../assets/images/ToastIcons.svg"
+import { onUnmounted, watch } from "vue";
+import CloseIcon from "../../assets/images/CloseIcon.svg"
+import ToastIcons from "../../assets/images/ToastIcons.svg"
 
-defineProps({
+const props = defineProps({
   open: {
     type: Boolean,
     default: false,
@@ -45,12 +52,62 @@ defineProps({
     type: String,
     default: "",
   },
+  duration: {
+    type: Number,
+    default: 1800,
+  },
 });
 
 const emit = defineEmits(["close"]);
 
+let timer = null;
+
 const handleClose = () => {
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+  }
   emit("close");
 };
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    if (isOpen && props.duration > 0) {
+      timer = setTimeout(() => {
+        handleClose();
+      }, props.duration);
+    }
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  if (timer) {
+    clearTimeout(timer);
+  }
+});
 </script>
+
+<style scoped>
+.toast-progress-bar {
+  animation-name: grow;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes grow {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+</style>
+
 
