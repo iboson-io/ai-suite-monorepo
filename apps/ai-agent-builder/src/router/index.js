@@ -84,7 +84,7 @@ const routes = [
     meta: { requiresAuth: true, standaloneAgentView: true },
   },
   { path: '/agents', name: 'Agents', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/tasks', name: 'Tasks', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/workflows', name: 'Workflows', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/settings', name: 'Settings', component: Dashboard, meta: { requiresAuth: true } },
 ]
 

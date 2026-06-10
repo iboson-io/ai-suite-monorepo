@@ -175,7 +175,7 @@
       </div>
 
       <!-- Menu (scrolls when many tabs; does not overlap bottom section) -->
-      <nav class="sidebar-nav-scroll mt-6xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
+      <nav class="sidebar-nav-scroll mt-xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
         <div v-for="item in menuItems" :key="item.tab" @click="handleSidebarClick(item.tab)"
           @mouseenter="hoveredItem = item.tab" @mouseleave="hoveredItem = null"
           class="relative group flex cursor-pointer items-center gap-lg rounded-lg py-xl mt-md hover:bg-info-50-hover" :class="[

@@ -21,7 +21,7 @@ export function getSidebarMenuItems() {
   return [
     { icon: HomeIcon, label: 'Home', tab: 'chat' },
     { icon: AgentsIcon, label: 'Agents', tab: 'agents' },
-    { icon: TasksIcon, label: 'Tasks', tab: 'tasks' },
+    { icon: TasksIcon, label: 'Workflows', tab: 'workflows' },
     { icon: SettingsIcon, label: 'Settings', tab: 'settings' },
   ]
 }

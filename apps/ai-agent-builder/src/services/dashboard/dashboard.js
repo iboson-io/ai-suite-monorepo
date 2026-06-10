@@ -1,24 +1,24 @@
 import ChatView from '../../views/ChatView.vue'
 import AgentsView from '../../views/AgentsView.vue'
-import TasksView from '../../views/TasksView.vue'
+import WorkflowsView from '../../views/WorkflowsView.vue'
 
 export function getDashboardConfig() {
   return {
     tabToRouteMap: {
       chat: '/home',
       agents: '/agents',
-      tasks: '/tasks',
+      workflows: '/workflows',
       settings: '/settings',
     },
     routeToTabMap: {
       '/home': 'chat',
       '/chat': 'chat',
       '/agents': 'agents',
-      '/tasks': 'tasks',
+      '/workflows': 'workflows',
       '/settings': 'settings',
       '/dashboard': 'chat',
     },
-    remountOnReselectTabs: ['agents', 'tasks', 'settings'],
+    remountOnReselectTabs: ['agents', 'workflows', 'settings'],
     resetChatOnReselectChat: true,
     mobileFixedHeader: false,
     rootLayoutClass: 'flex min-h-screen bg_secondary_color overflow-hidden',
@@ -32,7 +32,7 @@ export function getDashboardViews() {
   return {
     chat: ChatView,
     agents: AgentsView,
-    tasks: TasksView,
+    workflows: WorkflowsView,
   }
 }
 
