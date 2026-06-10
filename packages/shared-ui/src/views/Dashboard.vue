@@ -1,8 +1,8 @@
 <template>
-  <div :class="config.rootLayoutClass">
+  <div :class="[config.rootLayoutClass, hideSidebar ? 'h-screen max-h-screen overflow-hidden' : '']">
     <Sidebar
       ref="sidebarRef"
-      class="hidden lg:flex"
+      :class="['hidden', hideSidebar ? 'lg:hidden' : 'lg:flex']"
       :activeTab="activeTab"
       @changeTab="handleTabChange"
       @collapseChange="isSidebarCollapsed = $event"
@@ -23,9 +23,9 @@
     />
 
     <div
-      :class="[config.mainAreaClass, isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64']"
+      :class="[config.mainAreaClass, hideSidebar ? 'lg:ml-0 h-full max-h-full !overflow-hidden' : (isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64')]"
     >
-      <header :class="config.mobileHeaderClass">
+      <header v-if="!hideSidebar" :class="config.mobileHeaderClass">
         <button
           type="button"
           @click="showMobileSidebar = true"
@@ -55,6 +55,7 @@
             :is="views[tab]"
             v-if="activeTab === tab"
             :class="viewClass(tab)"
+            @toggle-sidebar="hideSidebar = $event"
           />
         </template>
 
@@ -102,6 +103,14 @@ const sessionToLoad = ref(null)
 const sessionRemovedFromList = ref(null)
 const sidebarRef = ref(null)
 const sidebarMobileRef = ref(null)
+
+const hideSidebar = ref(false)
+
+watch(activeTab, (newTab) => {
+  if (newTab !== 'workflows') {
+    hideSidebar.value = false
+  }
+})
 
 const viewKeys = reactive(
   Object.fromEntries(

@@ -37,7 +37,7 @@ export function getDashboardViews() {
 }
 
 export function getDashboardViewClass(tab) {
-  if (tab === 'chat' || tab === 'agents') {
+  if (tab === 'chat' || tab === 'agents' || tab === 'workflows') {
     return 'flex min-h-0 flex-1 flex-col'
   }
   return ''

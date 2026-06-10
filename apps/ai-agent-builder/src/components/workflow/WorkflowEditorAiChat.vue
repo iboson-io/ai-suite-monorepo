@@ -3,6 +3,8 @@ import { ref, watch, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
 import { useAuth } from '@app/composables/useAuth'
 import { WORKFLOW_AGENT_WS_URL, WORKFLOW_AGENT_WS_PATH } from '@app/services/constants'
+import AgentChatIcon from '../../assets/images/agents/dashboard/chatIcon.svg'
+import { ChatActionBar } from '@ai-suite/shared-ui'
 
 marked.setOptions({ breaks: true, gfm: true })
 
@@ -13,12 +15,43 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['submit-prompt', 'ai-response', 'schema-changed'])
+const emit = defineEmits(['submit-prompt', 'ai-response', 'schema-changed', 'back'])
 
-const { getToken } = useAuth()
+const { getToken, user } = useAuth()
+
+const userName = computed(() => {
+  const name = user.value?.name || user.value?.username || 'user'
+  return name.split(' ')[0]
+})
+
+const suggestions = [
+  {
+    text: 'Build me an automation from scratch',
+    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`
+  },
+  {
+    text: 'Help me brainstorm ideas for an automation',
+    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`
+  },
+  {
+    text: 'What can you do?',
+    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+  },
+  {
+    text: 'What are custom nodes and how do I use them?',
+    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>`
+  }
+]
+
+function selectSuggestion(text) {
+  prompt.value = text
+  nextTick(() => {
+    send()
+  })
+}
 
 const messages = ref(
-  /** @type {{ kind: 'user' | 'assistant' | 'system' | 'error', text: string, raw?: boolean }[]} */ ([])
+  /** @type {{ kind: 'user' | 'assistant' | 'system' | 'error', text: string, raw?: boolean, isLiked?: boolean, isDisliked?: boolean }[]} */ ([])
 )
 const prompt = ref('')
 const connected = ref(false)
@@ -97,7 +130,7 @@ function scrollToBottom() {
 }
 
 function append(kind, text, raw = false) {
-  messages.value = [...messages.value, { kind, text, raw }]
+  messages.value = [...messages.value, { kind, text, raw, isLiked: false, isDisliked: false }]
   scrollToBottom()
 }
 
@@ -310,6 +343,36 @@ watch(
   }
 )
 
+async function handleCopy(text) {
+  if (!text) return
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-9999px'
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+  }
+}
+
+function toggleChatReaction(index, type) {
+  const message = messages.value[index]
+  if (!message) return
+
+  if (type === 'like') {
+    message.isLiked = !message.isLiked
+    if (message.isLiked) message.isDisliked = false
+    return
+  }
+
+  message.isDisliked = !message.isDisliked
+  if (message.isDisliked) message.isLiked = false
+}
+
 onMounted(() => {
   connect()
 })
@@ -340,133 +403,411 @@ const statusDotClass = computed(() => {
 
 <template>
   <aside
-    class="workflow-agent-chat flex min-h-[220px] flex-col border-t border-blue-100/90 bg-gradient-to-b from-sky-50/95 via-blue-50/40 to-white lg:h-full lg:min-h-0 lg:w-[min(100vw,360px)] lg:shrink-0 lg:border-r lg:border-t-0 lg:border-blue-100/90"
+    class="workflow-agent-chat flex min-h-[220px] flex-col border-r border-slate-200/80 bg_primary_color lg:h-full lg:min-h-0 lg:w-[min(100vw,550px)] lg:shrink-0"
     aria-label="Workflow assistant chat"
   >
+    <!-- Header with Logo and Exit Button -->
     <div
-      class="flex shrink-0 flex-wrap items-center gap-2 border-b border-blue-100/80 bg-gradient-to-r from-sky-100/70 via-blue-50/80 to-sky-50/50 px-3 py-2"
+      class="flex shrink-0 flex-wrap items-center gap-4 border-b primary_border_color bg_secondary_color px-6xl py-4xl justify-between"
     >
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        <span class="relative flex h-2 w-2 shrink-0">
-          <span
-            class="absolute inline-flex h-full w-full rounded-full opacity-75"
-            :class="connected ? 'animate-ping bg-sky-400' : ''"
-          />
-          <span class="relative inline-flex h-2 w-2 rounded-full" :class="statusDotClass" />
-        </span>
-        <div class="min-w-0">
-          <p class="truncate text-sm font-semibold text-slate-900">Workflow assistant</p>
-          <p class="truncate text-xs text-slate-500">{{ statusLabel }}</p>
+      <div class="flex min-w-0 items-center gap-3">
+        <!-- Logo -->
+        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-white font-bold text-lg select-none">
+          G
+        </div>
+        <!-- Status Indicator -->
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2.5 w-2.5 shrink-0">
+            <span
+              class="absolute inline-flex h-full w-full rounded-full opacity-75"
+              :class="connected ? 'animate-ping bg-sky-400' : ''"
+            />
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full" :class="statusDotClass" />
+          </span>
+          <div class="min-w-0">
+            <p class="truncate label_2_bold primary_text_color select-none">Workflow co-pilot</p>
+            <p class="truncate caption_1_medium secondary_text_color select-none">{{ statusLabel }}</p>
+          </div>
         </div>
       </div>
-      <div class="flex shrink-0 gap-1">
+      <div class="flex shrink-0 gap-2">
         <button
           type="button"
-          class="rounded-lg px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-sky-100/80"
-          @click="reconnectManual"
+          @click="$emit('back')"
+          class="flex items-center gap-2 rounded-lg border primary_border_color bg_secondary_color px-3.5 py-2 label_2_semibold primary_text_color hover:bg-gray-25 shadow-sm transition-all"
         >
-          Reconnect
-        </button>
-        <button
-          type="button"
-          class="rounded-lg px-2 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-100/70"
-          @click="newChat"
-        >
-          New chat
+          <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Exit
         </button>
       </div>
     </div>
 
-    <div ref="messagesBodyRef" class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
-      <p v-if="!messages.length" class="text-xs leading-relaxed text-slate-700/90">
-        Ask about triggers, output channels, patterns, and agents for this workflow.
-      </p>
-      <template v-for="(m, i) in messages" :key="i">
-        <div v-if="m.kind === 'user'" class="flex justify-end">
-          <div class="max-w-[92%] rounded-2xl bg-gradient-to-br from-blue-600 to-sky-600 px-3 py-2 text-sm leading-snug text-white shadow-sm">
-            {{ m.text }}
+    <!-- Welcoming view when messages list is empty -->
+    <div 
+      v-if="!messages.length" 
+      class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl flex flex-col justify-center items-center"
+    >
+      <div class="w-full max-w-md flex flex-col items-center justify-center text-center my-auto py-8">
+        <!-- Welcoming title -->
+        <h1 class="text-3xl font-bold primary_text_color tracking-tight mb-2">
+          Hey {{ userName }}, how can I help?
+        </h1>
+        <p class="text-sm secondary_text_color max-w-sm mb-8 leading-relaxed">
+          I'm your AI co-pilot. I can build flows, help you answer questions, and make you a workflow expert.
+        </p>
+
+        <!-- Centered Prompt Box -->
+        <div class="w-full button-gradient mb-8">
+          <div class="prompt-box-inner rounded-xl bg_secondary_color p-5xl flex flex-col text-left">
+            <textarea
+              ref="promptInputRef"
+              v-model="prompt"
+              rows="3"
+              placeholder="Describe what you want to automate today"
+              class="w-full border-none outline-none label_1_regular resize-none bg-transparent"
+              :class="[
+                prompt ? 'primary_text_color' : 'secondary_text_color',
+                !connected || sending ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+              @keydown="onKeydown"
+              :disabled="!connected || sending"
+            />
+
+            <div class="mt-4 flex items-center justify-between">
+              <!-- Attachment Button -->
+              <button type="button" class="text-slate-400 hover:text-slate-600 p-1 transition-colors">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+              </button>
+
+              <div class="flex items-center gap-3">
+                <!-- Send Button with Gradient -->
+                <button
+                  type="button"
+                  class="rounded-full p-0.5 transition-transform"
+                  :class="[!connected || sending || !prompt.trim() ? 'opacity-50 cursor-not-allowed' : '']"
+                  :disabled="!connected || sending || !prompt.trim()"
+                  @click="send"
+                >
+                  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="34" height="34" rx="17" fill="url(#purpleGradient)"/>
+                    <path d="M17 10V24M17 10L23 16M17 10L11 16" stroke="#F3F0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                      <linearGradient id="purpleGradient" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FAB000"/>
+                        <stop offset="0.30" stop-color="#9966FF"/>
+                        <stop offset="0.85" stop-color="#0073E6"/>
+                        <stop offset="1.00" stop-color="#15BE53"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div v-else-if="m.kind === 'assistant'" class="flex justify-start">
-          <div
-            class="assistant-md max-w-[92%] rounded-2xl border border-sky-100/90 bg-white/90 px-3 py-2 text-sm leading-snug text-slate-800 shadow-sm"
-            v-html="renderMarkdown(m.text)"
-          />
-        </div>
-        <div v-else class="flex justify-center">
-          <div
-            class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
-            :class="
-              m.kind === 'error'
-                ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
-                : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
-            "
+
+        <!-- Suggestion List -->
+        <div class="w-full flex flex-col gap-2">
+          <button
+            v-for="(suggestion, idx) in suggestions"
+            :key="idx"
+            type="button"
+            @click="selectSuggestion(suggestion.text)"
+            class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border border-slate-200/60 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all text-left text-sm primary_text_color shadow-sm"
           >
-            {{ m.text }}
-          </div>
+            <div class="flex items-center gap-3">
+              <span class="text-slate-400" v-html="suggestion.icon" />
+              <span>{{ suggestion.text }}</span>
+            </div>
+            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
-      </template>
-      <div v-if="sending" class="flex items-center gap-2 text-sm text-slate-600">
-        <span
-          class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-sky-200 border-t-blue-600"
-          aria-hidden="true"
-        />
-        <span>Waiting for reply…</span>
       </div>
     </div>
 
-    <div class="shrink-0 border-t border-blue-100/80 bg-white/60 p-2 backdrop-blur-[2px]">
-      <div class="flex gap-2">
-        <textarea
-          ref="promptInputRef"
-          v-model="prompt"
-          rows="2"
-          class="min-h-[2.75rem] max-h-36 flex-1 resize-y overflow-y-auto rounded-xl border border-sky-200/90 bg-white/95 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none  disabled:opacity-50"
-          placeholder="Ask the workflow assistant…"
-          :disabled="!connected"
-          @keydown="onKeydown"
-        />
-        <button
-          type="button"
-          class="self-end shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:from-blue-700 hover:to-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="!connected || sending || !String(prompt).trim()"
-          @click="send"
-        >
-          Send
-        </button>
+    <!-- Active Messages view when messages list is not empty -->
+    <template v-else>
+      <div ref="messagesBodyRef" class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl space-y-6">
+        <template v-for="(m, i) in messages" :key="i">
+          <div v-if="m.kind === 'user'" class="flex justify-end">
+            <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
+              <p class="Body_2_regular primary_text_color">{{ m.text }}</p>
+            </div>
+          </div>
+          <div v-else-if="m.kind === 'assistant'" class="flex items-start gap-3">
+            <img
+              :src="AgentChatIcon"
+              alt=""
+              class="h-8 w-8 shrink-0 rounded-full"
+              aria-hidden="true"
+            />
+            <div class="min-w-0 flex-1">
+              <div
+                class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                v-html="renderMarkdown(m.text)"
+              />
+              <ChatActionBar
+                :is-liked="m.isLiked"
+                :is-disliked="m.isDisliked"
+                :padded="false"
+                compact-icons
+                class="lg:px-3xl"
+                @copy="handleCopy(m.text)"
+                @like="toggleChatReaction(i, 'like')"
+                @dislike="toggleChatReaction(i, 'dislike')"
+              />
+            </div>
+          </div>
+          <div v-else class="flex justify-center">
+            <div
+              class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
+              :class="
+                m.kind === 'error'
+                  ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
+                  : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
+              "
+            >
+              {{ m.text }}
+            </div>
+          </div>
+        </template>
+
+        <div v-if="sending" class="flex items-start gap-3">
+          <img
+            :src="AgentChatIcon"
+            alt=""
+            class="h-8 w-8 shrink-0 rounded-full"
+            aria-hidden="true"
+          />
+          <div class="min-w-0 flex-1">
+            <div class="rounded-2xl py-xs">
+              <p class="primary_text_color body_3_regular">
+                Got it, give me a moment<span class="loading-dots" />
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <!-- Docked Prompt Box at the bottom -->
+      <div class="shrink-0 px-6xl pb-6xl pt-2">
+        <div
+          class="w-full"
+          :class="sending ? 'prompt-box-animated' : 'button-gradient'"
+        >
+          <div class="prompt-box-inner rounded-xl bg_secondary_color p-5xl flex flex-col">
+            <textarea
+              ref="promptInputRef"
+              v-model="prompt"
+              rows="2"
+              placeholder="Ask the workflow assistant…"
+              class="w-full border-none outline-none label_1_regular bg-transparent resize-none"
+              :class="[
+                prompt ? 'primary_text_color' : 'secondary_text_color',
+                !connected || sending ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+              @keydown="onKeydown"
+              :disabled="!connected || sending"
+            />
+
+            <div class="mt-4 flex items-center justify-between">
+              <!-- Attachment Button -->
+              <button type="button" class="text-slate-400 hover:text-slate-600 p-1 transition-colors">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+              </button>
+              <div class="flex items-center gap-3">
+                <!-- Send Button with Gradient -->
+                <button
+                  type="button"
+                  class="rounded-full p-0.5 transition-transform"
+                  :class="[!connected || sending || !prompt.trim() ? 'opacity-50 cursor-not-allowed' : '']"
+                  :disabled="!connected || sending || !prompt.trim()"
+                  @click="send"
+                >
+                  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="34" height="34" rx="17" fill="url(#purpleGradient)"/>
+                    <path d="M17 10V24M17 10L23 16M17 10L11 16" stroke="#F3F0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                      <linearGradient id="purpleGradient" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FAB000"/>
+                        <stop offset="0.30" stop-color="#9966FF"/>
+                        <stop offset="0.85" stop-color="#0073E6"/>
+                        <stop offset="1.00" stop-color="#15BE53"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
   </aside>
 </template>
 
 <style scoped>
-.workflow-agent-chat :deep(.assistant-md p) {
-  margin: 0.35em 0;
+.chat-markdown :deep(p) {
+  margin: 0 0 0.75em;
 }
-.workflow-agent-chat :deep(.assistant-md p:first-child) {
-  margin-top: 0;
-}
-.workflow-agent-chat :deep(.assistant-md p:last-child) {
+
+.chat-markdown :deep(p:last-child) {
   margin-bottom: 0;
 }
-.workflow-agent-chat :deep(.assistant-md a) {
-  color: rgb(2 132 199);
+
+.chat-markdown :deep(h1),
+.chat-markdown :deep(h2),
+.chat-markdown :deep(h3),
+.chat-markdown :deep(h4),
+.chat-markdown :deep(h5),
+.chat-markdown :deep(h6) {
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+}
+
+.chat-markdown :deep(h1) {
+  font-size: 1.375em;
+}
+
+.chat-markdown :deep(h2) {
+  font-size: 1.25em;
+}
+
+.chat-markdown :deep(h3) {
+  font-size: 1.125em;
+}
+
+.chat-markdown :deep(ul),
+.chat-markdown :deep(ol) {
+  margin: 0.5em 0 0.75em;
+  padding-left: 1.5em;
+}
+
+.chat-markdown :deep(li + li) {
+  margin-top: 0.25em;
+}
+
+.chat-markdown :deep(blockquote) {
+  margin: 0.75em 0;
+  padding-left: 1em;
+  border-left: 3px solid rgb(209 213 219);
+}
+
+.chat-markdown :deep(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  background: rgb(243 244 246);
+}
+
+.chat-markdown :deep(pre) {
+  margin: 0.75em 0;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: rgb(243 244 246);
+}
+
+.chat-markdown :deep(pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+.chat-markdown :deep(table) {
+  display: block;
+  width: 100%;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.chat-markdown :deep(th),
+.chat-markdown :deep(td) {
+  padding: 0.5em 0.75em;
+  border: 1px solid rgb(229 231 235);
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-markdown :deep(th) {
+  font-weight: 600;
+  background: rgb(249 250 251);
+}
+
+.chat-markdown :deep(hr) {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid rgb(229 231 235);
+}
+
+.chat-markdown :deep(a) {
+  color: rgb(37 99 235);
   text-decoration: underline;
 }
-.workflow-agent-chat :deep(.assistant-md pre) {
-  overflow-x: auto;
-  margin: 0.35em 0;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  background: rgb(240 249 255);
-  font-size: 0.75rem;
+
+.chat-markdown :deep(a:hover) {
+  color: rgb(29 78 216);
 }
-.workflow-agent-chat :deep(.assistant-md code) {
-  font-size: 0.85em;
+
+.chat-markdown :deep(img) {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5em 0;
+  border-radius: 0.5rem;
 }
-.workflow-agent-chat :deep(.assistant-md ul),
-.workflow-agent-chat :deep(.assistant-md ol) {
-  margin: 0.35em 0;
-  padding-left: 1.25rem;
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: '';
+  }
+  40% {
+    content: '.';
+  }
+  60% {
+    content: '..';
+  }
+  80%,
+  100% {
+    content: '...';
+  }
+}
+
+.custom_scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.custom_scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-track {
+  margin: 0;
+  background: transparent;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 </style>

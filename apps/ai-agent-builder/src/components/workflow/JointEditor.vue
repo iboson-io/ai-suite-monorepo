@@ -37,6 +37,7 @@
         @submit-prompt="$emit('workflow-ai-prompt', $event)"
         @ai-response="$emit('workflow-ai-response', $event)"
         @schema-changed="onWorkflowAgentSchemaChanged"
+        @back="$emit('back')"
       />
 
       <div class="relative flex min-h-0 min-w-0 flex-1 flex-col">

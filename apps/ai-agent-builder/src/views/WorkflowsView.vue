@@ -15,12 +15,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import ListPanel from '@app/components/workflow/ListPanel.vue'
 import JointEditor from '@app/components/workflow/JointEditor.vue'
 import Toast from '@app/components/workflow/Toast.vue'
 
 const selectedWorkflowId = ref(null)
+
+const emit = defineEmits(['toggle-sidebar'])
+
+watch(selectedWorkflowId, (val) => {
+  emit('toggle-sidebar', !!val)
+}, { immediate: true })
 </script>
 
 <style scoped>
