@@ -27,7 +27,7 @@
       </button>
       <span
         role="tooltip"
-        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/copy:block group-focus-within/copy:block"
+        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/copy:block"
       >
         {{ copyTitle }}
       </span>
@@ -60,7 +60,7 @@
       </button>
       <span
         role="tooltip"
-        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/like:block group-focus-within/like:block"
+        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/like:block"
       >
         {{ likeTitle }}
       </span>
@@ -93,7 +93,7 @@
       </button>
       <span
         role="tooltip"
-        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/dislike:block group-focus-within/dislike:block"
+        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/dislike:block"
       >
         {{ dislikeTitle }}
       </span>
@@ -123,7 +123,7 @@
       </button>
       <span
         role="tooltip"
-        class="pointer-events-none absolute bottom-full pt-2 left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/regenerate:block group-focus-within/regenerate:block"
+        class="pointer-events-none absolute bottom-full pt-2 left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/regenerate:block"
       >
         {{ regenerateTitle }}
       </span>
