@@ -95,7 +95,7 @@ export async function deleteProfilePicture() {
 export async function uploadProfilePicture(formDataOrFile) {
   const file =
     formDataOrFile instanceof FormData
-      ? formDataOrFile.get('profile_picture') ?? formDataOrFile.get('file')
+      ? formDataOrFile.get('profile_picture') ?? formDataOrFile.get('picture') ?? formDataOrFile.get('file')
       : formDataOrFile
 
   const data = await apiService.updateProfilePicture(file)
