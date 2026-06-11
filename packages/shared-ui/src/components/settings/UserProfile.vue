@@ -512,6 +512,7 @@ const saveChanges = async () => {
     if (String(profilePictureUrl.value).includes("ui-avatars.com")) {
       profilePictureUrl.value = defaultAvatarUrl.value;
     }
+    window.dispatchEvent(new CustomEvent("profile-updated"));
   } catch (e) {
     nameSaveError.value = extractProfileUpdateError(e);
   } finally {
@@ -608,6 +609,7 @@ const handleVerifyCode = async (code) => {
       googleAccountEmail.value = next;
       await fetchUserProfile();
       showEmailUpdateSuccessToast.value = true;
+      window.dispatchEvent(new CustomEvent("profile-updated"));
     }
   } catch (e) {
     verificationModalError.value = extractProfileUpdateError(e);
@@ -698,6 +700,7 @@ const deleteProfilePicture = async () => {
     profilePictureUrl.value = defaultAvatarUrl.value;
 
     await fetchUserProfile();
+    window.dispatchEvent(new CustomEvent("profile-updated"));
   } catch (e) {
     console.error("Failed to delete profile picture:", e);
     alert(extractProfileUpdateError(e));
@@ -786,6 +789,7 @@ const saveProfilePicture = async () => {
 
     isExistingImage.value = true;
     closeProfilePictureModal();
+    window.dispatchEvent(new CustomEvent("profile-updated"));
   } catch (e) {
     pictureSaveError.value = extractProfileUpdateError(e);
   } finally {

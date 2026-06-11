@@ -60,7 +60,7 @@ export async function fetchUserProfile() {
 export async function updateProfileUsername(username) {
   await apiService.request('/api/user/profile', {
     method: 'PUT',
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ name: username }),
   })
 }
 

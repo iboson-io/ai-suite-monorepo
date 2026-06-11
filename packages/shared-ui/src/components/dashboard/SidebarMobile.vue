@@ -468,6 +468,11 @@ onMounted(() => {
   loadChatSessions();
   loadSidebarUser();
   fetchNotificationsForBadge();
+  window.addEventListener("profile-updated", loadSidebarUser);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("profile-updated", loadSidebarUser);
 });
 
 defineExpose({ refreshChatSessions });
