@@ -515,6 +515,26 @@ function toggleChatReaction(index, type) {
   if (message.isDisliked) message.isLiked = false
 }
 
+function handleRegenerate(index) {
+  // Find the user message that preceded this assistant response
+  let userText = null
+  for (let i = index - 1; i >= 0; i--) {
+    if (messages.value[i]?.kind === 'user') {
+      userText = messages.value[i].text
+      break
+    }
+  }
+  if (!userText || sending.value || !connected.value) return
+
+  // Append as a brand-new user message (keeps existing history)
+  append('user', userText)
+
+  if (!sendPromptText(userText)) {
+    sending.value = false
+    append('error', 'Not connected — wait for connection or click Reconnect.')
+  }
+}
+
 onMounted(() => {
   connect()
 })
@@ -730,10 +750,12 @@ const statusDotClass = computed(() => {
                 :is-disliked="m.isDisliked"
                 :padded="false"
                 compact-icons
+                show-regenerate
                 class="lg:px-3xl"
                 @copy="handleCopy(m.text)"
                 @like="toggleChatReaction(i, 'like')"
                 @dislike="toggleChatReaction(i, 'dislike')"
+                @regenerate="handleRegenerate(i)"
               />
             </div>
           </div>

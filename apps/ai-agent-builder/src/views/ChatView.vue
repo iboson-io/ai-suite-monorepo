@@ -92,10 +92,12 @@
                     :is-disliked="message.isDisliked"
                     :padded="false"
                     compact-icons
+                    show-regenerate
                     class="lg:px-3xl"
                     @copy="handleCopy(message.aiResponse)"
                     @like="toggleChatReaction(index, 'like')"
                     @dislike="toggleChatReaction(index, 'dislike')"
+                    @regenerate="handleRegenerate(index)"
                   />
                 </div>
               </div>
@@ -477,6 +479,37 @@ function toggleChatReaction(index, type) {
 
   message.isDisliked = !message.isDisliked
   if (message.isDisliked) message.isLiked = false
+}
+
+async function handleRegenerate(index) {
+  const message = messages.value[index]
+  if (!message?.text || isLoading.value || !chatId.value || !selectedAgentId.value) return
+
+  isLoading.value = true
+  messages.value.push({
+    text: message.text,
+    isLoading: true,
+    isStreaming: false,
+    aiResponse: null,
+    isLiked: false,
+    isDisliked: false,
+  })
+
+  await scrollToBottom()
+
+  try {
+    await currentWs.value.ensureConnected(selectedAgentId.value, chatId.value)
+    currentWs.value.send(message.text)
+  } catch (err) {
+    const lastIndex = messages.value.length - 1
+    messages.value[lastIndex] = {
+      ...messages.value[lastIndex],
+      isLoading: false,
+      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.',
+    }
+    isLoading.value = false
+    await scrollToBottom()
+  }
 }
 
 onUnmounted(() => {

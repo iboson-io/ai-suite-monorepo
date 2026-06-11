@@ -594,24 +594,28 @@ async function handleRegenerate(index) {
   const message = chatMessages.value[index]
   if (!message?.text || isLoading.value || !scopeId.value || !chatId.value) return
 
-  chatMessages.value[index] = {
-    ...message,
+  isLoading.value = true
+  chatMessages.value.push({
+    id: `pending_${Date.now()}`,
+    text: message.text,
     isLoading: true,
     isStreaming: false,
     aiResponse: null,
     isLiked: false,
-    isDisliked: false
-  }
-  isLoading.value = true
+    isDisliked: false,
+  })
+
+  await scrollToBottom()
 
   try {
     await ensureConnected(scopeId.value, chatId.value)
     send(message.text)
   } catch (err) {
-    chatMessages.value[index] = {
-      ...chatMessages.value[index],
+    const lastIndex = chatMessages.value.length - 1
+    chatMessages.value[lastIndex] = {
+      ...chatMessages.value[lastIndex],
       isLoading: false,
-      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.'
+      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.',
     }
     isLoading.value = false
     await scrollToBottom()
