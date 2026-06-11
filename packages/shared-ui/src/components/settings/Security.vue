@@ -35,7 +35,7 @@
   />
   
   <!-- Show Security Settings -->
-  <div v-if="!showCreatePassword && !showUpdatePassword" class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height">
+  <div v-if="!showCreatePassword && !showUpdatePassword" class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height overflow-y-auto">
     <!-- Header -->
     <h2 class="heading_h6_bold primary_text_color">Security</h2>
     <p class="label_1_regular secondary_text_color mt-md">
@@ -54,7 +54,7 @@
         @click="hasPasswordCreated ? showUpdatePassword = true : showCreatePassword = true"
         class="p-xl px-xxl rounded-lg border border-black-200 bg_secondary_color label_1_semibold  primary_text_color hover:bg-gray-25"
       >
-        {{ hasPasswordCreated ? 'change password' : 'Create password' }}
+        {{ hasPasswordCreated ? 'Change Password' : 'Create password' }}
       </button>
     </div>
 

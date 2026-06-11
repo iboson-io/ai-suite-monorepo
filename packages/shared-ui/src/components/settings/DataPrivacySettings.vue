@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height"> 
+  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height overflow-y-auto"> 
     <!-- Delete Confirmation Modal -->
     <ConfirmDataDeletionModal
       ref="deleteModal"

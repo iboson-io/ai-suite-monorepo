@@ -93,3 +93,27 @@
 .agents-grid-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #c4c7cc;
 }
+
+.data-privacy-full-height {
+  /* Full viewport height minus header, padding, and tabs navigation */
+  min-height: calc(100vh - 200px);
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .data-privacy-full-height {
+    min-height: calc(100vh - 220px);
+    max-height: calc(100vh - 220px);
+  }
+}
+
+/* Large screen adjustments */
+@media (min-width: 1024px) {
+  .data-privacy-full-height {
+    min-height: calc(100vh - 170px);
+    max-height: calc(100vh - 170px);
+  }
+}
+

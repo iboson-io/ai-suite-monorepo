@@ -1,5 +1,5 @@
 <template>
-     <div class="bg_secondary_color rounded-2xl p-6xl primary_border_color h-[100%] data-privacy-full-height">
+     <div class="bg_secondary_color rounded-2xl p-6xl primary_border_color h-[100%] data-privacy-full-height overflow-y-auto">
             <h2 class="heading_h6_semibold">Profile Information</h2>
             <p class="label_1_regular secondary_text_color mt-md">
               Update your profile, secure your account, and manage connected apps.
