@@ -1,5 +1,5 @@
 <template>
-  <aside class="workflow-build-panel w-full lg:w-[380px] xl:w-[300px] flex-shrink-0 border-b lg:border-b-0 lg:border-l border-slate-200 bg-white overflow-y-auto max-h-[40vh] lg:max-h-none">
+  <aside v-if="false" class="workflow-build-panel w-full lg:w-[380px] xl:w-[300px] flex-shrink-0 border-b lg:border-b-0 lg:border-l border-slate-200 bg-white overflow-y-auto max-h-[40vh] lg:max-h-none">
     <div class="p-4 space-y-4 text-sm text-slate-800">
       <!-- Workflow -->
       <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
@@ -68,38 +68,39 @@
         </div>
       </div>
 
-      <!-- Node selected on canvas → properties -->
+      <!-- Node selected on canvas → properties OR Adding a trigger -->
       <div
-        v-if="canvasSelection && canvasSelection.kind !== 'workflow-hub'"
+        v-if="(canvasSelection && canvasSelection.kind !== 'workflow-hub') || isAddingTrigger"
         class="rounded-lg border-2 border-blue-300/80 bg-gradient-to-b from-blue-50/90 to-white p-3 space-y-3 shadow-sm"
       >
         <div class="flex items-center justify-between gap-2">
-          <p class="text-xs font-bold uppercase tracking-wide text-blue-900">Canvas selection</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-blue-900">
+            {{ isAddingTrigger ? 'Add trigger' : 'Canvas selection' }}
+          </p>
           <button
             type="button"
             class="text-[11px] font-medium text-slate-500 hover:text-slate-900"
-            @click="requestClearCanvasSelection"
+            @click="isAddingTrigger ? (isAddingTrigger = false) : requestClearCanvasSelection()"
           >
-            Clear
+            {{ isAddingTrigger ? 'Cancel' : 'Clear' }}
           </button>
         </div>
 
-        <template v-if="canvasSelection.kind === 'trigger'">
-          <div v-if="canvasTriggerLoading" class="text-xs text-slate-600 py-2">Loading trigger…</div>
-          <div v-else-if="canvasEditTrigger" class="space-y-3">
+        <template v-if="isAddingTrigger">
+          <div class="space-y-3">
             <label class="block text-xs font-medium text-slate-600">Type</label>
-            <div ref="canvasTriggerTypeDropdownRef" class="relative">
+            <div ref="triggerModalTypeDropdownRef" class="relative">
               <button
                 type="button"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900"
-                :aria-expanded="canvasTriggerTypeOpen"
+                :aria-expanded="triggerModalTypeOpen"
                 aria-haspopup="listbox"
-                @click="canvasTriggerTypeOpen = !canvasTriggerTypeOpen"
+                @click="triggerModalTypeOpen = !triggerModalTypeOpen"
               >
-                <span>{{ triggerTypeOptionLabel(canvasTriggerForm.trigger_type) }}</span>
+                <span>{{ triggerTypeOptionLabel(triggerForm.trigger_type) }}</span>
                 <svg
                   class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
-                  :class="{ 'rotate-180': canvasTriggerTypeOpen }"
+                  :class="{ 'rotate-180': triggerModalTypeOpen }"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -109,97 +110,109 @@
                 </svg>
               </button>
               <ul
-                v-show="canvasTriggerTypeOpen"
-                class="absolute z-[100] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+                v-show="triggerModalTypeOpen"
+                class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
                 role="listbox"
               >
                 <li
                   v-for="opt in TRIGGER_TYPE_OPTIONS"
                   :key="opt.value"
                   role="option"
-                  :aria-selected="canvasTriggerForm.trigger_type === opt.value"
+                  :aria-selected="triggerForm.trigger_type === opt.value"
                   class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-                  :class="{ 'bg-slate-100 font-medium': canvasTriggerForm.trigger_type === opt.value }"
-                  @click="selectCanvasTriggerType(opt.value)"
+                  :class="{ 'bg-slate-100 font-medium': triggerForm.trigger_type === opt.value }"
+                  @click="selectTriggerModalType(opt.value)"
                 >
                   {{ opt.label }}
                 </li>
               </ul>
             </div>
+
             <label class="flex items-center gap-2 text-xs text-slate-700">
-              <input v-model="canvasTriggerForm.is_active" type="checkbox" class="rounded border-slate-300" />
+              <input v-model="triggerForm.is_active" type="checkbox" class="rounded border-slate-300" />
               Active
             </label>
-            <template v-if="canvasTriggerForm.trigger_type === 'email'">
+
+            <template v-if="triggerForm.trigger_type === 'email'">
               <label class="block text-xs font-medium text-slate-600">Inbound email</label>
               <input
-                v-model="canvasTriggerEmail"
+                v-model="triggerEmail"
                 type="email"
-                class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-none"
-                :class="{ 'border-red-500 ring-1 ring-red-200': canvasTriggerErr('config.inbound_email', 'inbound_email') }"
+                class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
+                :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.inbound_email', 'inbound_email') }"
                 placeholder="support@company.com"
+                @input="onTriggerFieldInput('email')"
               >
-              <p v-if="canvasTriggerErr('config.inbound_email', 'inbound_email')" class="text-red-600 text-xs">
-                {{ canvasTriggerErr('config.inbound_email', 'inbound_email') }}
+              <p v-if="triggerErr('config.inbound_email', 'inbound_email')" class="text-red-600 text-xs">
+                {{ triggerErr('config.inbound_email', 'inbound_email') }}
               </p>
             </template>
-            <template v-else-if="canvasTriggerForm.trigger_type === 'webhook'">
+            <template v-else-if="triggerForm.trigger_type === 'webhook'">
               <label class="block text-xs font-medium text-slate-600">Endpoint URL</label>
               <input
-                v-model="canvasTriggerWebhook"
+                v-model="triggerWebhook"
                 type="url"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
-                :class="{ 'border-red-500 ring-1 ring-red-200': canvasTriggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }"
+                :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }"
                 placeholder="https://…"
+                @input="onTriggerFieldInput('webhook')"
               >
-              <p v-if="canvasTriggerErr('config.endpoint', 'endpoint', 'config.url', 'url')" class="text-red-600 text-xs">
-                {{ canvasTriggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }}
+              <p v-if="triggerErr('config.endpoint', 'endpoint', 'config.url', 'url')" class="text-red-600 text-xs">
+                {{ triggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }}
               </p>
             </template>
-            <template v-else-if="canvasTriggerForm.trigger_type === 'schedule'">
+            <template v-else-if="triggerForm.trigger_type === 'schedule'">
               <label class="block text-xs font-medium text-slate-600">Cron</label>
               <input
-                v-model="canvasTriggerCron"
+                v-model="triggerCron"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
-                :class="{ 'border-red-500 ring-1 ring-red-200': canvasTriggerErr('config.cron', 'cron') }"
+                :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.cron', 'cron') }"
                 placeholder="0 9 * * *"
+                @input="onTriggerFieldInput('schedule')"
               >
-              <p v-if="canvasTriggerErr('config.cron', 'cron')" class="text-red-600 text-xs">
-                {{ canvasTriggerErr('config.cron', 'cron') }}
+              <p v-if="triggerErr('config.cron', 'cron')" class="text-red-600 text-xs">
+                {{ triggerErr('config.cron', 'cron') }}
               </p>
             </template>
-            <template v-else-if="canvasTriggerForm.trigger_type === 'sms' || canvasTriggerForm.trigger_type === 'voice'">
+            <template v-else-if="triggerForm.trigger_type === 'sms' || triggerForm.trigger_type === 'voice'">
               <label class="block text-xs font-medium text-slate-600">Phone</label>
               <input
-                v-model="canvasTriggerPhone"
+                v-model="triggerPhone"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
-                :class="{ 'border-red-500 ring-1 ring-red-200': canvasTriggerErr('config.phone_number', 'phone_number', 'phone') }"
+                :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.phone_number', 'phone_number', 'phone') }"
                 placeholder="+14155552671"
+                @input="onTriggerFieldInput('phone')"
               >
-              <p v-if="canvasTriggerErr('config.phone_number', 'phone_number', 'phone')" class="text-red-600 text-xs">
-                {{ canvasTriggerErr('config.phone_number', 'phone_number', 'phone') }}
+              <p v-if="triggerErr('config.phone_number', 'phone_number', 'phone')" class="text-red-600 text-xs">
+                {{ triggerErr('config.phone_number', 'phone_number', 'phone') }}
               </p>
             </template>
-            <div class="flex flex-wrap gap-2 pt-1">
+
+            <div class="flex gap-2 pt-1">
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 :disabled="saving"
-                @click="submitCanvasTriggerUpdate"
+                @click="submitTrigger"
               >
-                {{ saving ? 'Saving…' : 'Update' }}
+                {{ saving ? 'Saving…' : 'Create' }}
               </button>
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border border-red-300 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="flex-1 py-2 px-3 rounded-lg border border-slate-300 text-slate-800 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50"
                 :disabled="saving"
-                @click="deleteSelectedCanvasTrigger"
+                @click="isAddingTrigger = false"
               >
-                Remove
+                Cancel
               </button>
             </div>
           </div>
-          <p v-else class="text-xs text-amber-700">Could not load this trigger.</p>
+        </template>
+
+        <template v-else-if="canvasSelection.kind === 'trigger'">
+          <div class="text-xs text-slate-600 py-2 font-medium">
+            Configure this trigger directly inside the trigger node on the canvas.
+          </div>
         </template>
 
         <template v-else-if="canvasSelection.kind === 'pattern'">
@@ -635,7 +648,9 @@
         </button>
       </div>
     </div>
+  </aside>
 
+  <Teleport to="body">
     <!-- Workflow edit -->
     <div
       v-if="showWorkflowEditModal"
@@ -657,116 +672,7 @@
       </div>
     </div>
 
-    <!-- Trigger create -->
-    <div
-      v-if="showTriggerModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showTriggerModal = false"
-    >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Add trigger</h3>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Type</label>
-        <div ref="triggerModalTypeDropdownRef" class="relative mb-3">
-          <button
-            type="button"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900"
-            :aria-expanded="triggerModalTypeOpen"
-            aria-haspopup="listbox"
-            @click="triggerModalTypeOpen = !triggerModalTypeOpen"
-          >
-            <span>{{ triggerTypeOptionLabel(triggerForm.trigger_type) }}</span>
-            <svg
-              class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
-              :class="{ 'rotate-180': triggerModalTypeOpen }"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <ul
-            v-show="triggerModalTypeOpen"
-            class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
-            role="listbox"
-          >
-            <li
-              v-for="opt in TRIGGER_TYPE_OPTIONS"
-              :key="opt.value"
-              role="option"
-              :aria-selected="triggerForm.trigger_type === opt.value"
-              class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-              :class="{ 'bg-slate-100 font-medium': triggerForm.trigger_type === opt.value }"
-              @click="selectTriggerModalType(opt.value)"
-            >
-              {{ opt.label }}
-            </li>
-          </ul>
-        </div>
-       
-        <template v-if="triggerForm.trigger_type === 'email'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Inbound email</label>
-          <input
-            v-model="triggerEmail"
-            type="email"
-            class="w-full border rounded-lg px-3 py-2 mb-2 text-sm focus:outline-none"
-            :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.inbound_email', 'inbound_email') }"
-            placeholder="support@company.com"
-            @input="onTriggerFieldInput('email')"
-          >
-          <p v-if="triggerErr('config.inbound_email', 'inbound_email')" class="text-red-600 text-xs mb-3">
-            {{ triggerErr('config.inbound_email', 'inbound_email') }}
-          </p>
-        </template>
-        <template v-else-if="triggerForm.trigger_type === 'webhook'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Endpoint URL</label>
-          <input
-            v-model="triggerWebhook"
-            type="url"
-            class="w-full border rounded-lg px-3 py-2 mb-2 text-sm focus:outline-none"
-            :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }"
-            placeholder="https://…"
-            @input="onTriggerFieldInput('webhook')"
-          >
-          <p v-if="triggerErr('config.endpoint', 'endpoint', 'config.url', 'url')" class="text-red-600 text-xs mb-3">
-            {{ triggerErr('config.endpoint', 'endpoint', 'config.url', 'url') }}
-          </p>
-        </template>
-        <template v-else-if="triggerForm.trigger_type === 'schedule'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Cron</label>
-          <input
-            v-model="triggerCron"
-            class="w-full border rounded-lg px-3 py-2 mb-2 text-sm focus:outline-none"
-            :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.cron', 'cron') }"
-            placeholder="0 9 * * *"
-            @input="onTriggerFieldInput('schedule')"
-          >
-          <p v-if="triggerErr('config.cron', 'cron')" class="text-red-600 text-xs mb-3">
-            {{ triggerErr('config.cron', 'cron') }}
-          </p>
-        </template>
-        <template v-else-if="triggerForm.trigger_type === 'sms' || triggerForm.trigger_type === 'voice'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Phone</label>
-          <input
-            v-model="triggerPhone"
-            class="w-full border rounded-lg px-3 py-2 mb-2 text-sm focus:outline-none"
-            :class="{ 'border-red-500 ring-1 ring-red-200': triggerErr('config.phone_number', 'phone_number', 'phone') }"
-            placeholder="+14155552671"
-            @input="onTriggerFieldInput('phone')"
-          >
-          <p v-if="triggerErr('config.phone_number', 'phone_number', 'phone')" class="text-red-600 text-xs mb-3">
-            {{ triggerErr('config.phone_number', 'phone_number', 'phone') }}
-          </p>
-        </template>
-        <div class="flex justify-end gap-2 mt-2">
-          <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showTriggerModal = false">Cancel</button>
-          <button type="button" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitTrigger">
-            {{ saving ? 'Saving…' : 'Create' }}
-          </button>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Pattern create -->
     <div
@@ -1325,58 +1231,7 @@
       </div>
     </div>
 
-    <!-- HITL -->
-    <div
-      v-if="showHitlModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 overflow-y-auto"
-      @click.self="showHitlModal = false"
-    >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 my-8" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Human-in-the-loop</h3>
-        <label class="flex items-center gap-2 mb-3 text-sm">
-          <input v-model="hitlForm.is_enabled" type="checkbox" class="rounded">
-          Enabled
-        </label>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Pause on</label>
-        <select v-model="hitlForm.pause_on" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm">
-          <option value="failure">failure</option>
-          <option value="before_confidential">before_confidential</option>
-          <option value="both">both</option>
-          <option value="custom">custom</option>
-        </select>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Contact channel</label>
-        <input v-model="hitlForm.contact_channel" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm" placeholder="email">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Message template</label>
-        <textarea v-model="hitlForm.message_template" rows="2" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm" />
-        <label class="block text-xs font-medium text-slate-600 mb-1">Timeout (hours)</label>
-        <input v-model.number="hitlForm.timeout_hours" type="number" min="1" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm">
-        <label class="block text-xs font-medium text-slate-600 mb-1">On timeout</label>
-        <select v-model="hitlForm.on_timeout" class="w-full border rounded-lg px-3 py-2 mb-2 text-sm">
-          <option value="reject">reject</option>
-          <option value="approve">approve</option>
-          <option value="escalate">escalate</option>
-        </select>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Owner message</label>
-        <input v-model="hitlForm.owner_message" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm">
-        <div class="flex justify-between gap-2 flex-wrap">
-          <button
-            v-if="hitlExists"
-            type="button"
-            class="px-3 py-2 text-sm border border-red-300 text-red-800 rounded-lg"
-            :disabled="saving"
-            @click="deleteHitlConfig"
-          >
-            Delete HITL
-          </button>
-          <div class="flex gap-2 ml-auto">
-            <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showHitlModal = false">Cancel</button>
-            <button type="button" class="px-3 py-2 text-sm bg-amber-600 text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitHitl">
-              {{ saving ? 'Saving…' : hitlExists ? 'Update' : 'Create' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Confirm (replaces window.confirm; z above other modals) -->
     <div
@@ -1413,7 +1268,7 @@
         </div>
       </div>
     </div>
-  </aside>
+  </Teleport>
 </template>
 
 <script setup>
@@ -1437,6 +1292,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['diagram-updated', 'workflow-deleted', 'clear-canvas-selection'])
+
+function emitDiagramUpdated(payload = null) {
+  emit('diagram-updated', payload)
+}
 
 const {
   listPatterns,
@@ -1522,7 +1381,7 @@ const saving = ref(false)
 const showWorkflowEditModal = ref(false)
 const workflowEditForm = ref({ name: '', description: '' })
 
-const showTriggerModal = ref(false)
+const isAddingTrigger = ref(false)
 const showPatternModal = ref(false)
 const showPatternEditModal = ref(false)
 const patternEditForm = ref({ id: '', pattern_type: 'sequential', name: '', description: '' })
@@ -1560,7 +1419,7 @@ const outputChannelForm = ref({
   is_primary: false
 })
 
-const showHitlModal = ref(false)
+
 
 /** Options for trigger type combobox (native select cannot animate chevron open/close). */
 const TRIGGER_TYPE_OPTIONS = [
@@ -2055,6 +1914,7 @@ async function deleteCanvasRouterFromSidebar() {
 watch(
   () => [props.canvasSelection, props.workflowId],
   async ([sel, wid]) => {
+    isAddingTrigger.value = false
     canvasEditTrigger.value = null
     canvasTriggerApiErrors.value = {}
     canvasTriggerLoading.value = false
@@ -2530,13 +2390,15 @@ async function loadAgents() {
 }
 
 function openTriggerModal() {
-  triggerForm.value = { trigger_type: 'email' }
+  requestClearCanvasSelection()
+  isAddingTrigger.value = true
+  triggerForm.value = { trigger_type: 'email', is_active: true }
   triggerEmail.value = ''
   triggerWebhook.value = ''
   triggerCron.value = ''
   triggerPhone.value = ''
   triggerApiErrors.value = {}
-  showTriggerModal.value = true
+  triggerModalTypeOpen.value = false
 }
 
 function openPatternModal() {
@@ -2908,7 +2770,6 @@ async function deleteSelectedCanvasOutput() {
 async function openHitlModal() {
   const cfg = await loadHitl(props.workflowId)
   applyHitlResponseToForm(cfg)
-  showHitlModal.value = true
 }
 
 async function deleteHitlConfig() {
@@ -2923,7 +2784,6 @@ async function deleteHitlConfig() {
     await deleteHitl(props.workflowId)
     applyHitlResponseToForm(null)
     showToast('Success', 'HITL removed', 'success')
-    showHitlModal.value = false
     emit('diagram-updated')
   } catch (e) {
     showToast('Error', e.message || 'Delete failed', 'error')
@@ -2971,7 +2831,7 @@ async function submitTrigger() {
     })
     await refreshTriggers()
     showToast('Success', 'Trigger added', 'success')
-    showTriggerModal.value = false
+    isAddingTrigger.value = false
     emit('diagram-updated')
   } catch (e) {
     const raw = e?.errors && typeof e.errors === 'object' ? e.errors : {}
@@ -3256,7 +3116,7 @@ async function submitPattern() {
     await refreshPatterns()
     showToast('Success', 'Pattern added', 'success')
     showPatternModal.value = false
-    emit('diagram-updated')
+    emitDiagramUpdated(created?.id ? { selectPatternId: String(created.id) } : null)
     if (patternForm.value.pattern_type === 'supervisor' && created?.id) {
       const p = patterns.value.find((x) => String(x.id) === String(created.id)) || created
       if (p?.id) await openRouterModal(p)
@@ -3398,7 +3258,6 @@ async function submitHitl(options = {}) {
     await upsertHitl(props.workflowId, payload, wasUpdate)
     hitlExists.value = true
     showToast('Success', 'HITL config saved', 'success')
-    if (closeModal) showHitlModal.value = false
     emit('diagram-updated')
   } catch (e) {
     showToast('Error', e.message || 'Failed to save HITL', 'error')
@@ -3418,7 +3277,7 @@ watch(managePatternId, async () => {
   if (showManageAgentsModal.value) await loadManageAgents()
 })
 
-watch(showTriggerModal, (open) => {
+watch(isAddingTrigger, (open) => {
   if (!open) triggerModalTypeOpen.value = false
 })
 
@@ -3454,6 +3313,7 @@ defineExpose({
   openPatternModal,
   deleteTriggerFromCanvas,
   refreshPatterns,
-  openHitlModal
+  openHitlModal,
+  openWorkflowEditModal
 })
 </script>

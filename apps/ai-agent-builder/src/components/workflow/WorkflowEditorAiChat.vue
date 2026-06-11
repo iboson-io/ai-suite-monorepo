@@ -5,6 +5,8 @@ import { useAuth } from '@app/composables/useAuth'
 import { WORKFLOW_AGENT_WS_URL, WORKFLOW_AGENT_WS_PATH } from '@app/services/constants'
 import AgentChatIcon from '../../assets/images/agents/dashboard/chatIcon.svg'
 import { ChatActionBar } from '@ai-suite/shared-ui'
+import MikeIcon from '../../../../../packages/shared-ui/src/assets/images/MikeIcon.svg'
+import ActiveMikeIcon from '../../../../../packages/shared-ui/src/assets/images/ActiveMikeIcon.svg'
 
 marked.setOptions({ breaks: true, gfm: true })
 
@@ -15,7 +17,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['submit-prompt', 'ai-response', 'schema-changed', 'back'])
+const emit = defineEmits(['submit-prompt', 'ai-response', 'schema-changed', 'back', 'messages-changed'])
 
 const { getToken, user } = useAuth()
 
@@ -71,6 +73,126 @@ const messagesBodyRef = ref(null)
 /** @type {import('vue').Ref<HTMLTextAreaElement | null>} */
 const promptInputRef = ref(null)
 
+const isListening = ref(false)
+const speechUnsupportedMessage = ref('')
+const speechRecognition = ref(null)
+const voiceFinal = ref('')
+
+const canUseSpeechApi = () =>
+  typeof window !== 'undefined' &&
+  !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+
+function stopVoiceRecognition() {
+  const r = speechRecognition.value
+  if (!r) {
+    isListening.value = false
+    return
+  }
+  speechRecognition.value = null
+  r.onresult = null
+  r.onerror = null
+  r.onend = null
+  try {
+    r.stop()
+  } catch {
+    /* ignore */
+  }
+  isListening.value = false
+}
+
+function abortVoiceRecognition() {
+  const r = speechRecognition.value
+  if (!r) {
+    isListening.value = false
+    return
+  }
+  speechRecognition.value = null
+  r.onresult = null
+  r.onerror = null
+  r.onend = null
+  try {
+    r.abort()
+  } catch {
+    /* ignore */
+  }
+  isListening.value = false
+}
+
+function startVoiceRecognition() {
+  speechUnsupportedMessage.value = ''
+  if (!canUseSpeechApi()) {
+    speechUnsupportedMessage.value =
+      'Voice input is not supported in this browser. Try Chrome, Edge, or Safari.'
+    return
+  }
+  if (sending.value || isListening.value) return
+
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition
+  const recognition = new Ctor()
+  voiceFinal.value = ''
+  prompt.value = ''
+
+  recognition.lang = navigator.language || 'en-US'
+  recognition.continuous = true
+  recognition.interimResults = true
+
+  recognition.onresult = (event) => {
+    let interim = ''
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const piece = event.results[i][0].transcript
+      if (event.results[i].isFinal) {
+        voiceFinal.value += piece
+      } else {
+        interim += piece
+      }
+    }
+    prompt.value = (voiceFinal.value + interim).trim()
+  }
+
+  recognition.onerror = (e) => {
+    if (e.error === 'aborted') {
+      if (speechRecognition.value === recognition) {
+        speechRecognition.value = null
+      }
+      isListening.value = false
+      return
+    }
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      speechUnsupportedMessage.value =
+        'Microphone access was denied. Allow the microphone to use voice input.'
+    } else if (e.error !== 'no-speech') {
+      speechUnsupportedMessage.value = 'Voice input error. Try again.'
+    }
+    stopVoiceRecognition()
+  }
+
+  recognition.onend = () => {
+    if (speechRecognition.value === recognition) {
+      speechRecognition.value = null
+    }
+    isListening.value = false
+  }
+
+  speechRecognition.value = recognition
+
+  try {
+    recognition.start()
+    isListening.value = true
+  } catch {
+    speechUnsupportedMessage.value = 'Could not start voice input.'
+    speechRecognition.value = null
+    isListening.value = false
+  }
+}
+
+function toggleVoice() {
+  if (isListening.value) {
+    stopVoiceRecognition()
+  } else {
+    startVoiceRecognition()
+  }
+}
+
 function focusPromptInput() {
   nextTick(() => {
     promptInputRef.value?.focus()
@@ -94,6 +216,7 @@ function storeChatId(id) {
   if (typeof sessionStorage === 'undefined' || !id) return
   try {
     sessionStorage.setItem(chatStorageKey(), id)
+    currentChatId.value = id
   } catch {
     /* ignore */
   }
@@ -103,10 +226,16 @@ function clearStoredChatId() {
   if (typeof sessionStorage === 'undefined') return
   try {
     sessionStorage.removeItem(chatStorageKey())
+    currentChatId.value = null
   } catch {
     /* ignore */
   }
 }
+
+const currentChatId = ref(getStoredChatId())
+const hasChatSession = computed(() => {
+  return messages.value.length > 0 || !!currentChatId.value
+})
 
 function escapeHtml(s) {
   return String(s)
@@ -286,6 +415,10 @@ function send() {
   const text = String(prompt.value || '').trim()
   if (!text || sending.value || !connected.value) return
 
+  if (isListening.value) {
+    stopVoiceRecognition()
+  }
+
   append('user', text)
   prompt.value = ''
 
@@ -338,9 +471,18 @@ watch(
   () => {
     messages.value = []
     reconnectAttempts = 0
+    currentChatId.value = getStoredChatId()
     cleanupSocket()
     connect()
   }
+)
+
+watch(
+  messages,
+  (newVal) => {
+    emit('messages-changed', newVal)
+  },
+  { deep: true, immediate: true }
 )
 
 async function handleCopy(text) {
@@ -379,6 +521,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (syncDebounce) clearTimeout(syncDebounce)
+  abortVoiceRecognition()
   disconnect()
 })
 
@@ -403,7 +546,7 @@ const statusDotClass = computed(() => {
 
 <template>
   <aside
-    class="workflow-agent-chat flex min-h-[220px] flex-col border-r border-slate-200/80 bg_primary_color lg:h-full lg:min-h-0 lg:w-[min(100vw,550px)] lg:shrink-0"
+    class="workflow-agent-chat flex min-h-[220px] flex-col bg_primary_color lg:h-full lg:min-h-0"
     aria-label="Workflow assistant chat"
   >
     <!-- Header with Logo and Exit Button -->
@@ -431,6 +574,17 @@ const statusDotClass = computed(() => {
         </div>
       </div>
       <div class="flex shrink-0 gap-2">
+        <button
+          v-if="hasChatSession"
+          type="button"
+          @click="newChat"
+          class="flex items-center gap-2 rounded-lg border primary_border_color bg_secondary_color px-3.5 py-2 label_2_semibold primary_text_color hover:bg-gray-25 shadow-sm transition-all"
+        >
+          <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          New chat
+        </button>
         <button
           type="button"
           @click="$emit('back')"
@@ -465,7 +619,7 @@ const statusDotClass = computed(() => {
               ref="promptInputRef"
               v-model="prompt"
               rows="3"
-              placeholder="Describe what you want to automate today"
+              :placeholder="isListening ? 'Listening… speak now' : 'Describe what you want to automate today'"
               class="w-full border-none outline-none label_1_regular resize-none bg-transparent"
               :class="[
                 prompt ? 'primary_text_color' : 'secondary_text_color',
@@ -475,15 +629,27 @@ const statusDotClass = computed(() => {
               :disabled="!connected || sending"
             />
 
-            <div class="mt-4 flex items-center justify-between">
-              <!-- Attachment Button -->
-              <button type="button" class="text-slate-400 hover:text-slate-600 p-1 transition-colors">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-              </button>
-
+            <div class="mt-4 flex items-center justify-end">
               <div class="flex items-center gap-3">
+                <!-- Microphone Button -->
+                <div class="group/voice relative">
+                  <button
+                    type="button"
+                    class="transition-transform duration-100 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+                    :disabled="sending"
+                    @click="toggleVoice"
+                  >
+                    <img v-if="isListening" class="h-[34px] w-[34px] animate-pulse" :src="ActiveMikeIcon" alt="Listening" />
+                    <img v-else class="h-[34px] w-[34px]" :src="MikeIcon" alt="Start Voice" />
+                  </button>
+                  <span
+                    role="tooltip"
+                    class="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-medium leading-tight text-white shadow-md group-hover/voice:block"
+                  >
+                    {{ isListening ? 'Stop listening' : 'Voice input' }}
+                  </span>
+                </div>
+
                 <!-- Send Button with Gradient -->
                 <button
                   type="button"
@@ -507,6 +673,13 @@ const statusDotClass = computed(() => {
                 </button>
               </div>
             </div>
+            <p
+              v-if="speechUnsupportedMessage"
+              class="mt-2 text-[10px] text-amber-700 font-medium select-none text-left"
+              role="status"
+            >
+              {{ speechUnsupportedMessage }}
+            </p>
           </div>
         </div>
 
@@ -606,7 +779,7 @@ const statusDotClass = computed(() => {
               ref="promptInputRef"
               v-model="prompt"
               rows="2"
-              placeholder="Ask the workflow assistant…"
+              :placeholder="isListening ? 'Listening… speak now' : 'Ask the workflow assistant…'"
               class="w-full border-none outline-none label_1_regular bg-transparent resize-none"
               :class="[
                 prompt ? 'primary_text_color' : 'secondary_text_color',
@@ -616,14 +789,27 @@ const statusDotClass = computed(() => {
               :disabled="!connected || sending"
             />
 
-            <div class="mt-4 flex items-center justify-between">
-              <!-- Attachment Button -->
-              <button type="button" class="text-slate-400 hover:text-slate-600 p-1 transition-colors">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-              </button>
+            <div class="mt-4 flex items-center justify-end">
               <div class="flex items-center gap-3">
+                <!-- Microphone Button -->
+                <div class="group/voice relative">
+                  <button
+                    type="button"
+                    class="transition-transform duration-100 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+                    :disabled="sending"
+                    @click="toggleVoice"
+                  >
+                    <img v-if="isListening" class="h-[34px] w-[34px] animate-pulse" :src="ActiveMikeIcon" alt="Listening" />
+                    <img v-else class="h-[34px] w-[34px]" :src="MikeIcon" alt="Start Voice" />
+                  </button>
+                  <span
+                    role="tooltip"
+                    class="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-medium leading-tight text-white shadow-md group-hover/voice:block"
+                  >
+                    {{ isListening ? 'Stop listening' : 'Voice input' }}
+                  </span>
+                </div>
+
                 <!-- Send Button with Gradient -->
                 <button
                   type="button"
@@ -647,6 +833,13 @@ const statusDotClass = computed(() => {
                 </button>
               </div>
             </div>
+            <p
+              v-if="speechUnsupportedMessage"
+              class="mt-2 text-[10px] text-amber-700 font-medium select-none text-left"
+              role="status"
+            >
+              {{ speechUnsupportedMessage }}
+            </p>
           </div>
         </div>
       </div>

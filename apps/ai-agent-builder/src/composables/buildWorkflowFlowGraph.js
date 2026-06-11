@@ -189,7 +189,8 @@ export function buildWorkflowFlowGraph(schema, options = {}) {
         role: 'trigger',
         triggerId: t.id,
         triggerType: String(t.trigger_type || 'event'),
-        subtitle: buildTriggerSubtitle(t)
+        subtitle: buildTriggerSubtitle(t),
+        isActive: t.is_active !== false
       }
     })
   })

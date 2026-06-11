@@ -8,7 +8,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 
 import { useWorkflow } from '@app/composables/useWorkflow'
-import { buildWorkflowFlowGraph, baseEdge, workflowEdgeMarkerEnd } from '@app/composables/buildWorkflowFlowGraph'
+import { buildWorkflowFlowGraph, baseEdge, workflowEdgeMarkerEnd, cellKey } from '@app/composables/buildWorkflowFlowGraph'
 import {
   mergeLocalDiagram,
   saveWorkflowDiagramLocal,
@@ -22,13 +22,7 @@ import WfRouterNode from './WfRouterNode.vue'
 import WfCardNode from './WfCardNode.vue'
 import WfWorkflowHub from './WfWorkflowHub.vue'
 import WfTriggerChip from './WfTriggerChip.vue'
-import WorkflowFlowToolbar from './WorkflowFlowToolbar.vue'
 import WorkflowFlowFitHelper from './WorkflowFlowFitHelper.vue'
-
-/** Injected by workflow hub node to open the toolbar’s pattern reorder modal */
-const WF_OPEN_PATTERN_REORDER = 'wfOpenPatternReorder'
-/** Injected by workflow hub ⋮ menu to open HITL config (menu uses @click.stop so node-click never fires). */
-const WF_OPEN_HITL_CONFIG = 'wfOpenHitlConfig'
 
 const props = defineProps({
   workflowId: {
@@ -46,25 +40,29 @@ const emit = defineEmits([
   'title-meta',
   'load-error',
   'loaded',
+  'schema-loaded',
   'add-agent-to-pattern',
   'manage-pattern-agents',
   'configure-pattern-router',
-  'add-trigger',
-  'add-pattern',
   'canvas-node-select',
   'delete-trigger',
   'patterns-reordered',
-  'open-hitl-config',
   'preview'
 ])
 
-const { fetchWorkflowSchema, fetchAgentNameByIdMap, reorderPatterns, reorderPatternAgents } = useWorkflow()
+const {
+  fetchWorkflowSchema,
+  fetchAgentNameByIdMap,
+  reorderPatterns,
+  reorderPatternAgents,
+  createTrigger,
+  createPattern,
+  nextPatternExecutionOrder,
+  createOutputChannel
+} = useWorkflow()
 
-const flowToolbarRef = ref(null)
-provide(WF_OPEN_PATTERN_REORDER, () => {
-  flowToolbarRef.value?.openPatternReorderModal?.()
-})
-provide(WF_OPEN_HITL_CONFIG, () => emit('open-hitl-config'))
+provide('workflowId', computed(() => props.workflowId))
+provide('reloadDiagram', load)
 
 const defaultEdgeOptions = {
   type: 'step',
@@ -393,23 +391,22 @@ function onNodeClick(payload) {
     const actionEl = clickTargetElement(rawEvent)?.closest?.('[data-action]')
     const hubAction = actionEl?.getAttribute('data-action')
     if (hubAction === 'add-trigger') {
-      rawEvent.preventDefault?.()
-      rawEvent.stopPropagation?.()
-      emit('add-trigger')
+      handleAddTriggerCanvas()
       return
     }
     if (hubAction === 'add-pattern') {
       rawEvent.preventDefault?.()
       rawEvent.stopPropagation?.()
-      emit('add-pattern')
+      void handleAddPatternCanvas()
       return
     }
-    if (hubAction === 'configure-hitl') {
+    if (hubAction === 'add-output-channel') {
       rawEvent.preventDefault?.()
       rawEvent.stopPropagation?.()
-      emit('open-hitl-config')
+      void handleAddOutputChannelCanvas()
       return
     }
+
     emit('canvas-node-select', { kind: 'workflow-hub', nodeId: node.id })
     return
   }
@@ -438,9 +435,15 @@ function onNodeClick(payload) {
       rawEvent.stopPropagation?.()
       const action = String(actionEl.getAttribute('data-action') || '')
       if (action === 'add-agent-to-pattern') {
-        emit('add-agent-to-pattern', patternId)
+        node.selected = true
+        if (!node.data) node.data = {}
+        node.data.tab = 'add'
+        emit('canvas-node-select', { kind: 'pattern', patternId, nodeId: node.id })
       } else if (action === 'manage-pattern-agents') {
-        emit('manage-pattern-agents', patternId)
+        node.selected = true
+        if (!node.data) node.data = {}
+        node.data.tab = 'manage'
+        emit('canvas-node-select', { kind: 'pattern', patternId, nodeId: node.id })
       } else if (action === 'configure-pattern-router') {
         emit('configure-pattern-router', patternId)
       }
@@ -572,6 +575,11 @@ function resetLocalLayout() {
 }
 
 async function load() {
+  nodes.value.forEach((n) => {
+    n.selected = false
+  })
+  emit('canvas-node-select', null)
+
   try {
     hydrating.value = true
     const [schema, agentNameById] = await Promise.all([
@@ -581,6 +589,12 @@ async function load() {
     if (!schema?.workflow) {
       throw new Error('Invalid response')
     }
+    const hasExistingNodes = (schema.triggers && schema.triggers.length > 0) ||
+                             (schema.patterns && schema.patterns.length > 0) ||
+                             (schema.output_channels && schema.output_channels.length > 0) ||
+                             (schema.hitl && schema.hitl.is_enabled)
+    emit('schema-loaded', { hasNodes: !!hasExistingNodes })
+
     const built = buildWorkflowFlowGraph(schema, { agentNameById })
     const merged = mergeLocalDiagram(props.workflowId, built)
     nodes.value = merged.nodes.map((n) => ({
@@ -605,18 +619,113 @@ async function load() {
   }
 }
 
-/** Toolbar modal saved pattern order; reload graph then sync build panel. */
-async function onToolbarPatternsReordered() {
-  await load()
-  emit('patterns-reordered')
-}
+
 
 /** After the flow’s parent changes width/height (e.g. sidebar toggle), refresh dimensions and refit. */
 function reflowAfterResize() {
   fitTick.value += 1
 }
 
-defineExpose({ load, reflowAfterResize })
+async function handleAddTriggerCanvas() {
+  try {
+    const newTrigger = await createTrigger(props.workflowId, {
+      trigger_type: 'email',
+      config: { inbound_email: 'edit-me@company.com' },
+      is_active: true
+    })
+    await load()
+
+    nextTick(() => {
+      const nodeObj = nodes.value.find((n) => n.data?.triggerId === newTrigger.id)
+      if (nodeObj) {
+        nodes.value.forEach((n) => { n.selected = false })
+        nodeObj.selected = true
+        emit('canvas-node-select', { kind: 'trigger', triggerId: newTrigger.id, nodeId: nodeObj.id })
+      }
+    })
+  } catch (e) {
+    console.error('Failed to create trigger:', e)
+  }
+}
+
+async function handleAddPatternCanvas() {
+  try {
+    const order = await nextPatternExecutionOrder(props.workflowId)
+    const created = await createPattern(props.workflowId, {
+      pattern_type: 'sequential',
+      execution_order: order,
+      name: 'New pattern',
+      description: 'Edit description'
+    })
+    await load()
+
+    if (created?.id) {
+      selectPatternNode(created.id)
+    }
+  } catch (e) {
+    console.error('Failed to create pattern:', e)
+  }
+}
+
+async function handleAddOutputChannelCanvas() {
+  try {
+    const newChannel = await createOutputChannel(props.workflowId, {
+      channel_type: 'email',
+      is_primary: false,
+      config: { to: 'owner@company.com', subject: 'Workflow result' }
+    })
+    await load()
+
+    nextTick(() => {
+      if (newChannel?.id) {
+        const nodeObj = nodes.value.find((n) => n.id === cellKey('output_channel', newChannel.id))
+        if (nodeObj) {
+          nodes.value.forEach((n) => { n.selected = false })
+          nodeObj.selected = true
+          emit('canvas-node-select', { kind: 'output', channelId: String(newChannel.id), nodeId: nodeObj.id })
+        }
+      }
+    })
+  } catch (e) {
+    console.error('Failed to create output channel:', e)
+  }
+}
+
+function findPatternNode(patternId) {
+  const pid = patternId != null ? String(patternId) : ''
+  if (!pid) return null
+  return (
+    nodes.value.find((n) => n.id === cellKey('pattern', pid)) ||
+    nodes.value.find((n) => n.type === 'wfPattern' && String(n.data?.patternId) === pid) ||
+    null
+  )
+}
+
+function selectPatternNode(patternId) {
+  const pid = patternId != null ? String(patternId) : ''
+  if (!pid) return
+
+  const applySelection = () => {
+    const nodeObj = findPatternNode(pid)
+    if (!nodeObj) return false
+    nodes.value.forEach((n) => {
+      n.selected = false
+    })
+    nodeObj.selected = true
+    emit('canvas-node-select', { kind: 'pattern', patternId: pid, nodeId: nodeObj.id })
+    return true
+  }
+
+  nextTick(() => {
+    if (applySelection()) return
+    // Diagram may still be settling after load(); retry once.
+    nextTick(() => {
+      applySelection()
+    })
+  })
+}
+
+defineExpose({ load, reflowAfterResize, selectPatternNode })
 
 function onKeyDown(e) {
   const key = String(e.key || '').toLowerCase()
@@ -681,20 +790,7 @@ watch(
       @pane-click="onPaneClick"
     >
       <WorkflowFlowFitHelper :tick="fitTick" />
-      <WorkflowFlowToolbar
-        ref="flowToolbarRef"
-        :workflow-id="workflowId"
-        :properties-panel-visible="props.propertiesPanelVisible"
-        :can-undo="canUndo"
-        :can-redo="canRedo"
-        :can-auto-layout="canAutoLayout"
-        @reset-layout="resetLocalLayout"
-        @undo="undo"
-        @redo="redo"
-        @auto-layout="autoLayout"
-        @patterns-reordered="onToolbarPatternsReordered"
-        @preview="emit('preview')"
-      />
+
       <Background gap="16" pattern-color="#d1d9e6" variant="lines" />
       <MiniMap
         class="workflow-minimap !rounded-lg !border !border-slate-200/90 !shadow-md"
