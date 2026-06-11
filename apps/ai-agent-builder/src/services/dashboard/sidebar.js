@@ -33,15 +33,22 @@ export function getSessionActivityMs(session) {
   return Number.isFinite(t) ? t : 0
 }
 
-export async function fetchChatSessions() {
-  const queryParams = new URLSearchParams({ page: '1', limit: '50' })
+export async function fetchChatSessions(page = 1, limit = 50) {
+  const queryParams = new URLSearchParams({ page: String(page), limit: String(limit) })
   const data = await apiService.requestChatList(`${API_ENDPOINTS.GET_CHATS}?${queryParams}`, {
     method: 'GET',
   })
-  return extractSessionList(data)
+  
+  const rawList = extractSessionList(data);
+  const chats = rawList
     .map(mapChatSession)
     .filter(Boolean)
-    .sort((a, b) => getSessionActivityMs(b) - getSessionActivityMs(a))
+    .sort((a, b) => getSessionActivityMs(b) - getSessionActivityMs(a));
+
+  return {
+    chats,
+    pagination: data?.data?.pagination || data?.pagination || null
+  };
 }
 
 export async function renameChatSession(sessionId, title) {

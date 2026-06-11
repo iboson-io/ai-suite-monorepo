@@ -41,6 +41,7 @@
               ]"
             >
               <div
+                v-if="showAllProductsOption"
                 @click="selectProduct(allProductsOption)"
                 class="cursor-pointer px-xl py-md label_2_medium secondary_text_color hover:bg-gray-50"
               >
@@ -171,6 +172,10 @@ const props = defineProps({
   initialProductId: {
     type: [String, Number],
     default: null,
+  },
+  showAllProductsOption: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -368,14 +373,20 @@ const selectProduct = (item) => {
 
 function syncProductFromId(productId) {
   if (productId == null || productId === '' || productId === allProductsLabel) {
-    selectedProduct.value = { ...allProductsOption }
+    if (!props.showAllProductsOption && products.value.length > 0) {
+      selectedProduct.value = { id: products.value[0].id, name: products.value[0].name }
+    } else {
+      selectedProduct.value = { ...allProductsOption }
+    }
     return
   }
   const idStr = String(productId)
   const match = products.value.find((p) => p.id != null && String(p.id) === idStr)
   selectedProduct.value = match
     ? { id: match.id, name: match.name }
-    : { id: productId, name: idStr }
+    : (!props.showAllProductsOption && products.value.length > 0
+        ? { id: products.value[0].id, name: products.value[0].name }
+        : { id: productId, name: idStr })
 }
 
 function setSelectedProduct(productId) {
@@ -483,6 +494,8 @@ watch(
 watch(products, () => {
   if (props.initialProductId != null && props.initialProductId !== '') {
     syncProductFromId(props.initialProductId)
+  } else if (!props.showAllProductsOption && products.value.length > 0) {
+    syncProductFromId(null)
   }
 })
 

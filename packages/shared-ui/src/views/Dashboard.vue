@@ -4,6 +4,7 @@
       ref="sidebarRef"
       :class="['hidden', hideSidebar ? 'lg:hidden' : 'lg:flex']"
       :activeTab="activeTab"
+      :activeSessionId="activeSessionId"
       @changeTab="handleTabChange"
       @collapseChange="isSidebarCollapsed = $event"
       @newChat="handleNewChat"
@@ -15,6 +16,7 @@
       ref="sidebarMobileRef"
       :is-open="showMobileSidebar"
       :activeTab="activeTab"
+      :activeSessionId="activeSessionId"
       @close="showMobileSidebar = false"
       @changeTab="handleTabChange"
       @newChat="handleNewChat"
@@ -103,6 +105,7 @@ const sessionToLoad = ref(null)
 const sessionRemovedFromList = ref(null)
 const sidebarRef = ref(null)
 const sidebarMobileRef = ref(null)
+const activeSessionId = ref(null)
 
 const hideSidebar = ref(false)
 
@@ -178,9 +181,11 @@ const handleTabChange = (tab) => {
 const handleNewChat = () => {
   resetChatFlag.value = true
   sessionToLoad.value = null
+  activeSessionId.value = null
 }
 
 const handleLoadSession = (sessionId) => {
+  activeSessionId.value = sessionId
   sessionToLoad.value = sessionId
   if (activeTab.value !== 'chat') {
     activeTab.value = 'chat'
@@ -188,13 +193,17 @@ const handleLoadSession = (sessionId) => {
   }
 }
 
-const handleNewSessionCreated = () => {
+const handleNewSessionCreated = (newChatId) => {
+  activeSessionId.value = newChatId
   sidebarRef.value?.refreshChatSessions?.()
   sidebarMobileRef.value?.refreshChatSessions?.()
 }
 
 const handleSessionDeleted = (sessionId) => {
   sessionRemovedFromList.value = sessionId
+  if (String(activeSessionId.value) === String(sessionId)) {
+    activeSessionId.value = null
+  }
   nextTick(() => {
     sessionRemovedFromList.value = null
   })

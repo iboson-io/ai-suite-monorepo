@@ -46,7 +46,7 @@
     <p class="mt-6xl label_3_semibold primary_text_color">Chat history</p>
     <div
       class="mt-xl max-h-[155px] overflow-x-hidden overflow-y-auto custom_scrollbar pr-1 md:max-h-[200px]"
-      @scroll.passive="closeChatSessionMenu"
+      @scroll.passive="handleScroll"
     >
       <!-- Dynamic Chat Sessions from API -->
       <div 
@@ -55,6 +55,7 @@
         :data-session-id="session.id"
         @click="handleSessionRowClick(session)"
         class="cursor-pointer mt-lg min-w-0 p-md md:mt-xl md:p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+        :class="String(activeSessionId) === String(session.id) ? 'bg-info-50-hover border-gray-50' : ''"
       >
         <!-- Title Display or Edit Input -->
         <div class="flex-1 min-w-0">
@@ -87,6 +88,10 @@
       <!-- Loading State -->
       <div v-if="isLoadingSessions" class="mt-xl p-xl label_2_regular secondary_text_color">
         Loading...
+      </div>
+      <!-- Loading More State -->
+      <div v-if="loadingMoreSessions" class="mt-md text-center py-xs label_3_regular secondary_text_color">
+        Loading more...
       </div>
       <!-- Empty State -->
       <div v-else-if="chatSessions.length === 0" class="mt-xl p-xl label_2_regular secondary_text_color">
@@ -231,9 +236,10 @@ const sidebarConfig = getSidebarConfig();
 const menuItems = getSidebarMenuItems();
 const notification = getSidebarNotificationItem();
 
-defineProps({
+const props = defineProps({
   isOpen: { type: Boolean, default: false },
   activeTab: { type: String, default: "" },
+  activeSessionId: [String, Number],
 });
 
 const emit = defineEmits(["changeTab", "close", "newChat", "loadSession", "sessionDeleted"]);
@@ -245,6 +251,9 @@ const notifications = ref([]);
 const unreadNotificationsCount = ref(0);
 const chatSessions = ref([]);
 const isLoadingSessions = ref(false);
+const currentPage = ref(1);
+const hasNext = ref(true);
+const loadingMoreSessions = ref(false);
 const openChatSessionMenuId = ref(null);
 const chatSessionMenuTriggerRefs = ref({});
 const deletingChatSessionId = ref(null);
@@ -401,15 +410,69 @@ async function loadSidebarUser() {
   }
 }
 
+const isFirstLoad = ref(true);
+
 const loadChatSessions = async () => {
   isLoadingSessions.value = true;
+  currentPage.value = 1;
+  hasNext.value = true;
   try {
-    chatSessions.value = await fetchChatSessionsApi();
+    const result = await fetchChatSessionsApi(1, 20);
+    if (result && typeof result === 'object' && 'chats' in result) {
+      chatSessions.value = result.chats || [];
+      const pag = result.pagination;
+      hasNext.value = pag ? pag.has_next : false;
+    } else {
+      chatSessions.value = Array.isArray(result) ? result : [];
+      hasNext.value = false;
+    }
+    
+    // Auto-select first session on first load if no activeSessionId is specified
+    if (chatSessions.value.length > 0 && !props.activeSessionId && isFirstLoad.value) {
+      isFirstLoad.value = false;
+      handleSessionClick(chatSessions.value[0].id);
+    }
   } catch (error) {
     console.error("Error fetching chat sessions:", error);
     chatSessions.value = [];
   } finally {
     isLoadingSessions.value = false;
+  }
+};
+
+const loadMoreChatSessions = async () => {
+  if (loadingMoreSessions.value || !hasNext.value) return;
+
+  loadingMoreSessions.value = true;
+  const nextPage = currentPage.value + 1;
+  try {
+    const result = await fetchChatSessionsApi(nextPage, 20);
+    if (result && typeof result === 'object' && 'chats' in result) {
+      const incoming = result.chats || [];
+      const existingIds = new Set(chatSessions.value.map(s => s.id));
+      for (const session of incoming) {
+        if (!existingIds.has(session.id)) {
+          chatSessions.value.push(session);
+        }
+      }
+      const pag = result.pagination;
+      hasNext.value = pag ? pag.has_next : false;
+      currentPage.value = nextPage;
+    } else {
+      hasNext.value = false;
+    }
+  } catch (error) {
+    console.error("Error loading more chat sessions:", error);
+  } finally {
+    loadingMoreSessions.value = false;
+  }
+};
+
+const handleScroll = (event) => {
+  closeChatSessionMenu();
+  const el = event.target;
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < 20) {
+    loadMoreChatSessions();
   }
 };
 
