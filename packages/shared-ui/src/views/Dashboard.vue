@@ -1,5 +1,5 @@
 <template>
-  <div :class="[config.rootLayoutClass, hideSidebar ? 'h-screen max-h-screen overflow-hidden' : '']">
+  <div :class="[config.rootLayoutClass, (hideSidebar || activeTab === 'chat') ? 'h-screen max-h-screen overflow-hidden' : '']">
     <Sidebar
       ref="sidebarRef"
       :class="['hidden', hideSidebar ? 'lg:hidden' : 'lg:flex']"
@@ -25,7 +25,11 @@
     />
 
     <div
-      :class="[config.mainAreaClass, hideSidebar ? 'lg:ml-0 h-full max-h-full !overflow-hidden' : (isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64')]"
+      :class="[
+        config.mainAreaClass,
+        activeTab === 'chat' ? 'h-full max-h-full !overflow-hidden' : '',
+        hideSidebar ? 'lg:ml-0 h-full max-h-full !overflow-hidden' : (isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64')
+      ]"
     >
       <header v-if="!hideSidebar" :class="config.mobileHeaderClass">
         <button

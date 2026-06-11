@@ -47,10 +47,10 @@
 
     <section
       v-else
-      class="flex min-h-0 flex-1 flex-col bg_primary_color px-6xl py-8xl"
+      class="flex min-h-0 flex-1 flex-col bg_primary_color"
     >
-      <div class="mx-auto flex w-full max-w-3xl min-h-0 flex-1 flex-col">
-        <div class="min-h-0 flex-1 flex flex-col gap-7 overflow-y-auto custom_scrollbar pr-1">
+      <div class="min-h-0 flex-1 overflow-y-auto custom_scrollbar px-6xl py-8xl">
+        <div class="mx-auto flex w-full max-w-3xl flex-col gap-7">
           <article
             v-for="(message, index) in messages"
             :key="index"
@@ -105,8 +105,10 @@
           </article>
           <div ref="scrollAnchor" class="h-px" />
         </div>
+      </div>
 
-        <div class="mt-6xl shrink-0">
+      <div class="px-6xl pb-8xl pt-4 shrink-0">
+        <div class="mx-auto w-full max-w-3xl">
           <PromptBox
             :is-ai-generating="isLoading"
             :show-all-products-option="false"
