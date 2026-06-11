@@ -113,10 +113,19 @@ const focusedFields = reactive({
 
 /* Password Input Handler - Track actual password separately */
 const actualPassword = ref('');
+const token = ref('');
 
-// Initialize actualPassword from password
+// Initialize actualPassword from password and retrieve reset token
 onMounted(() => {
   actualPassword.value = password.value;
+  token.value = route.query.token || route.params.token || "";
+  
+  if (!token.value) {
+    errorMessage.value = "Reset token is missing or invalid. Redirecting to forgot password page...";
+    setTimeout(() => {
+      router.push("/forgot-password");
+    }, 3000);
+  }
 });
 
 // Sync actualPassword with password when it changes externally
@@ -255,19 +264,18 @@ const handleSubmit = async () => {
 
   if (!passwordRegex.test(password.value)) {
     errorMessage.value =
-     "Oops! The password you entered is incorrect.";
+     "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
     return;
   }
 
-  const resetToken = route.query.token;
-  if (!resetToken || typeof resetToken !== "string") {
+  if (!token.value || typeof token.value !== "string") {
     errorMessage.value = "Reset token is missing or invalid.";
     return;
   }
 
   try {
     const result = await resetPassword({
-      token: resetToken,
+      token: token.value,
       password: password.value,
     });
 

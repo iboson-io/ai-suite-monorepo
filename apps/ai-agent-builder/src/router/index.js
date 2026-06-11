@@ -27,6 +27,7 @@ const PUBLIC_PATHS = [
   '/forgot-password',
   '/reset-link',
   '/reset-password',
+  '/password-confirm',
   '/password-updation',
   '/deleted-message',
   '/verify-email',
@@ -60,6 +61,7 @@ const routes = [
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword },
   { path: '/reset-link', name: 'ResetLink', component: ResetLink },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPassword },
+  { path: '/password-confirm', name: 'PasswordConfirm', component: ResetPassword },
   { path: '/password-updation', name: 'PasswordUpdation', component: PasswordUpdation },
   { path: '/deleted-message', name: 'AccountDeleted', component: AccountDeleted },
 

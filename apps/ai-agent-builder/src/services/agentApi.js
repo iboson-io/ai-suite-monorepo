@@ -720,7 +720,7 @@ class ApiService {
   async updatePassword(currentPassword, newPassword) {
     return this.request(API_ENDPOINTS.UPDATE_PASSWORD, {
       method: 'PUT',
-      body: JSON.stringify({ currentPassword, newPassword })
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
     })
   }
 

@@ -47,7 +47,7 @@ export const API_ENDPOINTS = {
   RESEND_VERIFICATION: '/api/auth/resend-verification',
   FORGOT_PASSWORD: '/api/auth/forgot-password',
   CONFIRM_RESET_PASSWORD: '/api/auth/reset-password',
-  UPDATE_PASSWORD: '/auth/update-password',
+  UPDATE_PASSWORD: '/api/user/update-password',
 
   // Agent endpoints
   GET_AGENT_DATA: '/api/agents',
