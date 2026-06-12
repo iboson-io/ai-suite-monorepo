@@ -21,18 +21,30 @@
         "
          @click="$emit('select-chat', chat.id)"
       >
-        <button
-          type="button"
+        <div
           class="flex w-[90%] items-center justify-between gap-md text-left"
-         
         >
-          <span class="label_2_medium primary_text_color truncate">
-            {{ getChatTitle(chat) }}
-          </span>
-          <span class="label_3_regular tertiary_text_color shrink-0">
-            {{ formatDate(chat.updated_at || chat.created_at) }}
-          </span>
-        </button>
+          <input
+            v-if="chatToRename === chat.id"
+            ref="renameInputRef"
+            v-model="newChatTitle"
+            type="text"
+            class="w-full bg-transparent border-none outline-none label_2_medium primary_text_color"
+            placeholder="Enter chat title..."
+            @blur="confirmRename"
+            @keydown.enter="confirmRename"
+            @keydown.escape="cancelRename"
+            @click.stop
+          />
+          <template v-else>
+            <span class="label_2_medium primary_text_color truncate">
+              {{ getChatTitle(chat) }}
+            </span>
+            <span class="label_3_regular tertiary_text_color shrink-0">
+              {{ formatDate(chat.updated_at || chat.created_at) }}
+            </span>
+          </template>
+        </div>
 
         <div
           :ref="(el) => setChatOptionsRef(chat.id, el)"
@@ -113,48 +125,6 @@
     </template>
   </AgentDashboardSubSidebarShell>
 
-  <Teleport to="body">
-    <div
-      v-if="showRenameModal"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg_overlay"
-      @click="cancelRename"
-    >
-      <div
-        class="w-96 rounded-xl border primary_border_color bg_secondary_color p-6xl shadow-xl"
-        @click.stop
-      >
-        <h3 class="label_1_semibold primary_text_color mb-4xl">Rename Chat</h3>
-        <input
-          ref="renameInputRef"
-          v-model="newChatTitle"
-          type="text"
-          class="w-full rounded-lg border primary_border_color bg_primary_color px-md py-md label_2_regular primary_text_color outline-none focus:border-info-300"
-          placeholder="Enter new chat title"
-          @keyup.enter="confirmRename"
-          @keyup.escape="cancelRename"
-          @click.stop
-        />
-
-        <div class="mt-4xl flex justify-end gap-md">
-          <button
-            type="button"
-            class="rounded-lg px-4xl py-md label_2_medium text-info-600 transition-colors hover:bg-info-50"
-            @click.stop="cancelRename"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="primary_add_button rounded-lg px-4xl py-md label_2_semibold primary_2_text_color disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="!newChatTitle.trim() || renamingChat"
-            @click.stop="confirmRename"
-          >
-            {{ renamingChat ? 'Renaming...' : 'Rename' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
 
   <SuccessToastNotification
     :open="toastOpen"
@@ -195,13 +165,15 @@ const emit = defineEmits(['close', 'select-chat', 'create-chat', 'delete-chat', 
 
 const openMenuId = ref(null)
 const chatOptionsRefs = ref({})
-const showRenameModal = ref(false)
 const chatToRename = ref(null)
 const newChatTitle = ref('')
 const renameInputRef = ref(null)
 const deletingChatId = ref(null)
 const renamingChat = ref(false)
 const toastType = ref('success')
+const toastOpen = ref(false)
+const toastMessage = ref('')
+const toastSecondaryMessage = ref('')
 
 function showToast(mainMessage, secondaryMessage = '', type = 'success') {
   toastMessage.value = mainMessage
@@ -248,12 +220,18 @@ function handleRenameChat(chatId) {
 
   chatToRename.value = chatId
   newChatTitle.value = getChatTitle(chat)
-  showRenameModal.value = true
   openMenuId.value = null
 
   nextTick(() => {
-    renameInputRef.value?.focus()
-    renameInputRef.value?.select()
+    if (renameInputRef.value) {
+      if (Array.isArray(renameInputRef.value)) {
+        renameInputRef.value[0]?.focus?.()
+        renameInputRef.value[0]?.select?.()
+      } else {
+        renameInputRef.value.focus?.()
+        renameInputRef.value.select?.()
+      }
+    }
   })
 }
 
@@ -271,13 +249,13 @@ async function confirmRename() {
   } catch (error) {
     console.error('Error renaming chat:', error)
     showToast('Failed to rename chat', error?.message || 'Please try again.', 'error')
+    cancelRename()
   } finally {
     renamingChat.value = false
   }
 }
 
 function cancelRename() {
-  showRenameModal.value = false
   newChatTitle.value = ''
   chatToRename.value = null
 }
