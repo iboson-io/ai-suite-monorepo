@@ -8,8 +8,17 @@
       class="relative max-w-xl w-[90%] md:w-full bg_secondary_color rounded-lg shadow-2xl overflow-hidden"
       @click.stop
     >
-      <div class="flex justify-between items-center p-6xl">
-        <h2 class="heading_h5_semibold primary_text_color">{{ title }}</h2>
+      <div class="flex items-start justify-between gap-md p-6xl">
+        <div class="flex min-w-0 items-center gap-md">
+          <div
+            v-if="showHeaderIcon"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error-50"
+            aria-hidden="true"
+          >
+            <img :src="WarningIcon" alt="" class="h-5 w-5" />
+          </div>
+          <h2 class="heading_h5_semibold primary_text_color">{{ title }}</h2>
+        </div>
         <button
           @click="$emit('close')"
           aria-label="Close"
@@ -54,7 +63,8 @@
           type="button"
           :disabled="loading"
           @click="handleDelete"
-          class="p-xl rounded-lg label_1_semibold modal_primary_button disabled:cursor-not-allowed disabled:opacity-60"
+          class="p-xl rounded-lg label_1_semibold disabled:cursor-not-allowed disabled:opacity-60"
+          :class="confirmButtonClass"
         >
           {{ loading ? loadingLabel : confirmLabel }}
         </button>
@@ -64,9 +74,18 @@
 </template>
 
 <script setup>
+import WarningIcon from '../../assets/images/WarningIcon.svg'
 import WarningIconOrange from '../../assets/images/WarningIconOrange.svg'
 
 defineProps({
+  showHeaderIcon: {
+    type: Boolean,
+    default: false,
+  },
+  confirmButtonClass: {
+    type: String,
+    default: 'modal_primary_button',
+  },
   open: {
     type: Boolean,
     default: false,

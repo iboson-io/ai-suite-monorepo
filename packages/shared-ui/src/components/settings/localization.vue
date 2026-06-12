@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height">
+  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height overflow-y-auto">
     <!-- Header -->
     <h2 class="heading_h6_semibold primary_text_color">Localization</h2>
     <p class="label_1_regular secondary_text_color mt-md">

@@ -8,7 +8,7 @@
         ref="promptInputRef"
         v-model="prompt"
         type="text"
-        :placeholder="isListening ? 'Listening… speak now' : 'What\'s on your mind?'"
+        :placeholder="isListening ? 'Listening… speak now' : (placeholder || 'What\'s on your mind?')"
         class="w-full border-none outline-none label_1_regular"
         :class="[
           prompt ? 'primary_text_color' : 'secondary_text_color',
@@ -41,6 +41,7 @@
               ]"
             >
               <div
+                v-if="showAllProductsOption"
                 @click="selectProduct(allProductsOption)"
                 class="cursor-pointer px-xl py-md label_2_medium secondary_text_color hover:bg-gray-50"
               >
@@ -65,7 +66,7 @@
             <input type="file" class="hidden" multiple @change="handleFiles" />
           </label>
 
-          <div class="relative" ref="modelsDropdownRef">
+          <div v-if="showModelsDropdown !== false" class="relative" ref="modelsDropdownRef">
             <button
               @click="toggleModels"
               class="flex items-center gap-md rounded-md border primary_border_color bg_secondary_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
@@ -160,7 +161,7 @@ import {
   getPromptBoxConfig,
 } from '@app/services/promptBox/promptBox.js'
 
-const { allProductsLabel } = getPromptBoxConfig()
+const { allProductsLabel, placeholder, showModelsDropdown } = getPromptBoxConfig()
 const allProductsOption = { id: null, name: allProductsLabel }
 
 const props = defineProps({
@@ -171,6 +172,10 @@ const props = defineProps({
   initialProductId: {
     type: [String, Number],
     default: null,
+  },
+  showAllProductsOption: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -368,14 +373,20 @@ const selectProduct = (item) => {
 
 function syncProductFromId(productId) {
   if (productId == null || productId === '' || productId === allProductsLabel) {
-    selectedProduct.value = { ...allProductsOption }
+    if (!props.showAllProductsOption && products.value.length > 0) {
+      selectedProduct.value = { id: products.value[0].id, name: products.value[0].name }
+    } else {
+      selectedProduct.value = { ...allProductsOption }
+    }
     return
   }
   const idStr = String(productId)
   const match = products.value.find((p) => p.id != null && String(p.id) === idStr)
   selectedProduct.value = match
     ? { id: match.id, name: match.name }
-    : { id: productId, name: idStr }
+    : (!props.showAllProductsOption && products.value.length > 0
+        ? { id: products.value[0].id, name: products.value[0].name }
+        : { id: productId, name: idStr })
 }
 
 function setSelectedProduct(productId) {
@@ -483,6 +494,8 @@ watch(
 watch(products, () => {
   if (props.initialProductId != null && props.initialProductId !== '') {
     syncProductFromId(props.initialProductId)
+  } else if (!props.showAllProductsOption && products.value.length > 0) {
+    syncProductFromId(null)
   }
 })
 
@@ -552,7 +565,9 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', handleResize, true)
   fetchProducts()
-  fetchModels()
+  if (showModelsDropdown !== false) {
+    fetchModels()
+  }
 })
 
 onUnmounted(() => {

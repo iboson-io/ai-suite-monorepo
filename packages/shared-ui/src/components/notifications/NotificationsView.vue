@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ClearIcon from '../../assets/images/ClearIcon.svg'
 import BellIcon from '../../assets/images/BellIcon.svg'
 import {
@@ -126,7 +126,7 @@ import {
   clearAllNotifications,
 } from '@app/services/notifications/notifications.js'
 
-defineProps({
+const props = defineProps({
   open: Boolean,
   isCollapsed: Boolean,
 })
@@ -136,16 +136,24 @@ const emit = defineEmits(['close', 'notificationRead'])
 const activeTab = ref('all')
 const notifications = ref([])
 const loading = ref(false)
+let fetchGeneration = 0
 
 const loadNotifications = async () => {
+  const generation = ++fetchGeneration
+
   try {
     loading.value = true
-    notifications.value = await fetchNotificationsApi()
+    const data = await fetchNotificationsApi()
+    if (generation !== fetchGeneration) return
+    notifications.value = data
   } catch (error) {
+    if (generation !== fetchGeneration) return
     console.error('Failed to fetch notifications:', error)
     notifications.value = []
   } finally {
-    loading.value = false
+    if (generation === fetchGeneration) {
+      loading.value = false
+    }
   }
 }
 
@@ -165,7 +173,13 @@ const markAsRead = async (notificationId) => {
 }
 
 onMounted(() => {
-  loadNotifications()
+  if (props.open) {
+    loadNotifications()
+  }
+})
+
+onUnmounted(() => {
+  fetchGeneration += 1
 })
 
 const tabs = computed(() => {

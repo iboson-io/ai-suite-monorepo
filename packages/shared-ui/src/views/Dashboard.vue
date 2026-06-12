@@ -1,9 +1,10 @@
 <template>
-  <div :class="config.rootLayoutClass">
+  <div :class="[config.rootLayoutClass, (hideSidebar || activeTab === 'chat') ? 'h-screen max-h-screen overflow-hidden' : '']">
     <Sidebar
       ref="sidebarRef"
-      class="hidden lg:flex"
+      :class="['hidden', hideSidebar ? 'lg:hidden' : 'lg:flex']"
       :activeTab="activeTab"
+      :activeSessionId="activeSessionId"
       @changeTab="handleTabChange"
       @collapseChange="isSidebarCollapsed = $event"
       @newChat="handleNewChat"
@@ -15,6 +16,7 @@
       ref="sidebarMobileRef"
       :is-open="showMobileSidebar"
       :activeTab="activeTab"
+      :activeSessionId="activeSessionId"
       @close="showMobileSidebar = false"
       @changeTab="handleTabChange"
       @newChat="handleNewChat"
@@ -23,9 +25,13 @@
     />
 
     <div
-      :class="[config.mainAreaClass, isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64']"
+      :class="[
+        config.mainAreaClass,
+        activeTab === 'chat' ? 'h-full max-h-full !overflow-hidden' : '',
+        hideSidebar ? 'lg:ml-0 h-full max-h-full !overflow-hidden' : (isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64')
+      ]"
     >
-      <header :class="config.mobileHeaderClass">
+      <header v-if="!hideSidebar" :class="config.mobileHeaderClass">
         <button
           type="button"
           @click="showMobileSidebar = true"
@@ -55,6 +61,7 @@
             :is="views[tab]"
             v-if="activeTab === tab"
             :class="viewClass(tab)"
+            @toggle-sidebar="hideSidebar = $event"
           />
         </template>
 
@@ -102,6 +109,15 @@ const sessionToLoad = ref(null)
 const sessionRemovedFromList = ref(null)
 const sidebarRef = ref(null)
 const sidebarMobileRef = ref(null)
+const activeSessionId = ref(null)
+
+const hideSidebar = ref(false)
+
+watch(activeTab, (newTab) => {
+  if (newTab !== 'workflows') {
+    hideSidebar.value = false
+  }
+})
 
 const viewKeys = reactive(
   Object.fromEntries(
@@ -169,9 +185,11 @@ const handleTabChange = (tab) => {
 const handleNewChat = () => {
   resetChatFlag.value = true
   sessionToLoad.value = null
+  activeSessionId.value = null
 }
 
 const handleLoadSession = (sessionId) => {
+  activeSessionId.value = sessionId
   sessionToLoad.value = sessionId
   if (activeTab.value !== 'chat') {
     activeTab.value = 'chat'
@@ -179,13 +197,17 @@ const handleLoadSession = (sessionId) => {
   }
 }
 
-const handleNewSessionCreated = () => {
+const handleNewSessionCreated = (newChatId) => {
+  activeSessionId.value = newChatId
   sidebarRef.value?.refreshChatSessions?.()
   sidebarMobileRef.value?.refreshChatSessions?.()
 }
 
 const handleSessionDeleted = (sessionId) => {
   sessionRemovedFromList.value = sessionId
+  if (String(activeSessionId.value) === String(sessionId)) {
+    activeSessionId.value = null
+  }
   nextTick(() => {
     sessionRemovedFromList.value = null
   })

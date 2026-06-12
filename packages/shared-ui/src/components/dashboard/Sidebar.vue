@@ -14,17 +14,28 @@
         @mouseleave="hoveredItem = null"
         :ref="el => { if (el) menuItemRefs['logo'] = el }">
         <div class="flex items-center gap-lg">
-          <div @click="handleToggleCollapse" @mouseenter="() => { if (isCollapsed) hoverLogo = true }"
+          <div
+            v-if="sidebarConfig.brandIcon"
+            @click="handleToggleCollapse"
+            class="relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center"
+          >
+            <img :src="sidebarConfig.brandIcon" alt="" class="h-7 w-auto" />
+          </div>
+          <div
+            v-else
+            @click="handleToggleCollapse"
+            @mouseenter="() => { if (isCollapsed) hoverLogo = true }"
             @mouseleave="() => { if (isCollapsed) hoverLogo = false }"
             class="relative h-7 w-7 rounded-full cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200"
-            :class="isCollapsed ? (hoverLogo ? 'opacity-100 bg-transparent' : 'bg-gradient-to-r from-pink-500 to-purple-600') : 'bg-gradient-to-r from-pink-500 to-purple-600'">
+            :class="isCollapsed ? (hoverLogo ? 'opacity-100 bg-transparent' : 'bg-gradient-to-r from-pink-500 to-purple-600') : 'bg-gradient-to-r from-pink-500 to-purple-600'"
+          >
             <img v-if="isCollapsed" :src="SidebarIcon" alt=""
               class="h-4 w-4 transition-opacity duration-200 relative z-10"
               :class="hoverLogo ? 'opacity-100' : 'opacity-0'" />
           </div>
 
           <span v-if="!isCollapsed" class="heading_h5_semibold gradient_text_color">
-            Genius AI
+            {{ sidebarConfig.brandName || 'Genius AI' }}
           </span>
         </div>
 
@@ -49,8 +60,8 @@
       </div>
       <div class="block h-[1px] w-full bg-gray-25 mt-6xl"></div>
       <!-- New Chat -->
-      <div class="relative group mt-6xl" @mouseenter="hoveredItem = 'chat'" @mouseleave="hoveredItem = null"
-        :ref="el => { if (el) menuItemRefs['chat'] = el }">
+      <div class="relative group mt-6xl" @mouseenter="hoveredItem = 'newChat'" @mouseleave="hoveredItem = null"
+        :ref="el => { if (el) menuItemRefs['newChat'] = el }">
 
         <button class="button-gradient w-full" @click="handleNewChatClick">
           <span class="flex gap-md items-center w-full bg_primary_color primary_text_color label_2_semibold"
@@ -62,7 +73,7 @@
         </button>
 
         <Teleport to="body">
-          <div v-if="isCollapsed && hoveredItem === 'chat'" :style="getTooltipStyle('chat')"
+          <div v-if="isCollapsed && hoveredItem === 'newChat'" :style="getTooltipStyle('newChat')"
             class="pointer-events-none fixed whitespace-nowrap z-[1000] transition-all duration-200 ">
             <div
               class="relative bg-black-400 primary_2_text_color label_2_medium rounded-lg px-xl py-md outline-none ring-0 border_none">
@@ -81,8 +92,8 @@
       <div v-if="!isCollapsed" class="mt-6xl">
         <p class="label_3_semibold primary_text_color">Chat history</p>
         <div
-          class="max-h-[180px] overflow-y-auto custom_scrollbar pr-1"
-          @scroll.passive="closeChatSessionMenu"
+          class="max-h-[180px] overflow-x-hidden overflow-y-auto custom_scrollbar pr-1"
+          @scroll.passive="handleScroll"
         >
           <!-- Dynamic Chat Sessions from API -->
           <div 
@@ -90,7 +101,8 @@
             :key="session.id"
             :data-session-id="session.id"
             @click="handleSessionRowClick(session)"
-            class="cursor-pointer mt-xl p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+            class="cursor-pointer mt-xl min-w-0 p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+            :class="String(activeSessionId) === String(session.id) ? 'bg-info-50-hover border-gray-50' : ''"
           >
             <!-- Title Display or Edit Input -->
             <div class="flex-1 min-w-0">
@@ -104,7 +116,7 @@
                 class="w-full bg-transparent border-none outline-none label_2_regular primary_text_color"
                 placeholder="Enter chat title..."
               />
-              <span v-else class="truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
+              <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
             </div>
             <div class="relative shrink-0 flex items-center">
               <button
@@ -123,6 +135,10 @@
           <!-- Loading State -->
           <div v-if="isLoadingSessions" class="mt-xl p-xl label_2_regular secondary_text_color">
             Loading...
+          </div>
+          <!-- Loading More State -->
+          <div v-if="loadingMoreSessions" class="mt-md text-center py-xs label_3_regular secondary_text_color">
+            Loading more...
           </div>
           <!-- Empty State -->
           <div v-else-if="chatSessions.length === 0" class="mt-xl p-xl label_2_regular secondary_text_color">
@@ -164,7 +180,7 @@
       </div>
 
       <!-- Menu (scrolls when many tabs; does not overlap bottom section) -->
-      <nav class="sidebar-nav-scroll mt-6xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
+      <nav class="sidebar-nav-scroll mt-xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
         <div v-for="item in menuItems" :key="item.tab" @click="handleSidebarClick(item.tab)"
           @mouseenter="hoveredItem = item.tab" @mouseleave="hoveredItem = null"
           class="relative group flex cursor-pointer items-center gap-lg rounded-lg py-xl mt-md hover:bg-info-50-hover" :class="[
@@ -275,7 +291,13 @@
       </div>
     </div>
     <!-- 🔔 NOTIFICATION POPUP -->
-    <NotificationPopup :open="showNotifications" :isCollapsed="isCollapsed" @close="showNotifications = false" @notificationRead="refreshNotifications" />
+    <NotificationPopup
+      v-if="showNotifications"
+      :open="true"
+      :isCollapsed="isCollapsed"
+      @close="showNotifications = false"
+      @notificationRead="refreshNotifications"
+    />
     <!-- 👤 USER ACCOUNT POPUP -->
     <UserAccountPopup
       :open="showUserAccount"
@@ -317,8 +339,9 @@
   const menuItems = getSidebarMenuItems();
   const notification = getSidebarNotificationItem();
 
-  defineProps({
+  const props = defineProps({
     activeTab: String,
+    activeSessionId: [String, Number],
   });
 
   const emit = defineEmits(["changeTab", "collapseChange", "newChat", "loadSession", "sessionDeleted"]);
@@ -339,6 +362,9 @@
   /* Chat Sessions */
   const chatSessions = ref([]);
   const isLoadingSessions = ref(false);
+  const currentPage = ref(1);
+  const hasNext = ref(true);
+  const loadingMoreSessions = ref(false);
   const openChatSessionMenuId = ref(null);
   const chatSessionMenuTriggerRefs = ref({});
   const deletingChatSessionId = ref(null);
@@ -604,16 +630,70 @@
     };
   };
   
+  const isFirstLoad = ref(true);
+
   // Fetch chat sessions from API
   const loadChatSessions = async () => {
     isLoadingSessions.value = true;
+    currentPage.value = 1;
+    hasNext.value = true;
     try {
-      chatSessions.value = await fetchChatSessionsApi();
+      const result = await fetchChatSessionsApi(1, 20);
+      if (result && typeof result === 'object' && 'chats' in result) {
+        chatSessions.value = result.chats || [];
+        const pag = result.pagination;
+        hasNext.value = pag ? pag.has_next : false;
+      } else {
+        chatSessions.value = Array.isArray(result) ? result : [];
+        hasNext.value = false;
+      }
+      
+      // Auto-select first session on first load if no activeSessionId is specified
+      if (chatSessions.value.length > 0 && !props.activeSessionId && isFirstLoad.value) {
+        isFirstLoad.value = false;
+        handleSessionClick(chatSessions.value[0].id);
+      }
     } catch (error) {
       console.error('Error fetching chat sessions:', error);
       chatSessions.value = [];
     } finally {
       isLoadingSessions.value = false;
+    }
+  };
+
+  const loadMoreChatSessions = async () => {
+    if (loadingMoreSessions.value || !hasNext.value) return;
+
+    loadingMoreSessions.value = true;
+    const nextPage = currentPage.value + 1;
+    try {
+      const result = await fetchChatSessionsApi(nextPage, 20);
+      if (result && typeof result === 'object' && 'chats' in result) {
+        const incoming = result.chats || [];
+        const existingIds = new Set(chatSessions.value.map(s => s.id));
+        for (const session of incoming) {
+          if (!existingIds.has(session.id)) {
+            chatSessions.value.push(session);
+          }
+        }
+        const pag = result.pagination;
+        hasNext.value = pag ? pag.has_next : false;
+        currentPage.value = nextPage;
+      } else {
+        hasNext.value = false;
+      }
+    } catch (error) {
+      console.error('Error loading more chat sessions:', error);
+    } finally {
+      loadingMoreSessions.value = false;
+    }
+  };
+
+  const handleScroll = (event) => {
+    closeChatSessionMenu();
+    const el = event.target;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 20) {
+      loadMoreChatSessions();
     }
   };
 
@@ -647,6 +727,11 @@
     loadChatSessions();
     loadSidebarUser();
     fetchNotificationsForBadge();
+    window.addEventListener("profile-updated", loadSidebarUser);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener("profile-updated", loadSidebarUser);
   });
   
   // Expose refresh functions to parent

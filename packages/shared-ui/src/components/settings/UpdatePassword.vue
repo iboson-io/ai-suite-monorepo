@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height">
+  <div class="rounded-2xl bg_secondary_color p-6xl shadow-sm h-[100%] data-privacy-full-height overflow-y-auto">
     <!-- Password Success Modal -->
     <PasswordSuccessModal
       :open="showSuccessModal"

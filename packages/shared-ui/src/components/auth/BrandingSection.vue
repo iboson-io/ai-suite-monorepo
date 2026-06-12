@@ -40,13 +40,16 @@
     <p class="label_1_regular primary_text_color text-center mt-6xl">
       {{ description }}
     </p>
+    <p class="label_1_regular primary_text_color text-center mt-3xl">
+      {{ description2 }}
+    </p>
   </div>
 </template>
 <script setup>
 import Logo from "../common/Logo.vue";
 import { getBrandingSectionConfig } from "@app/services/auth/branding.js";
 
-const { headline, description } = getBrandingSectionConfig();
+const { headline, description, description2 } = getBrandingSectionConfig();
 
 /** Optional hex colors (e.g. product `brandColors`) to tint the sphere; auth pages omit this. */
 const props = defineProps({

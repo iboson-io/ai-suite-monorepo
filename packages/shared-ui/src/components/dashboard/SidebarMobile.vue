@@ -17,10 +17,17 @@
     <!-- Header -->
     <div class=" flex items-center justify-between">
       <div class="flex items-center gap-lg heading_h5_semibold gradient_text_color">
+        <img
+          v-if="sidebarConfig.brandIcon"
+          :src="sidebarConfig.brandIcon"
+          alt=""
+          class="h-6 w-auto shrink-0"
+        />
         <div
+          v-else
           class="h-6 w-6 rounded-full bg-gradient-to-r from-pink-500 to-purple-600"
         ></div>
-        Genius AI
+        {{ sidebarConfig.brandName || 'Genius AI' }}
       </div>
       <button @click="$emit('close')" class="text-xl secondary_text_color">✕</button>
     </div>
@@ -38,8 +45,8 @@
     <!-- Chat History -->
     <p class="mt-6xl label_3_semibold primary_text_color">Chat history</p>
     <div
-      class="mt-xl max-h-[155px] md:max-h-[200px] overflow-y-auto custom_scrollbar pr-1"
-      @scroll.passive="closeChatSessionMenu"
+      class="mt-xl max-h-[155px] overflow-x-hidden overflow-y-auto custom_scrollbar pr-1 md:max-h-[200px]"
+      @scroll.passive="handleScroll"
     >
       <!-- Dynamic Chat Sessions from API -->
       <div 
@@ -47,7 +54,8 @@
         :key="session.id"
         :data-session-id="session.id"
         @click="handleSessionRowClick(session)"
-        class="cursor-pointer mt-lg p-md md:mt-xl md:p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+        class="cursor-pointer mt-lg min-w-0 p-md md:mt-xl md:p-xl label_2_regular primary_text_color flex justify-between hover:bg-info-50-hover border border-transparent hover:border-gray-50 rounded-lg"
+        :class="String(activeSessionId) === String(session.id) ? 'bg-info-50-hover border-gray-50' : ''"
       >
         <!-- Title Display or Edit Input -->
         <div class="flex-1 min-w-0">
@@ -61,7 +69,7 @@
             class="w-full bg-transparent border-none outline-none label_2_regular primary_text_color"
             placeholder="Enter chat title..."
           />
-          <span v-else class="truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
+          <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
         </div>
         <div class="relative shrink-0 flex items-center">
           <button
@@ -80,6 +88,10 @@
       <!-- Loading State -->
       <div v-if="isLoadingSessions" class="mt-xl p-xl label_2_regular secondary_text_color">
         Loading...
+      </div>
+      <!-- Loading More State -->
+      <div v-if="loadingMoreSessions" class="mt-md text-center py-xs label_3_regular secondary_text_color">
+        Loading more...
       </div>
       <!-- Empty State -->
       <div v-else-if="chatSessions.length === 0" class="mt-xl p-xl label_2_regular secondary_text_color">
@@ -121,7 +133,7 @@
     </div>
 
     <!-- Menu (scrolls when many tabs; does not overlap bottom section) -->
-    <nav class="sidebar-nav-scroll mt-6xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
+    <nav class="sidebar-nav-scroll mt-xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
       <div
         v-for="item in menuItems"
         :key="item.tab"
@@ -224,9 +236,10 @@ const sidebarConfig = getSidebarConfig();
 const menuItems = getSidebarMenuItems();
 const notification = getSidebarNotificationItem();
 
-defineProps({
+const props = defineProps({
   isOpen: { type: Boolean, default: false },
   activeTab: { type: String, default: "" },
+  activeSessionId: [String, Number],
 });
 
 const emit = defineEmits(["changeTab", "close", "newChat", "loadSession", "sessionDeleted"]);
@@ -238,6 +251,9 @@ const notifications = ref([]);
 const unreadNotificationsCount = ref(0);
 const chatSessions = ref([]);
 const isLoadingSessions = ref(false);
+const currentPage = ref(1);
+const hasNext = ref(true);
+const loadingMoreSessions = ref(false);
 const openChatSessionMenuId = ref(null);
 const chatSessionMenuTriggerRefs = ref({});
 const deletingChatSessionId = ref(null);
@@ -394,15 +410,69 @@ async function loadSidebarUser() {
   }
 }
 
+const isFirstLoad = ref(true);
+
 const loadChatSessions = async () => {
   isLoadingSessions.value = true;
+  currentPage.value = 1;
+  hasNext.value = true;
   try {
-    chatSessions.value = await fetchChatSessionsApi();
+    const result = await fetchChatSessionsApi(1, 20);
+    if (result && typeof result === 'object' && 'chats' in result) {
+      chatSessions.value = result.chats || [];
+      const pag = result.pagination;
+      hasNext.value = pag ? pag.has_next : false;
+    } else {
+      chatSessions.value = Array.isArray(result) ? result : [];
+      hasNext.value = false;
+    }
+    
+    // Auto-select first session on first load if no activeSessionId is specified
+    if (chatSessions.value.length > 0 && !props.activeSessionId && isFirstLoad.value) {
+      isFirstLoad.value = false;
+      handleSessionClick(chatSessions.value[0].id);
+    }
   } catch (error) {
     console.error("Error fetching chat sessions:", error);
     chatSessions.value = [];
   } finally {
     isLoadingSessions.value = false;
+  }
+};
+
+const loadMoreChatSessions = async () => {
+  if (loadingMoreSessions.value || !hasNext.value) return;
+
+  loadingMoreSessions.value = true;
+  const nextPage = currentPage.value + 1;
+  try {
+    const result = await fetchChatSessionsApi(nextPage, 20);
+    if (result && typeof result === 'object' && 'chats' in result) {
+      const incoming = result.chats || [];
+      const existingIds = new Set(chatSessions.value.map(s => s.id));
+      for (const session of incoming) {
+        if (!existingIds.has(session.id)) {
+          chatSessions.value.push(session);
+        }
+      }
+      const pag = result.pagination;
+      hasNext.value = pag ? pag.has_next : false;
+      currentPage.value = nextPage;
+    } else {
+      hasNext.value = false;
+    }
+  } catch (error) {
+    console.error("Error loading more chat sessions:", error);
+  } finally {
+    loadingMoreSessions.value = false;
+  }
+};
+
+const handleScroll = (event) => {
+  closeChatSessionMenu();
+  const el = event.target;
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < 20) {
+    loadMoreChatSessions();
   }
 };
 
@@ -441,7 +511,9 @@ const handleNewChatClick = () => {
 const handleSidebarClick = (tab) => {
   showUserAccount.value = false;
   if (tab === "notifications") {
-    showNotifications.value = !showNotifications.value;
+    showNotifications.value = false;
+    emit("changeTab", tab);
+    emit("close");
     return;
   }
   showNotifications.value = false;
@@ -459,6 +531,11 @@ onMounted(() => {
   loadChatSessions();
   loadSidebarUser();
   fetchNotificationsForBadge();
+  window.addEventListener("profile-updated", loadSidebarUser);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("profile-updated", loadSidebarUser);
 });
 
 defineExpose({ refreshChatSessions });

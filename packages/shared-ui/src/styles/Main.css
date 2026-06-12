@@ -271,6 +271,15 @@
   .tertiary_text_color{
     @apply text-[#9c9da6]
   }
+  .action_icon_color {
+    @apply secondary_text_color transition-colors hover:primary_text_color;
+  }
+  .liked_icon_color {
+    @apply text-[#7950F2];
+  }
+  .disliked_icon_color {
+    @apply text-error-600;
+  }
 /* new design system end*/
   .text_subtle_color {
     @apply text-[#44546F]
@@ -381,7 +390,7 @@
 
   .selected_platform_border {
     position: relative;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
   }
 
   .selected_platform_border::before {
@@ -425,4 +434,188 @@
     @apply h-[100%]
   }
 
+}
+
+/* New Chat button + prompt box gradient border animations */
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.button-gradient {
+  --border-size: 1.5px;
+  --radius: 12px;
+  --angle: 0deg;
+
+  padding: var(--border-size);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  width: 100%;
+  background: transparent;
+
+  box-shadow:
+    0 4px 10px rgba(15, 23, 42, 0.08),
+    0 6px 14px rgba(99, 102, 241, 0.12);
+
+  transition: --angle 0.6s linear, box-shadow 0.3s ease;
+
+  background-image: conic-gradient(
+    from calc(var(--angle) - 45deg),
+
+    #FAB0003D 10deg,
+    #15BE5329 120deg,
+
+    transparent 130deg,
+
+    #0073E6 150deg,
+    #0073E6 150deg,
+
+    transparent 180deg,
+
+    #FAB0003D 280deg,
+    #15BE5329 300deg,
+
+    transparent 290deg,
+
+    #9966FF 320deg,
+    #9966FF 320deg,
+
+    transparent 360deg
+  );
+}
+
+.button-gradient:hover {
+  --angle: 150deg;
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.1),
+    0 12px 36px rgba(99, 102, 241, 0.16);
+}
+
+.button-gradient span {
+  border-radius: calc(var(--radius) - var(--border-size));
+}
+
+.button-gradient > .prompt-box-inner {
+  width: 100%;
+  border-radius: calc(var(--radius) - var(--border-size));
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.prompt-box-animated {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.08),
+    0 8px 32px rgba(124, 58, 237, 0.14);
+}
+
+.prompt-box-animated::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  border-radius: 12px 12px 0 0;
+  z-index: -1;
+  animation: center-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 50%,
+    rgba(153, 102, 255, 0.9) 0%,
+    rgba(124, 58, 237, 0.7) 25%,
+    rgba(99, 102, 241, 0.5) 40%,
+    rgba(59, 130, 246, 0.3) 60%,
+    rgba(99, 102, 241, 0.15) 75%,
+    transparent 100%
+  );
+  filter: blur(12px);
+}
+
+@keyframes center-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scaleX(1) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.1) scaleY(1.2);
+  }
+}
+
+.prompt-box-animated > div {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary-color, #fff);
+  border-radius: 12px;
+}
+
+.prompt-box-animated > div::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(129.49deg, #FAB000 3.76%, #9966FF 23.94%, #0073E6 70.44%, #15BE53 101.03%);
+  background-size: 200% 200%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: -1;
+  animation: border-gradient-animate 3s linear infinite;
+}
+
+@keyframes border-gradient-animate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.custom_scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #000000a3 transparent
+}
+
+.custom_scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 0;
+}
+
+.custom_scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 80px 0 50px;
+  border-radius: 10px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+}
+
+.custom_scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #8a8a8a;
+}
+
+aside:hover .custom_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c4c7ce;
+}
+
+aside:hover .custom_scrollbar::-webkit-scrollbar-track {
+  background: #ebebeb;
 }
