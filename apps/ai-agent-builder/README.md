@@ -2,6 +2,10 @@
 
 Vue 3 app for building and managing AI agents. Runs on port **3002**.
 
+## Documentation
+
+For a comprehensive architectural overview, component details, visual workflow canvas explanations, and development setup, refer to the [Frontend Developer Guide](file:///home/arya/DEVELOPMENT/iBoson-ai=suite/ai-suite-monorepo/apps/ai-agent-builder/docs/FRONTEND_GUIDE.md).
+
 ## Development
 
 From the monorepo root:
