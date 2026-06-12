@@ -103,7 +103,7 @@
                 </p>
               </div>
               <p class="body_4_medium tertiary_text_color shrink-0">
-                Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 5MB
+                Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 50MB
               </p>
             </div>
           </div>

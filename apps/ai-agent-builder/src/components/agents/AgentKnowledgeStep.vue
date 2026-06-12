@@ -50,7 +50,7 @@
               </p>
             </div>
             <p class="caption_1_regular tertiary_text_color shrink-0">
-              Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 5MB
+              Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 50MB
             </p>
           </div>
           <ul v-if="documentFiles.length > 0" class="mt-md flex flex-col gap-sm">
@@ -146,7 +146,7 @@
 import { computed, h, ref } from 'vue'
 import UploadIcon from '../../assets/images/uplaod.svg'
 
-const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024
+const DOCUMENT_MAX_BYTES = 50 * 1024 * 1024
 const DOCUMENT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg']
 const SCHEMA_EXTENSIONS = ['.json', '.yaml', '.yml']
 
@@ -269,7 +269,7 @@ function validateDocumentFiles(files) {
       return 'Accepted formats: .pdf, .png, .jpg, .jpeg'
     }
     if (file.size > DOCUMENT_MAX_BYTES) {
-      return 'Max file size is 5MB per file.'
+      return 'Max file size is 50MB per file.'
     }
   }
   return ''
