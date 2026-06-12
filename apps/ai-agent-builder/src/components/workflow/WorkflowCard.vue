@@ -81,7 +81,7 @@
 
     <p
       class="body_3_regular secondary_text_color mt-md min-w-0 flex-1 break-words line-clamp-3"
-      :title="workflow.description || 'No description'"
+   
     >
       {{ workflow.description || 'No description' }}
     </p>
