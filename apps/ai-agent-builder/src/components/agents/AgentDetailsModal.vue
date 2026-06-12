@@ -141,7 +141,9 @@
                   v-model="formPrompt"
                   rows="5"
                   placeholder="Describe what your agent should do"
-                  class="label_2_regular primary_text_color w-full resize-none rounded-xl border primary_border_color bg-white px-4xl py-3xl pr-12xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
+                  class="label_2_regular primary_text_color w-full resize-none rounded-xl border bg-white px-4xl py-3xl pr-12xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
+                  :class="promptValidationError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
+                  @blur="promptTouched = true"
                 />
                 <div class="group/enhance absolute bottom-3xl right-3xl">
                   <button
@@ -151,7 +153,12 @@
                     aria-label="Improve prompt with AI"
                     @click="handleEnhancePrompt"
                   >
+                    <div
+                      v-if="isEnhancing"
+                      class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-info-600"
+                    />
                     <svg
+                      v-else
                       class="enhance-ai-icon h-[22px] w-[22px]"
                       :class="{ 'enhance-ai-icon--busy': isEnhancing }"
                       width="22"
@@ -232,6 +239,9 @@
                   {{ enhanceError }}
                 </p>
               </div>
+              <p v-if="promptValidationError" class="label_3_regular text-error-600 mt-sm">
+                {{ promptValidationError }}
+              </p>
             </div>
 
             <div class="mt-5xl">
@@ -408,6 +418,7 @@ import {
   formatLastUpdated,
   getStatusLabel,
   validateAgentName,
+  validateAgentPromptOptional,
   validateAgentPromptForEnhance,
   validateCreateKnowledgeStep,
   validateDbConfig,
@@ -478,6 +489,7 @@ const formRules = ref([''])
 const isEnhancing = ref(false)
 const enhanceError = ref('')
 const nameTouched = ref(false)
+const promptTouched = ref(false)
 const createStep = ref(1)
 const knowledgeTab = ref('documents')
 const documentFiles = ref([])
@@ -545,6 +557,11 @@ const nameValidationError = computed(() => {
   return validateAgentName(formName.value).message
 })
 
+const promptValidationError = computed(() => {
+  if (!promptTouched.value) return ''
+  return validateAgentPromptOptional(formPrompt.value).message
+})
+
 const canEnhancePrompt = computed(
   () =>
     validateAgentPromptForEnhance(formPrompt.value).valid &&
@@ -553,7 +570,10 @@ const canEnhancePrompt = computed(
 )
 
 const canProceedToNextStep = computed(
-  () => validateAgentName(formName.value).valid && !isSubmitting.value
+  () =>
+    validateAgentName(formName.value).valid &&
+    validateAgentPromptOptional(formPrompt.value).valid &&
+    !isSubmitting.value
 )
 
 function clearKnowledgeValidation() {
@@ -664,6 +684,7 @@ function removeSchemaFile(index) {
 
 function handleNextStep() {
   nameTouched.value = true
+  promptTouched.value = true
   if (!canProceedToNextStep.value || isSubmitting.value) return
   createStep.value = 2
   clearKnowledgeValidation()
@@ -708,6 +729,7 @@ function resetCreateForm() {
   enhanceError.value = ''
   isEnhancing.value = false
   nameTouched.value = false
+  promptTouched.value = false
   createStep.value = 1
   knowledgeTab.value = 'documents'
   documentFiles.value = []

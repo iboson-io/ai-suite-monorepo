@@ -7,8 +7,8 @@
           v-model="form.name"
           type="text"
           placeholder="e.g., Refund Approval Agent"
-          class="label_2_regular primary_text_color mt-md w-full rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none focus:border-info-500"
-          :class="nameError ? 'border-error-200' : ''"
+          class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none focus:border-info-500"
+          :class="nameError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
           @input="markDirty"
         />
         <p v-if="nameError" class="label_3_regular text-error-600 mt-sm">{{ nameError }}</p>
@@ -21,18 +21,22 @@
             v-model="form.prompt"
             rows="6"
             placeholder="Describe what your agent should do"
-            class="label_2_regular primary_text_color w-full resize-none rounded-xl border primary_border_color bg-white px-4xl py-3xl pr-12xl outline-none focus:border-info-500"
-            :class="promptError ? 'border-error-200' : ''"
+            class="label_2_regular primary_text_color w-full resize-none rounded-xl border bg-white px-4xl py-3xl pr-12xl outline-none focus:border-info-500"
+            :class="promptError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
             @input="markDirty"
           />
           <button
             type="button"
-            class="absolute bottom-3xl right-3xl rounded-lg p-sm hover:bg-info-50 disabled:opacity-50"
+            class="flex items-center justify-center absolute bottom-3xl right-3xl rounded-lg p-sm hover:bg-info-50 disabled:opacity-50"
             :disabled="isEnhancing || !form.prompt.trim()"
             aria-label="Improve prompt with AI"
             @click="handleEnhance"
           >
-            <span class="label_3_semibold text-info-600">{{ isEnhancing ? '...' : 'AI' }}</span>
+            <div
+              v-if="isEnhancing"
+              class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-info-600"
+            />
+            <span v-else class="label_3_semibold text-info-600">AI</span>
           </button>
         </div>
         <p v-if="promptError" class="label_3_regular text-error-600 mt-sm">{{ promptError }}</p>

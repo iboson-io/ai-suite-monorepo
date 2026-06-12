@@ -22,7 +22,7 @@
         >
           <component :is="tab.icon" class="h-full w-full" />
         </span>
-        <span :class="activeTab === tab.id ? 'label_1_semibold' : 'label_2_medium'">
+        <span :class="activeTab === tab.id ? 'label_2_semibold' : 'label_2_medium'">
           {{ tab.label }}
         </span>
       </button>
