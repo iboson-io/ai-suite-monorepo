@@ -8,117 +8,91 @@
     </div>
 
     <template v-else>
-      <div class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl">
+      <div
+        class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl"
+        :class="{ 'flex flex-col justify-center': chatMessages.length === 0 }"
+      >
         <div class="mx-auto flex w-full max-w-3xl flex-col gap-7">
-          <article
-            v-for="(message, index) in onboardingMessages"
-            :key="`onboarding-${index}`"
-          >
-            <div class="flex items-start gap-3">
-              <img
-                :src="AgentChatIcon"
-                alt=""
-                class="h-8 w-8 shrink-0 rounded-full"
-                aria-hidden="true"
-              />
-
-              <div class="min-w-0 flex-1">
-                <p class="Body_2_regular primary_text_color whitespace-pre-wrap lg:px-3xl pt-sm pb-md">
-                  {{ message.text }}
-                </p>
-
-                <p
-                  v-if="message.showKnowledgeSuccess"
-                  class="label_2_medium mb-md inline-flex items-center gap-sm rounded-lg border border-success-200 bg-success-50 px-md py-xs text-success-600 lg:mx-3xl"
-                >
-                  <span aria-hidden="true">✓</span>
-                  Knowledge added successfully.
-                </p>
-
-                <Cards
-                  v-if="message.toolCards?.length"
-                  embedded
-                  :columns="2"
-                  :cards="message.toolCards"
-                  class="lg:px-3xl"
-                />
-
-                <ChatActionBar
-                  :is-liked="message.isLiked"
-                  :is-disliked="message.isDisliked"
-                  :padded="false"
-                  compact-icons
-                  @copy="handleCopy(message.text)"
-                  @like="toggleOnboardingReaction(index, 'like')"
-                  @dislike="toggleOnboardingReaction(index, 'dislike')"
-                />
+          <template v-if="chatMessages.length === 0">
+            <div class="flex flex-col items-center justify-center text-center py-12">
+              <div class="glass-sphere mx-auto mb-6">
+                <div class="fluid-container">
+                  <div class="base"></div>
+                  <div class="blob c1"></div>
+                  <div class="blob c2"></div>
+                  <div class="blob c3"></div>
+                  <div class="blob c4"></div>
+                </div>
               </div>
-            </div>
-          </article>
 
-          <article
-            v-if="mode === 'multi' && !hasMessages"
-            class="flex items-start gap-3"
-          >
-            <img
-              :src="AgentChatIcon"
-              alt=""
-              class="h-8 w-8 shrink-0 rounded-full"
-              aria-hidden="true"
-            />
-            <div class="min-w-0 flex-1">
-              <p class="Body_2_regular primary_text_color whitespace-pre-wrap lg:px-3xl pt-sm pb-md">
-                {{ welcomeMessage }}
+              <svg style="position: absolute; width: 0; height: 0;">
+                <defs>
+                  <filter id="liquid-filter">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="1">
+                      <animate attributeName="baseFrequency" dur="6s" values="0.01;0.03;0.01" repeatCount="indefinite" />
+                    </feTurbulence>
+                    <feDisplacementMap in="SourceGraphic" scale="80" />
+                  </filter>
+                </defs>
+              </svg>
+
+              <h1 class="primary_text_color heading_h5_semibold md:heading_h4_semibold">
+                Chat with your AI agent
+              </h1>
+              <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color">
+                Automate support and resolve issues
               </p>
             </div>
-          </article>
+          </template>
 
-          <article
-            v-for="(message, index) in chatMessages"
-            :key="`chat-${message.id ?? index}`"
-          >
-            <div v-if="message.text" class="flex justify-end">
-              <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
-                <p class="Body_2_regular primary_text_color">{{ message.text }}</p>
-              </div>
-            </div>
-
-            <div class="mt-xl flex items-start gap-3">
-              <img
-                :src="AgentChatIcon"
-                alt=""
-                class="h-8 w-8 shrink-0 rounded-full"
-                aria-hidden="true"
-              />
-
-              <div class="min-w-0 flex-1">
-                <div v-if="message.isLoading" class="rounded-2xl lg:px-3xl py-xs">
-                  <p class="primary_text_color body_3_regular">
-                    Got it, give me a moment<span class="loading-dots" />
-                  </p>
-                </div>
-
-                <div v-else-if="message.aiResponse">
-                  <div
-                    class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
-                    v-html="formatMarkdownToHtml(message.aiResponse)"
-                  />
-
-                  <ChatActionBar
-                    :is-liked="message.isLiked"
-                    :is-disliked="message.isDisliked"
-                    :padded="false"
-                    compact-icons
-                    show-regenerate
-                    @copy="handleCopy(message.aiResponse)"
-                    @like="toggleChatReaction(index, 'like')"
-                    @dislike="toggleChatReaction(index, 'dislike')"
-                    @regenerate="handleRegenerate(index)"
-                  />
+          <template v-else>
+            <article
+              v-for="(message, index) in chatMessages"
+              :key="`chat-${message.id ?? index}`"
+            >
+              <div v-if="message.text" class="flex justify-end">
+                <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
+                  <p class="Body_2_regular primary_text_color">{{ message.text }}</p>
                 </div>
               </div>
-            </div>
-          </article>
+
+              <div class="mt-xl flex items-start gap-3">
+                <img
+                  :src="AgentChatIcon"
+                  alt=""
+                  class="h-8 w-8 shrink-0 rounded-full"
+                  aria-hidden="true"
+                />
+
+                <div class="min-w-0 flex-1">
+                  <div v-if="message.isLoading" class="rounded-2xl lg:px-3xl py-xs">
+                    <p class="primary_text_color body_3_regular">
+                      Got it, give me a moment<span class="loading-dots" />
+                    </p>
+                  </div>
+
+                  <div v-else-if="message.aiResponse">
+                    <div
+                      class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                      v-html="formatMarkdownToHtml(message.aiResponse)"
+                    />
+
+                    <ChatActionBar
+                      :is-liked="message.isLiked"
+                      :is-disliked="message.isDisliked"
+                      :padded="false"
+                      compact-icons
+                      show-regenerate
+                      @copy="handleCopy(message.aiResponse)"
+                      @like="toggleChatReaction(index, 'like')"
+                      @dislike="toggleChatReaction(index, 'dislike')"
+                      @regenerate="handleRegenerate(index)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          </template>
 
           <div ref="scrollAnchor" class="h-px" />
         </div>
@@ -153,13 +127,12 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Cards, ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
+import { ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
 import AgentChatIcon from '../../../assets/images/agents/dashboard/chatIcon.svg'
 import { useDashboardChatWebSocket } from '../../../composables/useDashboardChatWebSocket.js'
 import { apiService } from '../../../services/agentApi.js'
 import { extractChatFromCreateResponse } from '../../../services/agents/chats.js'
 import { createGroupChat } from '../../../services/agents/multi/chats.js'
-import { getAgentToolCards } from '../../../services/chat/starterCards.js'
 import { clearCreatedAgentContext } from '../../../services/agents/selectedAgent.js'
 import { formatMarkdownToHtml } from '../../../utils/formatMarkdownToHtml.js'
 
@@ -192,7 +165,6 @@ const emit = defineEmits(['chat-created', 'chat-used'])
 const route = useRoute()
 
 const chatMessages = ref([])
-const onboardingMessages = ref([])
 const chatId = ref(null)
 const isLoading = ref(false)
 const loadingHistory = ref(false)
@@ -211,12 +183,6 @@ const promptProductId = computed(() =>
   props.mode === 'single' ? props.agent?.id : undefined
 )
 
-const welcomeMessage = computed(() => {
-  const name = props.group?.name ?? 'Multi-agent system'
-  const count = props.group?.agents?.length ?? 0
-  return `${name} is ready with ${count} agent${count === 1 ? '' : 's'}. Ask a question and the system will route it to the right agent.`
-})
-
 const {
   isConnected,
   isReconnecting,
@@ -229,39 +195,7 @@ const {
 } = useDashboardChatWebSocket(props.mode)
 
 const hasMessages = computed(
-  () => onboardingMessages.value.length > 0 || chatMessages.value.length > 0
-)
-
-const onboardingMessagesFromContext = computed(() => {
-  if (props.mode !== 'single' || !props.createdContext) return []
-
-  const prompt = String(props.createdContext.prompt ?? '').trim()
-  const promptEcho =
-    prompt ||
-    'This agent is ready. You can start chatting and connect tools to automate workflows.'
-
-  return [
-    {
-      text: promptEcho,
-      showKnowledgeSuccess: true,
-      isLiked: false,
-      isDisliked: false,
-    },
-    {
-      text: 'Connect your tools (Gmail, CRM, etc.) to automate support tickets.',
-      toolCards: getAgentToolCards(),
-      isLiked: false,
-      isDisliked: false,
-    },
-  ]
-})
-
-watch(
-  onboardingMessagesFromContext,
-  (messages) => {
-    onboardingMessages.value = messages.map((message) => ({ ...message }))
-  },
-  { immediate: true }
+  () => chatMessages.value.length > 0
 )
 
 setOnMessage((data) => {
@@ -477,20 +411,6 @@ async function handleCopy(text) {
   }
 }
 
-function toggleOnboardingReaction(index, type) {
-  const message = onboardingMessages.value[index]
-  if (!message) return
-
-  if (type === 'like') {
-    message.isLiked = !message.isLiked
-    if (message.isLiked) message.isDisliked = false
-    return
-  }
-
-  message.isDisliked = !message.isDisliked
-  if (message.isDisliked) message.isLiked = false
-}
-
 function toggleChatReaction(index, type) {
   const message = chatMessages.value[index]
   if (!message) return
@@ -567,7 +487,6 @@ async function handleSendMessage(messageData) {
 
   if (props.mode === 'single' && route.query.created === '1') {
     clearCreatedAgentContext()
-    onboardingMessages.value = []
   }
 
   await scrollToBottom()
@@ -770,5 +689,78 @@ defineExpose({ focusPrompt, hasMessages })
   100% {
     content: '...';
   }
+}
+
+/* Glass Sphere styles */
+.glass-sphere {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+ 
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    inset 0 0 15px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container for the fluid layers */
+.fluid-container {
+  position: absolute;
+  width: 140%;
+  height: 140%;
+  filter: url(#liquid-filter) blur(10px);
+  animation: rotateFull 8s infinite linear;
+}
+
+/* Base layer (usually white/transparent to keep the "glass" look) */
+.base {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0.3;
+}
+
+/* Individual Color Layers with varying Opacity cycles */
+.blob {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  mix-blend-mode: color-burn;
+}
+
+.c1 { 
+  background: radial-gradient(circle at 30% 30%, #FAB000, transparent 40%); 
+  animation: pulseOpacity 7s infinite ease-in-out; 
+}
+.c2 { 
+  background: radial-gradient(circle at 70% 30%, #9966FF, transparent 50%); 
+  animation: pulseOpacity 11s infinite ease-in-out; 
+}
+.c3 { 
+  background: radial-gradient(circle at 40% 70%, #0073E6, transparent 40%); 
+  animation: pulseOpacity 5s infinite ease-in-out; 
+}
+.c4 { 
+  background: radial-gradient(circle at 75% 70%, #15BE53, transparent 50%); 
+  animation: pulseOpacity 13s infinite ease-in-out; 
+}
+
+/* ANIMATIONS */
+@keyframes rotateFull {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
 }
 </style>

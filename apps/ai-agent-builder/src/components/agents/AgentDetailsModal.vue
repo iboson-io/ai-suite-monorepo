@@ -594,6 +594,7 @@ function switchKnowledgeTab(tabId) {
   knowledgeTab.value = tabId
   clearKnowledgeValidation()
   dbValidationErrors.value = {}
+  emit('clear-error')
 }
 
 function validateDbField(fieldName) {
