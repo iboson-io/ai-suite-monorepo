@@ -13,6 +13,9 @@ export {
   validateAgentPromptForEnhance,
   validateApiBaseUrl,
   validateDbConfig,
+  validateAgentRoleOptional,
+  validateAgentRulesOptional,
+  validateSingleRule,
 } from './validation.js'
 
 export {
