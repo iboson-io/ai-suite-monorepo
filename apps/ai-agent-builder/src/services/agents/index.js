@@ -16,6 +16,9 @@ export {
   validateAgentRoleOptional,
   validateAgentRulesOptional,
   validateSingleRule,
+  validateGroupName,
+  validateGroupDescriptionOptional,
+  validateGroupRedirectionRules,
 } from './validation.js'
 
 export {

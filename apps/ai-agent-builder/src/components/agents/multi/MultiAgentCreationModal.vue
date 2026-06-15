@@ -31,11 +31,11 @@
                 v-model="systemName"
                 type="text"
                 placeholder="e.g., Customer Support System"
-                class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200"
-                :class="{ 'border-error-300 bg-error-50': showErrors && !systemName.trim() }"
+                class="w-full rounded-lg border bg-white px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200"
+                :class="groupNameError ? 'border-error-300 bg-error-50' : 'primary_border_color'"
               />
-              <p v-if="showErrors && !systemName.trim()" class="caption_1_regular text-error-600 mt-sm">
-                System name is required
+              <p v-if="groupNameError" class="caption_1_regular text-error-600 mt-sm">
+                {{ groupNameError }}
               </p>
             </div>
 
@@ -128,7 +128,7 @@
           <button
             type="button"
             class="primary_add_button rounded-lg px-5xl py-md label_2_semibold primary_2_text_color disabled:opacity-50"
-            :disabled="submitting || selectedAgents.length < 2 || !systemName.trim()"
+            :disabled="submitting"
             @click="handleCreate"
           >
             {{ submitting ? 'Creating...' : 'Create System' }}
@@ -142,6 +142,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { fetchPublishedAgentsForPicker } from '../../../services/agents/multi/picker.js'
+import { validateGroupName } from '../../../services/agents/agents.js'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -169,6 +170,11 @@ const currentPage = ref(1)
 const showErrors = ref(false)
 
 let searchDebounceTimer = null
+
+const groupNameError = computed(() => {
+  if (!showErrors.value) return ''
+  return validateGroupName(systemName.value).message
+})
 
 const displayedAgents = computed(() => {
   const selectedIds = new Set(selectedAgents.value.map((agent) => String(agent.id)))
@@ -268,7 +274,7 @@ function handleClose() {
 
 function handleCreate() {
   showErrors.value = true
-  if (!systemName.value.trim() || selectedAgents.value.length < 2) return
+  if (!validateGroupName(systemName.value).valid || selectedAgents.value.length < 2) return
 
   emit('create', {
     groupName: systemName.value.trim(),
