@@ -72,6 +72,12 @@ export async function fetchGroupDetails(groupId) {
   }
 }
 
+import {
+  validateGroupName,
+  validateGroupDescriptionOptional,
+  validateGroupRedirectionRules,
+} from '../agents.js'
+
 export async function updateMultiAgentGroup({
   groupId,
   groupName,
@@ -79,6 +85,27 @@ export async function updateMultiAgentGroup({
   agentIds,
   redirectionRules,
 }) {
+  if (groupName !== undefined) {
+    const nameVal = validateGroupName(groupName)
+    if (!nameVal.valid) {
+      throw new Error(nameVal.message)
+    }
+  }
+
+  if (description !== undefined) {
+    const descVal = validateGroupDescriptionOptional(description)
+    if (!descVal.valid) {
+      throw new Error(descVal.message)
+    }
+  }
+
+  if (redirectionRules !== undefined) {
+    const rulesVal = validateGroupRedirectionRules(redirectionRules)
+    if (!rulesVal.valid) {
+      throw new Error(rulesVal.message)
+    }
+  }
+
   const ids = Array.isArray(agentIds)
     ? agentIds.filter((id) => id != null && String(id).trim() !== '')
     : []

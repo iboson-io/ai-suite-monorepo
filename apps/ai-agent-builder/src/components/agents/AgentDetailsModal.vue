@@ -3,6 +3,7 @@
     <div
       v-if="open"
       class="fixed inset-0 z-[60] flex items-center justify-center bg_overlay p-6xl"
+      @mousedown="handleOverlayMousedown"
       @click="handleOverlayClick"
     >
       <div
@@ -253,8 +254,13 @@
                 v-model="formRole"
                 type="text"
                 placeholder="e.g., Customer Support – friendly, accurate, escalation-aware"
-                class="label_2_regular primary_text_color mt-md w-full rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
+                class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
+                :class="roleValidationError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
+                @blur="roleTouched = true"
               />
+              <p v-if="roleValidationError" class="label_3_regular text-error-600 mt-sm">
+                {{ roleValidationError }}
+              </p>
               <p class="caption_1_regular tertiary_text_color mt-md">
                 Summarize who the agent should act as; helps when users do not write detailed prompts.
               </p>
@@ -266,23 +272,30 @@
               <div
                 v-for="(rule, index) in formRules"
                 :key="`rule-${index}`"
-                class="mt-md flex items-center gap-md"
+                class="mt-md"
               >
-                <input
-                  v-model="formRules[index]"
-                  type="text"
-                  :maxlength="RULE_MAX_LENGTH"
-                  placeholder="e.g., Never share full credit card numbers"
-                  class="label_2_regular primary_text_color min-w-0 flex-1 rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
-                />
-                <button
-                  v-if="formRules.length > 1"
-                  type="button"
-                  class="shrink-0 label_2_medium text-error-600 hover:underline"
-                  @click="removeRule(index)"
-                >
-                  Remove
-                </button>
+                <div class="flex items-center gap-md">
+                  <input
+                    v-model="formRules[index]"
+                    type="text"
+                    :maxlength="RULE_MAX_LENGTH"
+                    placeholder="e.g., Never share full credit card numbers"
+                    class="label_2_regular primary_text_color min-w-0 flex-1 rounded-xl border bg-white px-4xl py-3xl outline-none transition-colors placeholder:text-gray-400 focus:border-info-500"
+                    :class="getRuleError(index) ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
+                    @blur="rulesTouched = true"
+                  />
+                  <button
+                    v-if="formRules.length > 1"
+                    type="button"
+                    class="shrink-0 label_2_medium text-error-600 hover:underline"
+                    @click="removeRule(index)"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <p v-if="getRuleError(index)" class="label_3_regular text-error-600 mt-sm">
+                  {{ getRuleError(index) }}
+                </p>
               </div>
 
               <button
@@ -292,6 +305,10 @@
               >
                 + Add rule
               </button>
+
+              <p v-if="rulesArrayValidationError" class="label_3_regular text-error-600 mt-sm">
+                {{ rulesArrayValidationError }}
+              </p>
 
               <p class="caption_1_regular tertiary_text_color mt-md">
                 Short do's and don'ts; each line is one rule (max 1000 characters each).
@@ -366,7 +383,7 @@
             <button
               type="button"
               class="primary_add_button inline-flex items-center justify-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="!canProceedToNextStep || isSubmitting"
+              :disabled="isSubmitting"
               @click="handleNextStep"
             >
               Next Step
@@ -420,6 +437,9 @@ import {
   validateAgentName,
   validateAgentPromptOptional,
   validateAgentPromptForEnhance,
+  validateAgentRoleOptional,
+  validateAgentRulesOptional,
+  validateSingleRule,
   validateCreateKnowledgeStep,
   validateDbConfig,
   validateApiSchemaFiles,
@@ -490,6 +510,8 @@ const isEnhancing = ref(false)
 const enhanceError = ref('')
 const nameTouched = ref(false)
 const promptTouched = ref(false)
+const roleTouched = ref(false)
+const rulesTouched = ref(false)
 const createStep = ref(1)
 const knowledgeTab = ref('documents')
 const documentFiles = ref([])
@@ -562,6 +584,26 @@ const promptValidationError = computed(() => {
   return validateAgentPromptOptional(formPrompt.value).message
 })
 
+const roleValidationError = computed(() => {
+  if (!roleTouched.value) return ''
+  return validateAgentRoleOptional(formRole.value).message
+})
+
+const rulesArrayValidationError = computed(() => {
+  if (!rulesTouched.value) return ''
+  const result = validateAgentRulesOptional(formRules.value)
+  if (!result.valid && result.index === undefined) {
+    return result.message
+  }
+  return ''
+})
+
+function getRuleError(index) {
+  if (!rulesTouched.value) return ''
+  const rule = formRules.value[index]
+  return validateSingleRule(rule).message
+}
+
 const canEnhancePrompt = computed(
   () =>
     validateAgentPromptForEnhance(formPrompt.value).valid &&
@@ -573,6 +615,8 @@ const canProceedToNextStep = computed(
   () =>
     validateAgentName(formName.value).valid &&
     validateAgentPromptOptional(formPrompt.value).valid &&
+    validateAgentRoleOptional(formRole.value).valid &&
+    validateAgentRulesOptional(formRules.value).valid &&
     !isSubmitting.value
 )
 
@@ -685,7 +729,18 @@ function removeSchemaFile(index) {
 function handleNextStep() {
   nameTouched.value = true
   promptTouched.value = true
-  if (!canProceedToNextStep.value || isSubmitting.value) return
+  roleTouched.value = true
+  rulesTouched.value = true
+
+  const nameVal = validateAgentName(formName.value)
+  const promptVal = validateAgentPromptOptional(formPrompt.value)
+  const roleVal = validateAgentRoleOptional(formRole.value)
+  const rulesVal = validateAgentRulesOptional(formRules.value)
+
+  if (!nameVal.valid || !promptVal.valid || !roleVal.valid || !rulesVal.valid || isSubmitting.value) {
+    return
+  }
+
   createStep.value = 2
   clearKnowledgeValidation()
 }
@@ -730,6 +785,8 @@ function resetCreateForm() {
   isEnhancing.value = false
   nameTouched.value = false
   promptTouched.value = false
+  roleTouched.value = false
+  rulesTouched.value = false
   createStep.value = 1
   knowledgeTab.value = 'documents'
   documentFiles.value = []
@@ -757,7 +814,15 @@ function removeRule(index) {
   formRules.value.splice(index, 1)
 }
 
-function handleOverlayClick() {
+const mousedownOnOverlay = ref(false)
+
+function handleOverlayMousedown(e) {
+  mousedownOnOverlay.value = e.target === e.currentTarget
+}
+
+function handleOverlayClick(e) {
+  if (e.target !== e.currentTarget) return
+  if (!mousedownOnOverlay.value) return
   if (isSubmitting.value) return
   emit('close')
 }

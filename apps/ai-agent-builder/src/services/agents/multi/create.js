@@ -22,10 +22,17 @@ function extractCreatedGroup(response) {
   }
 }
 
+import { validateGroupName, validateGroupDescriptionOptional } from '../agents.js'
+
 export async function createMultiAgentGroup({ groupName, description, agentIds }) {
-  const trimmedName = String(groupName ?? '').trim()
-  if (!trimmedName) {
-    throw new Error('System name is required.')
+  const nameVal = validateGroupName(groupName)
+  if (!nameVal.valid) {
+    throw new Error(nameVal.message)
+  }
+
+  const descVal = validateGroupDescriptionOptional(description)
+  if (!descVal.valid) {
+    throw new Error(descVal.message)
   }
 
   const ids = Array.isArray(agentIds)
@@ -37,7 +44,7 @@ export async function createMultiAgentGroup({ groupName, description, agentIds }
   }
 
   const response = await apiService.createAgentGroup({
-    group_name: trimmedName,
+    group_name: String(groupName ?? '').trim(),
     description: String(description ?? '').trim(),
     agent_ids: ids,
   })
