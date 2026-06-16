@@ -7,8 +7,8 @@
           v-model="form.name"
           type="text"
           placeholder="e.g., Refund Approval Agent"
-          class="label_2_regular primary_text_color mt-md w-full rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none focus:border-info-500"
-          :class="nameError ? 'border-error-200' : ''"
+          class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none focus:border-info-500"
+          :class="nameError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
           @input="markDirty"
         />
         <p v-if="nameError" class="label_3_regular text-error-600 mt-sm">{{ nameError }}</p>
@@ -21,18 +21,22 @@
             v-model="form.prompt"
             rows="6"
             placeholder="Describe what your agent should do"
-            class="label_2_regular primary_text_color w-full resize-none rounded-xl border primary_border_color bg-white px-4xl py-3xl pr-12xl outline-none focus:border-info-500"
-            :class="promptError ? 'border-error-200' : ''"
+            class="label_2_regular primary_text_color w-full resize-none rounded-xl border bg-white px-4xl py-3xl pr-12xl outline-none focus:border-info-500"
+            :class="promptError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
             @input="markDirty"
           />
           <button
             type="button"
-            class="absolute bottom-3xl right-3xl rounded-lg p-sm hover:bg-info-50 disabled:opacity-50"
+            class="flex items-center justify-center absolute bottom-3xl right-3xl rounded-lg p-sm hover:bg-info-50 disabled:opacity-50"
             :disabled="isEnhancing || !form.prompt.trim()"
             aria-label="Improve prompt with AI"
             @click="handleEnhance"
           >
-            <span class="label_3_semibold text-info-600">{{ isEnhancing ? '...' : 'AI' }}</span>
+            <div
+              v-if="isEnhancing"
+              class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-info-600"
+            />
+            <span v-else class="label_3_semibold text-info-600">AI</span>
           </button>
         </div>
         <p v-if="promptError" class="label_3_regular text-error-600 mt-sm">{{ promptError }}</p>
@@ -45,34 +49,41 @@
           v-model="form.role"
           type="text"
           placeholder="e.g., Customer Support"
-          class="label_2_regular primary_text_color mt-md w-full rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none focus:border-info-500"
+          class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none focus:border-info-500"
+          :class="roleError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
           @input="markDirty"
         />
+        <p v-if="roleError" class="label_3_regular text-error-600 mt-sm">{{ roleError }}</p>
       </div>
 
       <div>
         <p class="label_2_semibold primary_text_color">Operational rules (optional)</p>
         <div class="mt-md space-y-md">
-          <div v-for="(_, index) in form.rules" :key="index" class="flex gap-md">
-            <input
-              v-model="form.rules[index]"
-              type="text"
-              placeholder="One rule per line"
-              class="label_2_regular primary_text_color flex-1 rounded-xl border primary_border_color bg-white px-4xl py-3xl outline-none focus:border-info-500"
-              @input="markDirty"
-            />
-            <button
-              type="button"
-              class="label_3_medium text-error-600"
-              @click="removeRule(index)"
-            >
-              Remove
-            </button>
+          <div v-for="(_, index) in form.rules" :key="index">
+            <div class="flex gap-md">
+              <input
+                v-model="form.rules[index]"
+                type="text"
+                placeholder="One rule per line"
+                class="label_2_regular primary_text_color flex-1 rounded-xl border bg-white px-4xl py-3xl outline-none focus:border-info-500"
+                :class="getRuleError(index) ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
+                @input="markDirty"
+              />
+              <button
+                type="button"
+                class="label_3_medium text-error-600"
+                @click="removeRule(index)"
+              >
+                Remove
+              </button>
+            </div>
+            <p v-if="getRuleError(index)" class="label_3_regular text-error-600 mt-sm">{{ getRuleError(index) }}</p>
           </div>
         </div>
         <button type="button" class="label_3_semibold text-info-600 mt-md" @click="addRule">
           + Add rule
         </button>
+        <p v-if="rulesArrayError" class="label_3_regular text-error-600 mt-sm">{{ rulesArrayError }}</p>
       </div>
 
       <div>
@@ -93,7 +104,7 @@
       <button
         type="button"
         class="primary_add_button w-full rounded-lg px-4xl py-md label_2_semibold primary_2_text_color disabled:opacity-50"
-        :disabled="!isDirty || isSaving || !!nameError || !!promptError"
+        :disabled="!isDirty || isSaving || !!nameError || !!promptError || !!roleError || hasRulesError"
         @click="handleSave"
       >
         {{ isSaving ? 'Saving...' : 'Save Changes' }}
@@ -110,6 +121,9 @@ import { updateAgentInfo } from '../../../../services/agents/update.js'
 import {
   validateAgentName,
   validateAgentPromptOptional,
+  validateAgentRoleOptional,
+  validateAgentRulesOptional,
+  validateSingleRule,
 } from '../../../../services/agents/validation.js'
 
 const props = defineProps({
@@ -143,6 +157,30 @@ const promptError = computed(() => {
   const validation = validateAgentPromptOptional(form.prompt)
   return validation.valid ? '' : validation.message
 })
+
+const roleError = computed(() => {
+  const validation = validateAgentRoleOptional(form.role)
+  return validation.valid ? '' : validation.message
+})
+
+const rulesArrayError = computed(() => {
+  const validation = validateAgentRulesOptional(form.rules)
+  if (!validation.valid && validation.index === undefined) {
+    return validation.message
+  }
+  return ''
+})
+
+const hasRulesError = computed(() => {
+  if (rulesArrayError.value) return true
+  return form.rules.some((rule) => !validateSingleRule(rule).valid)
+})
+
+function getRuleError(index) {
+  const rule = form.rules[index]
+  const validation = validateSingleRule(rule)
+  return validation.valid ? '' : validation.message
+}
 
 function resetForm(agent) {
   form.name = agent?.name ?? ''
@@ -194,7 +232,7 @@ async function handleEnhance() {
 }
 
 async function handleSave() {
-  if (!props.agent?.id || nameError.value || promptError.value) return
+  if (!props.agent?.id || nameError.value || promptError.value || roleError.value || hasRulesError.value) return
 
   isSaving.value = true
   saveError.value = ''

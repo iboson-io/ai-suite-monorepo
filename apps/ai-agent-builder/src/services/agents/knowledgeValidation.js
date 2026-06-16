@@ -1,7 +1,7 @@
 import { validateApiBaseUrl, validateDbConfig } from './validation.js'
 
 const SCHEMA_MAX_BYTES = 5 * 1024 * 1024
-const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024
+const DOCUMENT_MAX_BYTES = 50 * 1024 * 1024
 
 const SCHEMA_EXTENSIONS = ['.json', '.txt', '.yaml', '.yml']
 const SCHEMA_MIME_TYPES = [
@@ -104,7 +104,7 @@ export function validateDocumentFiles(files) {
     }
 
     if (file.size > DOCUMENT_MAX_BYTES) {
-      errors.push(`${file.name}: File must be under 5 MB.`)
+      errors.push(`${file.name}: File must be under 50 MB.`)
       continue
     }
 

@@ -17,8 +17,10 @@
           type="text"
           required
           placeholder="e.g., Customer Support System"
-          class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none placeholder:text-gray-400 focus:border-info-300 transition-colors"
+          class="w-full rounded-lg border bg-white px-4xl py-md label_2_regular primary_text_color outline-none placeholder:text-gray-400 focus:border-info-300 transition-colors"
+          :class="groupNameError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
         />
+        <p v-if="groupNameError" class="label_3_regular text-error-600 mt-sm">{{ groupNameError }}</p>
       </div>
 
       <div>
@@ -79,7 +81,7 @@
       <button
         type="button"
         class="primary_add_button w-full rounded-lg py-md label_2_semibold primary_2_text_color disabled:opacity-50"
-        :disabled="saving || selectedAgents.length < 1 || !groupName.trim()"
+        :disabled="saving"
         @click="handleSave"
       >
         {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -92,6 +94,7 @@
 import { computed, ref, watch } from 'vue'
 import AgentDashboardSubSidebarShell from '../dashboard/AgentDashboardSubSidebarShell.vue'
 import { fetchPublishedAgentsForPicker } from '../../../services/agents/multi/picker.js'
+import { validateGroupName } from '../../../services/agents/agents.js'
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -119,6 +122,12 @@ const pickerAgents = ref([])
 const pickerLoading = ref(false)
 const pickerHasMore = ref(true)
 const pickerPage = ref(1)
+const showErrors = ref(false)
+
+const groupNameError = computed(() => {
+  if (!showErrors.value) return ''
+  return validateGroupName(groupName.value).message
+})
 
 const displayedAgents = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -162,6 +171,7 @@ function syncFromGroup(group) {
   groupName.value = group?.name ?? ''
   groupDescription.value = group?.description ?? ''
   selectedAgents.value = Array.isArray(group?.agents) ? [...group.agents] : []
+  showErrors.value = false
 }
 
 function isPickerSelected(agentId) {
@@ -219,6 +229,9 @@ function handlePickerScroll(event) {
 }
 
 function handleSave() {
+  showErrors.value = true
+  if (!validateGroupName(groupName.value).valid || selectedAgents.value.length < 1) return
+
   emit('save', {
     groupName: groupName.value.trim(),
     description: groupDescription.value.trim(),

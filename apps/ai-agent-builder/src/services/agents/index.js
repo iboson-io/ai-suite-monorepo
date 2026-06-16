@@ -13,6 +13,12 @@ export {
   validateAgentPromptForEnhance,
   validateApiBaseUrl,
   validateDbConfig,
+  validateAgentRoleOptional,
+  validateAgentRulesOptional,
+  validateSingleRule,
+  validateGroupName,
+  validateGroupDescriptionOptional,
+  validateGroupRedirectionRules,
 } from './validation.js'
 
 export {

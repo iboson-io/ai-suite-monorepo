@@ -22,7 +22,7 @@
         >
           <component :is="tab.icon" class="h-full w-full" />
         </span>
-        <span :class="activeTab === tab.id ? 'label_1_semibold' : 'label_2_medium'">
+        <span :class="activeTab === tab.id ? 'label_2_semibold' : 'label_2_medium'">
           {{ tab.label }}
         </span>
       </button>
@@ -103,7 +103,7 @@
                 </p>
               </div>
               <p class="body_4_medium tertiary_text_color shrink-0">
-                Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 5MB
+                Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 50MB
               </p>
             </div>
           </div>
