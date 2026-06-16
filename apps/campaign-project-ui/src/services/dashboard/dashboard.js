@@ -1,6 +1,6 @@
 import ChatView from '../../views/ChatView.vue'
 import Campaigns from '../../views/Campaigns.vue'
-import Automations from '../../views/Automations.vue'
+import Automations from '../../views/automations.vue'
 import Audience from '../../views/Audience.vue'
 import AnalyticsView from '../../views/AnalyticsView.vue'
 import ProductView from '../../views/ProductsView.vue'
