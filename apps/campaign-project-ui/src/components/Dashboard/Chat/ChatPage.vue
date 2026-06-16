@@ -188,7 +188,7 @@ import { PromptBox, ChatActionBar } from "@ai-suite/shared-ui";
 import ImageEditIcon from "../../../assets/images/ImageEditIcon.svg";
 import TrashIcon from "../../../assets/images/TrashIcon.svg";
 import TextCopyIcon from "../../../assets/images/TextCopyIcon.svg";
-import closeIcon from "../../../assets/images/closeIcon.svg";
+import closeIcon from "../../../assets/images/CloseIcon.svg";
 import PostFilter from "../../../assets/images/PostFilter.svg";
 import DownArrow from "../../../assets/images/DownArrow.svg";
 import AiIcon from "../../../assets/images/AiIcon.svg";
