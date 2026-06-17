@@ -78,7 +78,7 @@
             type="file"
             class="hidden"
             multiple
-            accept=".json,.yaml,.yml,.openapi"
+            accept=".json,.txt,.yaml,.yml"
             @change="onSchemaInputChange"
           />
           <div
@@ -101,7 +101,7 @@
               </p>
             </div>
             <p class="caption_1_regular tertiary_text_color shrink-0">
-              Accepted formats - .json, .yaml, .yml
+              Accepted formats - .json, .txt, .yaml, .yml
             </p>
           </div>
           <ul v-if="schemaFiles.length > 0" class="mt-md flex flex-col gap-sm">
@@ -148,7 +148,7 @@ import UploadIcon from '../../assets/images/uplaod.svg'
 
 const DOCUMENT_MAX_BYTES = 50 * 1024 * 1024
 const DOCUMENT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg']
-const SCHEMA_EXTENSIONS = ['.json', '.yaml', '.yml']
+const SCHEMA_EXTENSIONS = ['.json', '.txt', '.yaml', '.yml']
 
 const props = defineProps({
   activeTab: {
@@ -278,7 +278,7 @@ function validateDocumentFiles(files) {
 function validateSchemaFiles(files) {
   for (const file of files) {
     if (!hasAllowedExtension(file.name, SCHEMA_EXTENSIONS)) {
-      return 'Accepted formats: .json, .yaml, .yml'
+      return 'Accepted formats: .json, .txt, .yaml, .yml'
     }
   }
   return ''

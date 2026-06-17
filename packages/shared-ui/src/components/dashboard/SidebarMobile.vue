@@ -191,9 +191,9 @@
         :alt="sidebarDisplayName || 'Profile'"
         class="h-8 w-8 rounded-full object-cover"
       />
-      <div v-if="!isCollapsed">
-        <p class="label_2_semibold primary_text_color">{{ sidebarDisplayName || "—" }}</p>
-        <p class="label_3_regular secondary_text_color">{{ sidebarUserEmail || "—" }}</p>
+      <div v-if="!isCollapsed" class="min-w-0 flex-1">
+        <p class="label_2_semibold primary_text_color truncate" :title="sidebarDisplayName">{{ sidebarDisplayName || "—" }}</p>
+        <p class="label_3_regular secondary_text_color truncate" :title="sidebarUserEmail">{{ sidebarUserEmail || "—" }}</p>
       </div>
     </div>
     </div>
