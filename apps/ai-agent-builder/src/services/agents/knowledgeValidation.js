@@ -31,9 +31,11 @@ export async function validateApiSchemaFiles(files) {
 
   for (const file of files) {
     const extension = getExtension(file.name)
+    const isValidType =
+      SCHEMA_MIME_TYPES.includes(file.type) || SCHEMA_EXTENSIONS.includes(extension)
 
-    if (extension !== '.json') {
-      errors.push(`${file.name}: Please upload a JSON file.`)
+    if (!isValidType) {
+      errors.push(`${file.name}: Upload a JSON, TXT, or YAML file.`)
       continue
     }
 
@@ -42,11 +44,13 @@ export async function validateApiSchemaFiles(files) {
       continue
     }
 
-    try {
-      JSON.parse(await file.text())
-    } catch {
-      errors.push(`${file.name}: Invalid JSON format.`)
-      continue
+    if (extension === '.json') {
+      try {
+        JSON.parse(await file.text())
+      } catch {
+        errors.push(`${file.name}: Invalid JSON format.`)
+        continue
+      }
     }
 
     validFiles.push(file)

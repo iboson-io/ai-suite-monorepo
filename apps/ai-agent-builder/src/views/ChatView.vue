@@ -86,6 +86,7 @@
                 <!-- AI Response display with copy/like/dislike -->
                 <div v-else-if="message.aiResponse">
                   <div
+                    :ref="el => { if (el) messageRefs[index] = el }"
                     class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md text-left"
                     v-html="formatMarkdownToHtml(message.aiResponse)"
                   />
@@ -103,6 +104,38 @@
                       @dislike="toggleChatReaction(index, 'dislike')"
                       @regenerate="handleRegenerate(index)"
                     />
+
+                    <!-- Excel Download option -->
+                    <div v-if="messageHasTable(message.aiResponse)" class="group/excel relative">
+                      <button
+                        type="button"
+                        class="flex items-center justify-center w-4xl h-4xl cursor-pointer action_icon_color"
+                        @click="downloadTableAsExcel(message, index)"
+                        title="Download Excel"
+                      >
+                        <svg
+                          class="w-4xl h-4xl"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="12" y1="18" x2="12" y2="12" />
+                          <polyline points="9 15 12 18 15 15" />
+                        </svg>
+                      </button>
+                      <span
+                        role="tooltip"
+                        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/excel:block"
+                      >
+                        Download Excel
+                      </span>
+                    </div>
 
                     <div v-if="message.audio" class="group/audio relative">
                       <button
@@ -165,12 +198,20 @@
       </div>
     </section>
   </div>
+
+  <SuccessToastNotification
+    :open="toastOpen"
+    :main-message="toastMessage"
+    :secondary-message="toastSecondaryMessage"
+    :type="toastType"
+    @close="toastOpen = false"
+  />
 </template>
 
 <script setup>
 import { ref, watch, computed, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { PromptBox, ChatActionBar } from '@ai-suite/shared-ui'
+import { PromptBox, ChatActionBar, SuccessToastNotification } from '@ai-suite/shared-ui'
 import ManageAgentsBanner from '../components/home/ManageAgentsBanner.vue'
 import VoiceToggle from '../components/agents/dashboard/VoiceToggle.vue'
 import { apiService } from '../services/agentApi.js'
@@ -198,6 +239,85 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['reset-complete', 'sessionLoaded', 'newSessionCreated'])
+
+const messageRefs = ref([])
+
+const toastType = ref('success')
+const toastOpen = ref(false)
+const toastMessage = ref('')
+const toastSecondaryMessage = ref('')
+
+function showToast(mainMessage, secondaryMessage = '', type = 'success') {
+  toastMessage.value = mainMessage
+  toastSecondaryMessage.value = secondaryMessage
+  toastType.value = type
+  toastOpen.value = true
+}
+
+const messageHasTable = (content) => {
+  if (!content) return false
+  const markdownTablePattern = /(?:\|[^\n]*\|)(?:\r?\n\|[^\n]*\|)+/
+  return markdownTablePattern.test(content) || content.includes('<table')
+}
+
+const downloadTableAsExcel = (message, index) => {
+  const container = messageRefs.value[index]
+  if (!container) {
+    showToast('Error', 'Unable to locate table content to download', 'error')
+    return
+  }
+
+  const tables = container.querySelectorAll('table')
+  if (!tables.length) {
+    showToast('Error', 'No table data available for download', 'error')
+    return
+  }
+
+  const tableHtml = Array.from(tables).map((table, idx) => {
+    const clonedTable = table.cloneNode(true)
+    return `<div style="margin-bottom:16px;"><h3>Table ${idx + 1}</h3>${clonedTable.outerHTML}</div>`
+  }).join('')
+
+  const excelHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+        <!--[if gte mso 9]>
+        <xml>
+            <x:ExcelWorkbook>
+                <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                        <x:Name>Agent Table</x:Name>
+                        <x:WorksheetOptions>
+                            <x:DisplayGridlines/>
+                        </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                </x:ExcelWorksheets>
+            </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        ${tableHtml}
+    </body>
+    </html>
+  `
+
+  const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel' })
+  const downloadUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = downloadUrl
+  link.download = `agent-response-${chatId.value || Date.now()}.xls`
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(downloadUrl)
+
+  showToast('Success', 'Table downloaded as Excel', 'success')
+}
 
 const router = useRouter()
 const hasMessages = ref(false)
@@ -797,25 +917,49 @@ watch(
   background: transparent;
 }
 
-.chat-markdown :deep(table) {
-  display: block;
+.chat-markdown :deep(.table-container) {
   width: 100%;
-  margin: 0.75em 0;
   overflow-x: auto;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.chat-markdown :deep(table) {
+  display: table;
+  width: 100%;
   border-collapse: collapse;
+  font-size: 0.875rem;
+  background-color: #ffffff;
 }
 
 .chat-markdown :deep(th),
 .chat-markdown :deep(td) {
-  padding: 0.5em 0.75em;
-  border: 1px solid rgb(229 231 235);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(229 231 235);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .chat-markdown :deep(th) {
   font-weight: 600;
-  background: rgb(249 250 251);
+  background-color: rgb(248 250 252);
+  color: rgb(71 85 105);
+  border-bottom: 2px solid rgb(229 231 235);
+  white-space: nowrap;
+}
+
+.chat-markdown :deep(tr:last-child td) {
+  border-bottom: none;
+}
+
+.chat-markdown :deep(tr:nth-child(even)) {
+  background-color: rgb(250 250 250);
+}
+
+.chat-markdown :deep(tr:hover) {
+  background-color: rgb(241 245 249);
 }
 
 .chat-markdown :deep(hr) {
