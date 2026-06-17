@@ -39,7 +39,7 @@
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                 @click="downloadTableAsExcel"
-                title="Download Excel"
+               
               >
                 <svg
                   class="w-5 h-5"

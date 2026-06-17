@@ -110,7 +110,7 @@
           </p>
           <button
             type="button"
-            class="bg-info-600 hover:bg-info-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-sm inline-flex items-center gap-2"
+            class="primary_add_button  hover:bg-info-900 text-white font-semibold py-2 px-6 rounded-lg transition-colors text-sm inline-flex items-center gap-2"
             :disabled="deploying"
             @click="createDeployment"
           >
