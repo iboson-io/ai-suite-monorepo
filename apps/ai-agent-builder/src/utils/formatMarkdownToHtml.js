@@ -22,7 +22,11 @@ marked.use({
 export function formatMarkdownToHtml(text) {
   if (text == null || text === '') return ''
 
-  const html = marked.parse(String(text))
+  let html = marked.parse(String(text))
+
+  // Wrap tables for horizontal scrolling and beautiful layout
+  html = html.replace(/<table>/g, '<div class="table-container"><table>')
+  html = html.replace(/<\/table>/g, '</table></div>')
 
   return html.replace(
     /<a (?![^>]*\btarget=)/g,
