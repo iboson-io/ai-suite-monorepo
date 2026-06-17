@@ -1,7 +1,7 @@
 <template>
   <div
     ref="sidebarContainer"
-    class="h-full shrink-0 overflow-visible lg:relative lg:flex"
+    class="h-full shrink-0 overflow-visible lg:relative lg:flex lg:w-auto lg:max-w-none"
     :class="[
       showSubSidebar
         ? 'fixed left-0 top-0 z-[9999] flex w-full max-w-full'
