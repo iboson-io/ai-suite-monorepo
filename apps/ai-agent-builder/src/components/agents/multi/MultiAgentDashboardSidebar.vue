@@ -1,7 +1,16 @@
 <template>
-  <div ref="sidebarContainer" class="relative flex h-full shrink-0 overflow-visible" data-sidebar-container>
+  <div
+    ref="sidebarContainer"
+    class="h-full shrink-0 overflow-visible lg:relative lg:flex"
+    :class="[
+      showSubSidebar
+        ? 'fixed left-0 top-0 z-[9999] flex w-full max-w-full'
+        : 'relative flex w-20'
+    ]"
+    data-sidebar-container
+  >
     <nav
-      class="z-10 flex h-full w-20 shrink-0 flex-col items-center gap-md border-r primary_border_color bg_secondary_color py-4xl shadow-sm"
+      class="z-20 flex h-full w-20 shrink-0 flex-col items-center gap-md border-r primary_border_color bg_secondary_color py-4xl shadow-sm"
     >
       <button
         type="button"
@@ -42,11 +51,11 @@
 
     <div
       v-if="isMobile && showSubSidebar"
-      class="fixed inset-0 z-[9998] bg_overlay lg:hidden"
+      class="fixed inset-0 z-10 bg_overlay lg:hidden"
       @click="closeSubSidebar"
     />
 
-    <div v-show="activeTab === 'chat'" class="h-full shrink-0">
+    <div v-show="activeTab === 'chat'" class="h-full shrink-0 z-20 relative">
       <AgentChatSidebar
         :is-open="showSubSidebar && activeTab === 'chat'"
         :chats="chats"
@@ -64,7 +73,7 @@
       />
     </div>
 
-    <div v-show="activeTab === 'group'" class="h-full shrink-0">
+    <div v-show="activeTab === 'group'" class="h-full shrink-0 z-20 relative">
       <MultiAgentGroupSidebar
         :is-open="showSubSidebar && activeTab === 'group'"
         :group="group"

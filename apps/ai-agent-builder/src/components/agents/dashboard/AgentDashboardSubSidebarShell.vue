@@ -66,10 +66,24 @@ const props = defineProps({
 
 defineEmits(['close'])
 
-const panelWidth = computed(() => (props.wide ? 'min(900px, 55vw)' : '24rem'))
+const panelWidth = computed(() => {
+  if (props.wide) return 'min(900px, 55vw)'
+  return 'var(--sub-sidebar-width, 24rem)'
+})
 
 const panelWidthClass = computed(() => {
   if (!props.isOpen) return 'w-0'
-  return props.wide ? 'w-[min(900px,55vw)]' : 'w-96'
+  return props.wide ? 'w-[min(900px,55vw)]' : 'w-[calc(100vw-5rem)] lg:w-96'
 })
 </script>
+
+<style scoped>
+[data-sub-sidebar] {
+  --sub-sidebar-width: calc(100vw - 5rem);
+}
+@media (min-width: 1024px) {
+  [data-sub-sidebar] {
+    --sub-sidebar-width: 24rem;
+  }
+}
+</style>
