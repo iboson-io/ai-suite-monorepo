@@ -47,6 +47,7 @@ export async function createMultiAgentGroup({ groupName, description, agentIds }
     group_name: String(groupName ?? '').trim(),
     description: String(description ?? '').trim(),
     agent_ids: ids,
+    voice: true,
   })
 
   const created = extractCreatedGroup(response)

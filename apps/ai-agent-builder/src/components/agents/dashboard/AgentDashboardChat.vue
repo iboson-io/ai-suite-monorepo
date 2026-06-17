@@ -308,6 +308,10 @@ watch(
       return
     }
 
+    if (nextChatId === chatId.value) {
+      return
+    }
+
     chatId.value = nextChatId
     await loadChatHistory(nextChatId)
 
