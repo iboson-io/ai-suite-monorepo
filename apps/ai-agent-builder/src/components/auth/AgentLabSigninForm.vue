@@ -41,45 +41,80 @@
         novalidate
         @submit.prevent="handleLoginSubmit"
       >
-        <div>
+        <div class="relative">
+          <label
+            :class="[
+              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              formData.email || focusedFields.email
+                ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
+                : 'top-1/2 -translate-y-1/2 secondary_text_color',
+              emailError && formData.email || focusedFields.email ? 'top-0' : emailError ? 'top-1/3' : ''
+            ]"
+          >
+            Email
+          </label>
           <input
             v-model="formData.email"
             type="email"
-            placeholder="Email"
-            class="input_box w-full px-xl py-md"
-            :class="emailError ? 'error_border_color' : 'regular_border_color'"
+            class="input_box w-full pt-4xl px-xl pb-md"
+            :class="[
+              emailError ? 'error_border_color' : 'regular_border_color',
+              focusedFields.email ? 'border border-info-50' : ''
+            ]"
             :disabled="isLoading"
-            @blur="validateEmail"
+            @focus="focusedFields.email = true"
+            @blur="() => { focusedFields.email = false; validateEmail(); }"
             @input="clearEmailError"
           />
-          <p v-if="emailError" class="label_2_semibold text-error-600 mt-md text-right">
-            {{ emailError }}
+          <p v-if="emailError" class="label_2_semibold text-error-600 mt-md flex gap-sm">
+            <img :src="WarningIcon" alt="" /> {{ emailError }}
           </p>
         </div>
 
         <div class="relative">
-          <input
-            v-model="formData.password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="Password"
-            class="input_box w-full px-xl py-md pr-10xl"
-            :class="passwordError ? 'error_border_color' : 'regular_border_color'"
-            :disabled="isLoading"
-            @blur="validatePassword"
-            @input="clearPasswordError"
-          />
-          <button
-            type="button"
-            class="absolute right-xl top-1/2 -translate-y-1/2 text-gray-500"
-            @click="showPassword = !showPassword"
+          <label
+            :class="[
+              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              formData.password || focusedFields.password
+                ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
+                : 'top-1/2 -translate-y-1/2 secondary_text_color',
+              passwordError && formData.password || focusedFields.password ? 'top-0' : passwordError ? 'top-1/3' : ''
+            ]"
           >
-            {{ showPassword ? 'Hide' : 'Show' }}
-          </button>
+            Password
+          </label>
+          <div class="relative">
+            <input
+              v-model="formData.password"
+              :type="showPassword ? 'text' : 'password'"
+              class="input_box w-full pt-4xl px-xl pb-md pr-10xl password-input"
+              :class="[
+                passwordError ? 'error_border_color' : 'regular_border_color',
+                focusedFields.password ? 'border border-info-50' : ''
+              ]"
+              :disabled="isLoading"
+              @focus="focusedFields.password = true"
+              @blur="() => { focusedFields.password = false; validatePassword(); }"
+              @input="clearPasswordError"
+            />
+            <button
+              type="button"
+              class="absolute right-xl top-1/2 -translate-y-1/2 z-20"
+              @click="showPassword = !showPassword"
+            >
+              <img
+                v-if="!showPassword"
+                :src="EyeOpenIcon"
+                alt="Show password"
+              />
+              <span v-else><img :src="EyeCloseIcon" alt="Hide password"></span>
+            </button>
+          </div>
           <p
             v-if="passwordError"
-            class="label_2_semibold text-error-600 mt-md text-right"
+            class="label_2_semibold text-error-600 mt-md flex gap-sm"
           >
-            {{ passwordError }}
+            <img :src="WarningIcon" alt="" /> {{ passwordError }}
           </p>
         </div>
 
@@ -107,19 +142,33 @@
         novalidate
         @submit.prevent="handleOtpSubmit"
       >
-        <div>
+        <div class="relative">
+          <label
+            :class="[
+              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              formData.otp || focusedFields.otp
+                ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
+                : 'top-1/2 -translate-y-1/2 secondary_text_color',
+              otpError && formData.otp || focusedFields.otp ? 'top-0' : otpError ? 'top-1/3' : ''
+            ]"
+          >
+            Enter OTP
+          </label>
           <input
             v-model="formData.otp"
             type="text"
-            placeholder="Enter OTP"
-            class="input_box w-full px-xl py-md"
-            :class="otpError ? 'error_border_color' : 'regular_border_color'"
+            class="input_box w-full pt-4xl px-xl pb-md"
+            :class="[
+              otpError ? 'error_border_color' : 'regular_border_color',
+              focusedFields.otp ? 'border border-info-50' : ''
+            ]"
             :disabled="isLoading"
-            @blur="validateOtp"
+            @focus="focusedFields.otp = true"
+            @blur="() => { focusedFields.otp = false; validateOtp(); }"
             @input="clearOtpError"
           />
-          <p v-if="otpError" class="label_2_semibold text-error-600 mt-md text-right">
-            {{ otpError }}
+          <p v-if="otpError" class="label_2_semibold text-error-600 mt-md flex gap-sm">
+            <img :src="WarningIcon" alt="" /> {{ otpError }}
           </p>
         </div>
 
@@ -156,10 +205,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import GoogleSignin from '../../../../../packages/shared-ui/src/components/auth/GoogleSignin.vue'
 import Logo from '../../../../../packages/shared-ui/src/components/common/Logo.vue'
+import WarningIcon from '../../../../../packages/shared-ui/src/assets/images/WarningIcon.svg'
+import EyeOpenIcon from '../../../../../packages/shared-ui/src/assets/images/EyeOpen.svg'
+import EyeCloseIcon from '../../../../../packages/shared-ui/src/assets/images/EyeCloseIcon.svg'
 import { useAuth } from '../../composables/useAuth.js'
 
 const router = useRouter()
@@ -169,6 +221,12 @@ const formData = ref({
   email: '',
   password: '',
   otp: '',
+})
+
+const focusedFields = reactive({
+  email: false,
+  password: false,
+  otp: false,
 })
 
 const showOtpField = ref(false)
