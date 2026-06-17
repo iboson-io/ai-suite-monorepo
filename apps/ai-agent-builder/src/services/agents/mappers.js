@@ -118,6 +118,7 @@ export function mapAgentDetails(raw) {
     rules: parseAgentRules(raw.rules),
     language: raw.language ?? 'english',
     status: normalizeStatus(raw.status),
+    voice: Boolean(raw.voice),
     updatedAt: raw.updated_at ?? raw.updatedAt ?? raw.created_at ?? raw.createdAt,
     agentType: resolveAgentKnowledgeType(raw),
     knowledgeTab: knowledgeTabFromType(resolveAgentKnowledgeType(raw)),

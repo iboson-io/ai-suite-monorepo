@@ -900,7 +900,7 @@
   import CircleRightArrow from "../assets/images/CircleRightArrow.svg"
   import DownArrow from "../assets/images/DownArrow.svg"
   import PlatformIcon from "../assets/images/PlatformIcon.svg"
-  import closeIcon from "../assets/images/closeIcon.svg"
+  import closeIcon from "../assets/images/CloseIcon.svg"
   import PendingIcon from "../assets/images/PendingIcon.svg"
   import ApproveIcon from "../assets/images/ApproveIcon.svg"
   import TimeIcon from "../assets/images/TimeIcon.svg"

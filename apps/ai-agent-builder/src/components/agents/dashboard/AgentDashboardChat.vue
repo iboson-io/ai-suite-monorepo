@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col">
+  <div class="flex min-h-0 flex-1 flex-col relative">
     <div
       v-if="loadingHistory"
       class="flex min-h-0 flex-1 items-center justify-center"
@@ -77,17 +77,62 @@
                       v-html="formatMarkdownToHtml(message.aiResponse)"
                     />
 
-                    <ChatActionBar
-                      :is-liked="message.isLiked"
-                      :is-disliked="message.isDisliked"
-                      :padded="false"
-                      compact-icons
-                      show-regenerate
-                      @copy="handleCopy(message.aiResponse)"
-                      @like="toggleChatReaction(index, 'like')"
-                      @dislike="toggleChatReaction(index, 'dislike')"
-                      @regenerate="handleRegenerate(index)"
-                    />
+                    <div class="flex items-center gap-sm mt-4xl lg:px-3xl">
+                      <ChatActionBar
+                        :is-liked="message.isLiked"
+                        :is-disliked="message.isDisliked"
+                        :padded="false"
+                        compact-icons
+                        show-regenerate
+                        class="!mt-0"
+                        @copy="handleCopy(message.aiResponse)"
+                        @like="toggleChatReaction(index, 'like')"
+                        @dislike="toggleChatReaction(index, 'dislike')"
+                        @regenerate="handleRegenerate(index)"
+                      />
+
+                      <div v-if="message.audio" class="group/audio relative">
+                        <button
+                          type="button"
+                          class="flex items-center justify-center w-4xl h-4xl cursor-pointer action_icon_color"
+                          @click="handleToggleAudio(message.audio, index)"
+                          title="Play/Pause Voice"
+                        >
+                          <svg
+                            v-if="playingMessageIndex !== index"
+                            class="w-4xl h-4xl"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 3.5l7 4.5-7 4.5v-9z" />
+                          </svg>
+                          <svg
+                            v-else
+                            class="w-4xl h-4xl"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 3.5h2v9H5v-9zM9 3.5h2v9H9v-9z" />
+                          </svg>
+                        </button>
+                        <span
+                          role="tooltip"
+                          class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/audio:block"
+                        >
+                          {{ playingMessageIndex !== index ? 'Play Voice' : 'Pause Voice' }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -107,6 +152,7 @@
             {{ connectingLabel }}<span class="loading-dots" />
           </p>
 
+
           <PromptBox
             :is-ai-generating="isLoading || isReconnecting"
             :initial-product-id="promptProductId"
@@ -115,7 +161,7 @@
 
           <div class="text-center p-xl">
             <p class="body_4_regular tertiary_text_color">
-              Genius AI can make mistakes. Please check for accuracy.
+              AI Agent can make mistakes. Please check for accuracy.
             </p>
           </div>
         </div>
@@ -135,6 +181,7 @@ import { extractChatFromCreateResponse } from '../../../services/agents/chats.js
 import { createGroupChat } from '../../../services/agents/multi/chats.js'
 import { clearCreatedAgentContext } from '../../../services/agents/selectedAgent.js'
 import { formatMarkdownToHtml } from '../../../utils/formatMarkdownToHtml.js'
+import VoiceToggle from './VoiceToggle.vue'
 
 const props = defineProps({
   mode: {
@@ -170,6 +217,105 @@ const isLoading = ref(false)
 const loadingHistory = ref(false)
 const promptSectionRef = ref(null)
 const scrollAnchor = ref(null)
+
+const voiceEnabled = ref(true)
+const currentAudio = ref(null)
+const playingMessageIndex = ref(-1)
+
+watch(
+  [() => props.agent, () => props.group],
+  () => {
+    if (props.mode === 'multi') {
+      if (props.group && props.group.voice !== undefined) {
+        voiceEnabled.value = Boolean(props.group.voice)
+      }
+    } else {
+      if (props.agent && props.agent.voice !== undefined) {
+        voiceEnabled.value = Boolean(props.agent.voice)
+      }
+    }
+  },
+  { immediate: true }
+)
+
+async function handleVoiceToggle(nextVal) {
+  voiceEnabled.value = nextVal
+  if (!nextVal) {
+    stopAllAudio()
+  }
+
+  try {
+    if (props.mode === 'multi') {
+      if (props.group?.id) {
+        const agentIds = props.group.agents.map((a) => a.id)
+        await apiService.updateAgentGroup(
+          props.group.id,
+          agentIds,
+          props.group.name,
+          props.group.description,
+          nextVal,
+          props.group.redirectionRules
+        )
+        props.group.voice = nextVal
+      }
+    } else {
+      if (props.agent?.id) {
+        await apiService.updateAgent(props.agent.id, { voice: nextVal })
+        props.agent.voice = nextVal
+      }
+    }
+
+    if (scopeId.value && chatId.value) {
+      try {
+        await reconnect(scopeId.value, chatId.value)
+      } catch (err) {
+        connect(scopeId.value, chatId.value)
+      }
+    }
+  } catch (err) {
+    console.error('[AgentDashboardChat] Failed to sync voice setting with backend:', err)
+  }
+}
+
+function stopAllAudio() {
+  if (currentAudio.value) {
+    currentAudio.value.pause()
+    currentAudio.value = null
+  }
+  playingMessageIndex.value = -1
+}
+
+function playAudio(base64Audio, index) {
+  stopAllAudio()
+
+  let audioUrl = base64Audio
+  if (!audioUrl.startsWith('data:')) {
+    audioUrl = `data:audio/mp3;base64,${audioUrl}`
+  }
+
+  const audio = new Audio(audioUrl)
+  currentAudio.value = audio
+  playingMessageIndex.value = index
+
+  audio.play().catch((err) => {
+    console.error('[AgentDashboardChat] Failed to play audio:', err)
+  })
+
+  audio.onended = () => {
+    if (playingMessageIndex.value === index) {
+      playingMessageIndex.value = -1
+      currentAudio.value = null
+    }
+  }
+}
+
+function handleToggleAudio(base64Audio, index) {
+  if (playingMessageIndex.value === index) {
+    stopAllAudio()
+  } else {
+    playAudio(base64Audio, index)
+  }
+}
 
 const scopeId = computed(() =>
   props.mode === 'multi' ? props.group?.id : props.agent?.id
@@ -265,7 +411,12 @@ setOnMessage((data) => {
         isStreaming: false,
         aiResponse: data.success
           ? (data.response || 'No response received')
-          : (data.response || 'Sorry, I encountered an error while processing your message.')
+          : (data.response || 'Sorry, I encountered an error while processing your message.'),
+        audio: data.audio || null
+      }
+
+      if (voiceEnabled.value && data.audio && data.success) {
+        playAudio(data.audio, pendingIndex)
       }
     }
     isLoading.value = false
@@ -305,6 +456,10 @@ watch(
       chatId.value = null
       chatMessages.value = []
       disconnect()
+      return
+    }
+
+    if (nextChatId === chatId.value) {
       return
     }
 
@@ -547,9 +702,10 @@ function focusPrompt() {
 
 onUnmounted(() => {
   disconnect()
+  stopAllAudio()
 })
 
-defineExpose({ focusPrompt, hasMessages })
+defineExpose({ focusPrompt, hasMessages, voiceEnabled, handleVoiceToggle })
 </script>
 
 <style scoped>

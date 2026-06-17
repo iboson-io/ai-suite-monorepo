@@ -44,6 +44,12 @@
             </div>
 
             <div class="flex shrink-0 items-center gap-md">
+              <VoiceToggle
+                v-if="chatRef"
+                :model-value="chatRef.voiceEnabled"
+                @update:model-value="chatRef.handleVoiceToggle"
+              />
+
               <button
                 v-if="hasChatMessages"
                 type="button"
@@ -97,6 +103,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AgentDashboardSidebar from '../components/agents/dashboard/AgentDashboardSidebar.vue'
 import AgentDashboardChat from '../components/agents/dashboard/AgentDashboardChat.vue'
 import AgentSetupView from '../components/agents/dashboard/AgentSetupView.vue'
+import VoiceToggle from '../components/agents/dashboard/VoiceToggle.vue'
 import {
   createAgentChat,
   extractChatFromCreateResponse,

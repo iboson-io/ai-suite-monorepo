@@ -919,6 +919,10 @@ class ApiService {
       formData.append('system_type', agentData.system_type)
     }
 
+    if (agentData.voice !== undefined) {
+      formData.append('voice', String(agentData.voice))
+    }
+
     if (agentData.role && String(agentData.role).trim()) {
       formData.append('role', String(agentData.role).trim())
     }

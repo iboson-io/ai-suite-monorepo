@@ -65,6 +65,7 @@ export function buildCreateAgentPayload({
     token: '',
     auth_type: 'none',
     auth_config: {},
+    voice: true,
   }
 
   const promptTrimmed = String(prompt ?? '').trim()
