@@ -3,7 +3,7 @@ import { apiService } from '../agentApi.js'
 export function getPromptBoxConfig() {
   return {
     allProductsLabel: 'All Agents',
-    placeholder: 'Ask a question, type @ to select an agent, or create a new one',
+    placeholder: 'Ask a question, select an agent, or create a new one',
     showModelsDropdown: false,
   }
 }
