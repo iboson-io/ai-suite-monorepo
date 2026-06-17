@@ -34,12 +34,12 @@
       </div>
     </header>
 
-    <div class="flex flex-1 flex-col lg:flex-row min-h-0 overflow-hidden">
+    <div class="flex flex-1 flex-col lg:flex-row min-h-0 overflow-y-auto lg:overflow-hidden">
       <WorkflowEditorAiChat
         ref="workflowChatRef"
         :class="[
           'lg:self-stretch',
-          shouldShowEditor ? 'shrink-0 lg:w-[min(100vw,550px)] border-r border-slate-200/80' : 'flex-1 w-full'
+          shouldShowEditor ? 'shrink-0 h-[70vh] lg:h-auto lg:w-[min(100vw,550px)] border-b lg:border-b-0 lg:border-r border-slate-200/80' : 'flex-1 w-full'
         ]"
         :workflow-id="workflowId"
         @submit-prompt="$emit('workflow-ai-prompt', $event)"
@@ -49,7 +49,7 @@
         @messages-changed="hasMessages = $event.length > 0"
       />
 
-      <div v-show="shouldShowEditor" class="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div v-show="shouldShowEditor" class="relative flex h-[50vh] min-h-[400px] lg:h-full lg:min-h-0 min-w-0 flex-1 flex-col">
         <div v-if="loadError" class="absolute inset-0 flex items-center justify-center p-6 z-20 bg-[#e8edf3]/90">
           <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 max-w-md text-center">
             <p class="text-slate-800 font-medium mb-2">Could not load workflow</p>

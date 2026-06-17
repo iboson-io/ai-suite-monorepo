@@ -1,5 +1,5 @@
 <template>
-  <main class="flex min-h-0 flex-1 flex-col overflow-hidden bg_primary_color px-6xl py-6xl">
+  <main class="flex min-h-0 flex-1 flex-col overflow-hidden bg_primary_color px-6xl pt-13xl pb-6xl lg:py-6xl">
     <div class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-hidden">
       <div class="flex shrink-0 flex-col gap-xl rounded-[18px] bg-white p-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
