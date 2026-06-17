@@ -186,12 +186,12 @@
                       : 'h-full w-[820px] shrink-0'
                 "
               >
-                <input
+                 <input
                   ref="schemaInputRef"
                   type="file"
                   class="hidden"
                   multiple
-                  accept=".json,application/json"
+                  accept=".json,.yaml,.yml,.txt"
                   @change="onSchemaInputChange"
                 />
                 <div
@@ -218,7 +218,7 @@
                     </p>
                   </div>
                   <p class="body_4_medium tertiary_text_color shrink-0">
-                    Accepted formats - .json | Max file size - 5MB
+                    Accepted formats - .json, .txt, .yaml, .yml | Max file size - 5MB
                   </p>
                 </div>
               </div>
