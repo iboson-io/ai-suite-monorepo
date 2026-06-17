@@ -450,7 +450,22 @@ function submitPrompt() {
   prompt.value = ''
   voiceFinal.value = ''
   files.value = []
+
+  nextTick(() => {
+    promptInputRef.value?.focus?.()
+  })
 }
+
+watch(
+  () => props.isAiGenerating,
+  (newVal, oldVal) => {
+    if (!newVal && oldVal) {
+      nextTick(() => {
+        promptInputRef.value?.focus?.()
+      })
+    }
+  }
+)
 
 const handleSend = () => {
   if (props.isAiGenerating) return
@@ -499,7 +514,7 @@ watch(products, () => {
   }
 })
 
-defineExpose({ setPrompt, setSelectedProduct })
+defineExpose({ setPrompt, setSelectedProduct, focus: () => promptInputRef.value?.focus?.() })
 
 const handleClickOutside = (event) => {
   if (
