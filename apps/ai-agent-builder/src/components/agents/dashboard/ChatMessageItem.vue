@@ -34,32 +34,27 @@
             />
 
             <!-- Excel Download option -->
-            <div v-if="messageHasTable(message.aiResponse)" class="group/excel relative mt-sm mr-4xl shrink-0">
-              <button
-                type="button"
-                class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                @click="downloadTableAsExcel"
-                title="Download Excel"
-              >
-                <svg
-                  class="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  aria-hidden="true"
+            <div v-if="messageHasTable(message.aiResponse)" class="mt-sm mr-4xl shrink-0">
+              <Tooltip text="Download Excel" position="bottom" :show-tail="true">
+                <button
+                  type="button"
+                  class="flex items-center justify-center w-8 h-8 rounded-lg cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                  @click="downloadTableAsExcel"
                 >
-                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-              </button>
-              <span
-                role="tooltip"
-                class="pointer-events-none absolute top-full right-0 z-10 mt-sm hidden whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/excel:block"
-              >
-                Download Excel
-              </span>
+                  <svg
+                    class="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -77,12 +72,16 @@
               @regenerate="$emit('regenerate', index)"
             />
 
-            <div v-if="message.audio" class="group/audio relative">
+            <Tooltip
+              v-if="message.audio"
+              :text="playingMessageIndex !== index ? 'Play Voice' : 'Pause Voice'"
+              position="top"
+              :show-tail="true"
+            >
               <button
                 type="button"
                 class="flex items-center justify-center w-4xl h-4xl cursor-pointer action_icon_color"
                 @click="$emit('toggle-audio', message.audio, index)"
-                title="Play/Pause Voice"
               >
                 <svg
                   v-if="playingMessageIndex !== index"
@@ -111,13 +110,7 @@
                   <path d="M5 3.5h2v9H5v-9zM9 3.5h2v9H9v-9z" />
                 </svg>
               </button>
-              <span
-                role="tooltip"
-                class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/audio:block"
-              >
-                {{ playingMessageIndex !== index ? 'Play Voice' : 'Pause Voice' }}
-              </span>
-            </div>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -127,7 +120,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChatActionBar } from '@ai-suite/shared-ui'
+import { ChatActionBar, Tooltip } from '@ai-suite/shared-ui'
 import { formatMarkdownToHtml } from '../../../utils/formatMarkdownToHtml.js'
 import AgentChatIcon from '../../../assets/images/agents/dashboard/chatIcon.svg'
 

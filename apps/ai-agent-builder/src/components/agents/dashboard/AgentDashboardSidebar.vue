@@ -10,7 +10,7 @@
     data-sidebar-container
   >
     <nav
-      class="z-20 flex h-full w-20 shrink-0 flex-col items-center gap-md border-r primary_border_color bg_secondary_color py-4xl shadow-sm"
+      class="relative z-30 flex h-full w-20 shrink-0 flex-col items-center gap-md border-r primary_border_color bg_secondary_color py-4xl shadow-sm"
     >
       <button
         type="button"
@@ -21,32 +21,33 @@
         <img :src="AiAgentIcon" alt="" class="h-7 w-auto" />
       </button>
 
-      <button
+      <Tooltip
         v-for="tab in visibleTabs"
         :key="tab.id"
-        type="button"
-        class="group relative flex w-full flex-col items-center rounded-xl px-md py-xl transition-colors"
-        :class="
-          activeTab === tab.id
-            ? 'bg-info-50 text-info-600'
-            : 'secondary_text_color hover:bg-gray-25 hover:text-info-600'
-        "
-        :aria-label="tab.label"
-        :aria-pressed="activeTab === tab.id"
-        @click="setActiveTab(tab.id)"
+        :text="tab.label"
+        position="right"
+        class="w-full flex justify-center"
       >
-        <img
-          :src="tab.icon"
-          alt=""
-          class="h-6 w-6 transition-opacity"
-          :class="activeTab === tab.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'"
-        />
-        <span
-          class="pointer-events-none absolute left-full z-50 ml-sm whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color opacity-0 transition-opacity group-hover:opacity-100"
+        <button
+          type="button"
+          class="group relative flex w-full flex-col items-center rounded-xl px-md py-xl transition-colors"
+          :class="
+            activeTab === tab.id
+              ? 'bg-info-50 text-info-600'
+              : 'secondary_text_color hover:bg-gray-25 hover:text-info-600'
+          "
+          :aria-label="tab.label"
+          :aria-pressed="activeTab === tab.id"
+          @click="setActiveTab(tab.id)"
         >
-          {{ tab.label }}
-        </span>
-      </button>
+          <img
+            :src="tab.icon"
+            alt=""
+            class="h-6 w-6 transition-opacity"
+            :class="activeTab === tab.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'"
+          />
+        </button>
+      </Tooltip>
     </nav>
 
     <div
@@ -105,6 +106,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { Tooltip } from '@ai-suite/shared-ui'
 import ChatIcon from '../../../assets/images/agents/dashboard/chat.svg'
 import KnowledgeIcon from '../../../assets/images/agents/dashboard/agent.svg'
 import AgentInfoIcon from '../../../assets/images/agents/dashboard/agentinfo.svg'
