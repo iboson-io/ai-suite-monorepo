@@ -34,7 +34,7 @@
                 class="w-full rounded-lg border bg-white px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200"
                 :class="groupNameError ? 'border-error-300 bg-error-50' : 'primary_border_color'"
               />
-              <p v-if="groupNameError" class="caption_1_regular text-error-600 mt-sm">
+              <p v-if="groupNameError" class="label_3_regular text-error-600 mt-sm">
                 {{ groupNameError }}
               </p>
             </div>
