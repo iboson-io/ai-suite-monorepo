@@ -70,7 +70,7 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                New Chat
+                <span class="hidden sm:inline">New Chat</span>
               </button>
 
               <button
@@ -78,7 +78,7 @@
                 class="primary_add_button inline-flex shrink-0 items-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color"
                 @click="showSetupView = true"
               >
-                Run
+                <span class="hidden sm:inline">Run</span>
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>

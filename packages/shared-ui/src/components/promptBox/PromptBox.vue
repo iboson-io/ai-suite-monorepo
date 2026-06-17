@@ -105,7 +105,7 @@
         <div class="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            class="rounded-full p-1 transition-transform"
+            class="rounded-full transition-transform flex items-center justify-center"
             :class="[props.isAiGenerating ? 'opacity-50 cursor-not-allowed' : '']"
             :disabled="props.isAiGenerating"
             :aria-pressed="isListening"
@@ -118,9 +118,9 @@
             "
             @click="handleMicOrSend"
           >
-            <img v-if="isListening" class="h-10 w-10" :src="ActiveMikeIcon" alt="" />
-            <img v-else-if="prompt.trim()" :src="SendIcon" alt="" />
-            <img v-else :src="MikeIcon" alt="" />
+            <img v-if="isListening" class="h-8 w-8" :src="ActiveMikeIcon" alt="" />
+            <img v-else-if="prompt.trim()" class="h-8 w-8" :src="SendIcon" alt="" />
+            <img v-else class="h-8 w-8" :src="MikeIcon" alt="" />
           </button>
         </div>
       </div>

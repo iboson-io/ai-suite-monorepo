@@ -5,7 +5,7 @@
     </div>
     <main
       v-if="!hasMessages"
-      class="flex min-h-0 flex-1 items-start bg_primary_color px-6xl py-10xl lg:items-center"
+      class="flex min-h-0 flex-1 items-start bg_primary_color px-6xl pt-13xl pb-10xl lg:py-10xl lg:items-center"
     >
       <div class="mx-auto w-full max-w-5xl text-center">
         <div class="glass-sphere mx-auto mb-6">
@@ -52,7 +52,7 @@
       v-else
       class="flex min-h-0 flex-1 flex-col bg_primary_color"
     >
-      <div class="min-h-0 flex-1 overflow-y-auto custom_scrollbar px-6xl py-8xl">
+      <div class="min-h-0 flex-1 overflow-y-auto custom_scrollbar px-6xl pt-13xl pb-8xl">
         <div class="mx-auto flex w-full max-w-3xl flex-col gap-7">
           <article
             v-for="(message, index) in messages"

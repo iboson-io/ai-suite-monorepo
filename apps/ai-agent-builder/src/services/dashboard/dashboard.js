@@ -24,7 +24,7 @@ export function getDashboardConfig() {
     rootLayoutClass: 'flex min-h-screen bg_secondary_color overflow-hidden',
     mainAreaClass: 'flex min-h-0 flex-1 flex-col overflow-y-auto transition-all duration-300 bg_primary_color',
     contentWrapperClass: 'flex min-h-0 flex-1 flex-col',
-    mobileHeaderClass: 'flex items-center gap-xl bg-transparent px-3xl py-xl absolute lg:hidden',
+    mobileHeaderClass: 'flex items-center gap-xl bg-transparent px-3xl py-xl absolute z-30 lg:hidden',
   }
 }
 
