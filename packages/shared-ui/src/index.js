@@ -7,6 +7,8 @@ export { default as SuccessToastNotification } from './components/common/Success
 export { default as DeletePostModal } from './components/common/DeletePostModal.vue'
 export { default as Cards } from './components/common/Cards.vue'
 export { default as Logo } from './components/common/Logo.vue'
+export { default as Tooltip } from './components/common/Tooltip.vue'
+
 
 export { default as SignInView } from './views/auth/SignIn.vue'
 export { default as SignUpView } from './views/auth/SignUp.vue'
