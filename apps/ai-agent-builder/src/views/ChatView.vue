@@ -1,5 +1,8 @@
 <template>
-  <div class="flex h-full min-h-0 flex-1 flex-col">
+  <div class="flex h-full min-h-0 flex-1 flex-col relative">
+    <div class="absolute top-4 right-6 z-30">
+      <VoiceToggle :model-value="voiceEnabled" @update:model-value="handleVoiceToggle" />
+    </div>
     <main
       v-if="!hasMessages"
       class="flex min-h-0 flex-1 items-start bg_primary_color px-6xl py-10xl lg:items-center"
@@ -33,7 +36,7 @@
           Automate support and resolve issues
         </p>
 
-        <div class="">
+        <div class="max-w-3xl mx-auto">
           <PromptBox
             :is-ai-generating="isLoading"
             :show-all-products-option="false"
@@ -87,18 +90,62 @@
                     v-html="formatMarkdownToHtml(message.aiResponse)"
                   />
 
-                  <ChatActionBar
-                    :is-liked="message.isLiked"
-                    :is-disliked="message.isDisliked"
-                    :padded="false"
-                    compact-icons
-                    show-regenerate
-                    class="lg:px-3xl"
-                    @copy="handleCopy(message.aiResponse)"
-                    @like="toggleChatReaction(index, 'like')"
-                    @dislike="toggleChatReaction(index, 'dislike')"
-                    @regenerate="handleRegenerate(index)"
-                  />
+                  <div class="flex items-center gap-sm mt-4xl lg:px-3xl">
+                    <ChatActionBar
+                      :is-liked="message.isLiked"
+                      :is-disliked="message.isDisliked"
+                      :padded="false"
+                      compact-icons
+                      show-regenerate
+                      class="!mt-0"
+                      @copy="handleCopy(message.aiResponse)"
+                      @like="toggleChatReaction(index, 'like')"
+                      @dislike="toggleChatReaction(index, 'dislike')"
+                      @regenerate="handleRegenerate(index)"
+                    />
+
+                    <div v-if="message.audio" class="group/audio relative">
+                      <button
+                        type="button"
+                        class="flex items-center justify-center w-4xl h-4xl cursor-pointer action_icon_color"
+                        @click="handleToggleAudio(message.audio, index)"
+                        title="Play/Pause Voice"
+                      >
+                        <svg
+                          v-if="playingMessageIndex !== index"
+                          class="w-4xl h-4xl"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 3.5l7 4.5-7 4.5v-9z" />
+                        </svg>
+                        <svg
+                          v-else
+                          class="w-4xl h-4xl"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 3.5h2v9H5v-9zM9 3.5h2v9H9v-9z" />
+                        </svg>
+                      </button>
+                      <span
+                        role="tooltip"
+                        class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-sm hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/audio:block"
+                      >
+                        {{ playingMessageIndex !== index ? 'Play Voice' : 'Pause Voice' }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -125,6 +172,7 @@ import { ref, watch, computed, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { PromptBox, ChatActionBar } from '@ai-suite/shared-ui'
 import ManageAgentsBanner from '../components/home/ManageAgentsBanner.vue'
+import VoiceToggle from '../components/agents/dashboard/VoiceToggle.vue'
 import { apiService } from '../services/agentApi.js'
 import { useDashboardChatWebSocket } from '../composables/useDashboardChatWebSocket.js'
 import { formatMarkdownToHtml } from '../utils/formatMarkdownToHtml.js'
@@ -159,6 +207,131 @@ const selectedAgentId = ref(null)
 const isMulti = ref(false)
 const isLoading = ref(false)
 const scrollAnchor = ref(null)
+
+const voiceEnabled = ref(true)
+const currentAudio = ref(null)
+const playingMessageIndex = ref(-1)
+
+async function loadVoiceSetting(targetId, isGroup) {
+  if (!targetId) return
+  try {
+    if (isGroup) {
+      const response = await apiService.fetchGroupAgents(targetId)
+      const groupData = response?.data?.group ?? response?.group
+      if (groupData && groupData.voice !== undefined) {
+        voiceEnabled.value = Boolean(groupData.voice)
+      }
+    } else {
+      const response = await apiService.getAgentById(targetId)
+      const agentData = response?.data?.agent ?? response?.agent ?? response
+      if (agentData && agentData.voice !== undefined) {
+        voiceEnabled.value = Boolean(agentData.voice)
+      }
+    }
+  } catch (err) {
+    console.error('[ChatView] Failed to load voice setting:', err)
+  }
+}
+
+watch(
+  () => selectedAgentId.value,
+  (newId) => {
+    if (newId) {
+      loadVoiceSetting(newId, isMulti.value)
+    }
+  }
+)
+
+async function getGroupAgentIds(groupId) {
+  try {
+    const response = await apiService.fetchGroupAgents(groupId)
+    const groupData = response?.data?.group ?? response?.group
+    if (groupData && Array.isArray(groupData.agents)) {
+      return groupData.agents.map((a) => a.id ?? a.agent_id).filter(Boolean)
+    }
+  } catch (err) {
+    console.error('[ChatView] Failed to fetch group agents for voice update:', err)
+  }
+  return []
+}
+
+async function handleVoiceToggle(nextVal) {
+  voiceEnabled.value = nextVal
+  if (!nextVal) {
+    stopAllAudio()
+  }
+
+  const targetId = selectedAgentId.value
+  if (!targetId) return
+
+  try {
+    if (isMulti.value) {
+      const agentIds = await getGroupAgentIds(targetId)
+      const response = await apiService.fetchGroupAgents(targetId)
+      const groupData = response?.data?.group ?? response?.group
+      await apiService.updateAgentGroup(
+        targetId,
+        agentIds,
+        groupData?.group_name ?? groupData?.name ?? null,
+        groupData?.description ?? null,
+        nextVal,
+        groupData?.redirection_rules
+      )
+    } else {
+      await apiService.updateAgent(targetId, { voice: nextVal })
+    }
+
+    if (targetId && chatId.value) {
+      try {
+        await currentWs.value.reconnect(targetId, chatId.value)
+      } catch (err) {
+        currentWs.value.connect(targetId, chatId.value)
+      }
+    }
+  } catch (err) {
+    console.error('[ChatView] Failed to sync voice setting with backend:', err)
+  }
+}
+
+function stopAllAudio() {
+  if (currentAudio.value) {
+    currentAudio.value.pause()
+    currentAudio.value = null
+  }
+  playingMessageIndex.value = -1
+}
+
+function playAudio(base64Audio, index) {
+  stopAllAudio()
+
+  let audioUrl = base64Audio
+  if (!audioUrl.startsWith('data:')) {
+    audioUrl = `data:audio/mp3;base64,${audioUrl}`
+  }
+
+  const audio = new Audio(audioUrl)
+  currentAudio.value = audio
+  playingMessageIndex.value = index
+
+  audio.play().catch((err) => {
+    console.error('[ChatView] Failed to play audio:', err)
+  })
+
+  audio.onended = () => {
+    if (playingMessageIndex.value === index) {
+      playingMessageIndex.value = -1
+      currentAudio.value = null
+    }
+  }
+}
+
+function handleToggleAudio(base64Audio, index) {
+  if (playingMessageIndex.value === index) {
+    stopAllAudio()
+  } else {
+    playAudio(base64Audio, index)
+  }
+}
 
 const singleWs = useDashboardChatWebSocket('single')
 const multiWs = useDashboardChatWebSocket('multi')
@@ -261,7 +434,12 @@ function handleWsMessage(data) {
         isStreaming: false,
         aiResponse: data.success
           ? (data.response || 'No response received')
-          : (data.response || 'Sorry, I encountered an error while processing your message.')
+          : (data.response || 'Sorry, I encountered an error while processing your message.'),
+        audio: data.audio || null
+      }
+
+      if (voiceEnabled.value && data.audio && data.success) {
+        playAudio(data.audio, pendingIndex)
       }
     }
     isLoading.value = false
@@ -517,6 +695,7 @@ async function handleRegenerate(index) {
 onUnmounted(() => {
   singleWs.disconnect()
   multiWs.disconnect()
+  stopAllAudio()
 })
 
 watch(
