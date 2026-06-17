@@ -161,7 +161,7 @@
 
           <div class="text-center p-xl">
             <p class="body_4_regular tertiary_text_color">
-              Genius AI can make mistakes. Please check for accuracy.
+              AI Agent can make mistakes. Please check for accuracy.
             </p>
           </div>
         </div>
