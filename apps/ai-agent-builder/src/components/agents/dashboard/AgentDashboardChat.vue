@@ -78,6 +78,7 @@
           <PromptBox
             :is-ai-generating="isLoading || isReconnecting"
             :initial-product-id="promptProductId"
+            :disable-product-select="true"
             @send-message="handleSendMessage"
           />
 
@@ -267,7 +268,7 @@ const connectingLabel = computed(() =>
 )
 
 const promptProductId = computed(() =>
-  props.mode === 'single' ? props.agent?.id : undefined
+  props.mode === 'single' ? props.agent?.id : props.group?.id
 )
 
 const {

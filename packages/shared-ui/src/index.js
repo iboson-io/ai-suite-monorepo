@@ -8,6 +8,7 @@ export { default as DeletePostModal } from './components/common/DeletePostModal.
 export { default as Cards } from './components/common/Cards.vue'
 export { default as Logo } from './components/common/Logo.vue'
 export { default as Tooltip } from './components/common/Tooltip.vue'
+export { default as SelectBox } from './components/common/SelectBox.vue'
 
 
 export { default as SignInView } from './views/auth/SignIn.vue'
