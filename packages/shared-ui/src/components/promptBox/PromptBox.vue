@@ -444,6 +444,7 @@ function submitPrompt() {
   emit('send-message', {
     text,
     product: selectedProduct.value.id,
+    productKind: selectedProduct.value.kind,
     model: selectedModel.value,
     files: files.value,
   })

@@ -39,6 +39,7 @@
         <div class="max-w-3xl mx-auto">
           <PromptBox
             :is-ai-generating="isLoading"
+            :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
             @send-message="handleFirstMessage"
           />
@@ -75,21 +76,22 @@
         <div class="mx-auto w-full max-w-3xl">
           <PromptBox
             :is-ai-generating="isLoading"
+            :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
             @send-message="handleFollowUpMessage"
           />
         </div>
       </div>
     </section>
-  </div>
 
-  <SuccessToastNotification
-    :open="toastOpen"
-    :main-message="toastMessage"
-    :secondary-message="toastSecondaryMessage"
-    :type="toastType"
-    @close="toastOpen = false"
-  />
+    <SuccessToastNotification
+      :open="toastOpen"
+      :main-message="toastMessage"
+      :secondary-message="toastSecondaryMessage"
+      :type="toastType"
+      @close="toastOpen = false"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -284,7 +286,15 @@ function goToAgents(type) {
 }
 
 function readChatId(payload) {
-  return payload?.id ?? payload?.chat_id ?? payload?.data?.id ?? payload?.data?.chat_id ?? null
+  return (
+    payload?.id ??
+    payload?.chat_id ??
+    payload?.data?.id ??
+    payload?.data?.chat_id ??
+    payload?.data?.chat?.id ??
+    payload?.data?.chat?.chat_id ??
+    null
+  )
 }
 
 function readAiResponse(payload) {
@@ -412,7 +422,7 @@ async function handleFirstMessage(messageData) {
 
   isLoading.value = true
   selectedAgentId.value = messageData.product ?? null
-  isMulti.value = false
+  isMulti.value = messageData.productKind === 'multi'
 
   messages.value = [
     {
@@ -434,7 +444,9 @@ async function handleFirstMessage(messageData) {
 
     let activeChatId = chatId.value
     if (!activeChatId) {
-      const created = await apiService.createChat(agentId, messageData.text.slice(0, 80) || 'New Chat')
+      const created = isMulti.value
+        ? await apiService.createChat(null, messageData.text.slice(0, 80) || 'New Chat', agentId)
+        : await apiService.createChat(agentId, messageData.text.slice(0, 80) || 'New Chat')
       activeChatId = readChatId(created)
       if (!activeChatId) {
         throw new Error('Could not create chat.')
