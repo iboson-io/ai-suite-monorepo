@@ -133,7 +133,7 @@ router.beforeEach((to) => {
 })
 
 router.afterEach((to) => {
-  document.title = to.meta.title || 'AI Agent Builder'
+  document.title = to.meta.title || 'AI Agent'
 })
 
 export default router
