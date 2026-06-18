@@ -1,4 +1,4 @@
-# AI Agent Builder
+# AI Agent
 
 Vue 3 app for building and managing AI agents. Runs on port **3002**.
 

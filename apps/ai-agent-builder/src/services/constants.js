@@ -99,7 +99,7 @@ export const API_ENDPOINTS = {
 
 // Other application constants can be added here
 export const APP_CONFIG = {
-  APP_NAME: 'AI Agent Builder',
+  APP_NAME: 'AI Agent',
   VERSION: '1.0.0',
   DEFAULT_TIMEOUT: 30000, // 30 seconds
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB to match backend
