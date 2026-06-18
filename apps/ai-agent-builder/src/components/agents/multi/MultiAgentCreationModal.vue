@@ -42,23 +42,12 @@
             <div>
               <label class="label_2_medium primary_text_color mb-md block">Select Agents</label>
 
-              <div class="relative mb-md">
-                <input
-                  v-model="agentSearchQuery"
-                  type="search"
-                  placeholder="Search agents."
-                  class="w-full rounded-lg border primary_border_color bg-white py-md pl-11 pr-4xl label_2_regular primary_text_color outline-none placeholder:text-gray-400"
-                  @input="handleSearchInput"
-                />
-                <svg
-                  class="pointer-events-none absolute left-3xl top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
+              <SearchInput
+                v-model="agentSearchQuery"
+                placeholder="Search agents."
+                wrapper-class="w-full mb-md"
+                @input="handleSearchInput"
+              />
 
               <div
                 class="max-h-[280px] overflow-y-auto rounded-lg"
@@ -141,6 +130,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { SearchInput } from '@ai-suite/shared-ui'
 import { fetchPublishedAgentsForPicker } from '../../../services/agents/multi/picker.js'
 import { validateGroupName } from '../../../services/agents/agents.js'
 
