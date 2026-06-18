@@ -8,28 +8,48 @@ export function getPromptBoxConfig() {
   }
 }
 
-export function mapAgent(raw) {
+export function mapAgent(raw, kind) {
   if (raw == null) return null
-  if (typeof raw === 'string') return { id: raw, name: raw }
+  if (typeof raw === 'string') return { id: raw, name: raw, kind: kind || 'single' }
 
-  const id = raw._id ?? raw.id ?? null
-  const name = raw.name ?? raw.title ?? String(id ?? '')
+  const id = raw._id ?? raw.id ?? raw.group_id ?? null
+  const name = raw.name ?? raw.title ?? raw.group_name ?? String(id ?? '')
 
   if (id == null && !name) return null
-  return { id, name: name || String(id) }
+  return { id, name: name || String(id), kind: kind || (raw.group_id ? 'multi' : 'single') }
 }
 
-function extractAgentList(data) {
+function extractList(data, keys = ['agents', 'groups', 'data']) {
   if (Array.isArray(data)) return data
-  if (Array.isArray(data?.agents)) return data.agents
-  if (Array.isArray(data?.data?.agents)) return data.data.agents
-  if (Array.isArray(data?.data)) return data.data
+  if (!data) return []
+
+  for (const key of keys) {
+    if (Array.isArray(data[key])) return data[key]
+    if (Array.isArray(data.data?.[key])) return data.data[key]
+  }
+
+  if (Array.isArray(data.data)) return data.data
   return []
 }
 
 export async function fetchProducts() {
-  const data = await apiService.getAgentData(1, 50)
-  return extractAgentList(data).map(mapAgent).filter(Boolean)
+  try {
+    const [agentsRes, groupsRes] = await Promise.allSettled([
+      apiService.getAgentData(1, 100),
+      apiService.getMultiAgents(1, 100)
+    ])
+
+    const agentsData = agentsRes.status === 'fulfilled' ? agentsRes.value : null
+    const groupsData = groupsRes.status === 'fulfilled' ? groupsRes.value : null
+
+    const agents = extractList(agentsData, ['agents']).map(item => mapAgent(item, 'single')).filter(Boolean)
+    const groups = extractList(groupsData, ['groups']).map(item => mapAgent(item, 'multi')).filter(Boolean)
+
+    return [...agents, ...groups]
+  } catch (error) {
+    console.error('[promptBox] fetchProducts failed:', error)
+    return []
+  }
 }
 
 export async function fetchModels() {
