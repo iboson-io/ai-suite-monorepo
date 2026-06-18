@@ -71,6 +71,8 @@ export function mapSidebarUser(data) {
   const pic =
     user.profilePictureUrl ??
     user.profile_picture_url ??
+    user.avatar_url ??
+    user.avatarUrl ??
     user.avatar ??
     user.profile_picture ??
     ''

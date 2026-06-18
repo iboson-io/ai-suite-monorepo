@@ -45,9 +45,13 @@ export function mapUserProfile(raw) {
         ? String(user.profilePictureUrl).trim()
         : user.profile_picture_url != null
           ? String(user.profile_picture_url).trim()
-          : user.avatar != null
-            ? String(user.avatar).trim()
-            : '',
+          : user.avatar_url != null
+            ? String(user.avatar_url).trim()
+            : user.avatarUrl != null
+              ? String(user.avatarUrl).trim()
+              : user.avatar != null
+                ? String(user.avatar).trim()
+                : '',
     isGoogleLinked: readIsGoogleLinked(user),
   }
 }
@@ -103,8 +107,12 @@ export async function uploadProfilePicture(formDataOrFile) {
   const profilePictureUrl =
     user?.profilePictureUrl ??
     user?.profile_picture_url ??
+    user?.avatar_url ??
+    user?.avatarUrl ??
     data?.profilePictureUrl ??
     data?.profile_picture_url ??
+    data?.avatar_url ??
+    data?.avatarUrl ??
     ''
 
   return { profilePictureUrl: String(profilePictureUrl || '') }
