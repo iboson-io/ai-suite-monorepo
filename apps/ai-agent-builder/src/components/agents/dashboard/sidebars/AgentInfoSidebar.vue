@@ -25,19 +25,96 @@
             :class="promptError ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
             @input="markDirty"
           />
-          <button
-            type="button"
-            class="flex items-center justify-center absolute bottom-3xl right-3xl rounded-lg p-sm hover:bg-info-50 disabled:opacity-50"
-            :disabled="isEnhancing || !form.prompt.trim()"
-            aria-label="Improve prompt with AI"
-            @click="handleEnhance"
-          >
-            <div
-              v-if="isEnhancing"
-              class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-info-600"
-            />
-            <span v-else class="label_3_semibold text-info-600">AI</span>
-          </button>
+          <div class="group/enhance absolute bottom-3xl right-3xl">
+            <button
+              type="button"
+              class="flex h-[28px] w-[28px] items-center justify-center rounded-lg transition-colors hover:bg-info-50 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="isEnhancing || !form.prompt.trim()"
+              aria-label="Improve prompt with AI"
+              @click="handleEnhance"
+            >
+              <div
+                v-if="isEnhancing"
+                class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-info-600"
+              />
+              <svg
+                v-else
+                class="enhance-ai-icon h-[22px] w-[22px]"
+                :class="{ 'enhance-ai-icon--busy': isEnhancing }"
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  d="M15.732 17.8929C16.3433 17.8929 16.9296 18.1509 17.3618 18.6101C17.7941 19.0694 18.0369 19.6923 18.0369 20.3418C18.0369 19.6923 18.2798 19.0694 18.712 18.6101C19.1443 18.1509 19.7305 17.8929 20.3418 17.8929C19.7305 17.8929 19.1443 17.6348 18.712 17.1756C18.2798 16.7163 18.0369 16.0934 18.0369 15.4439C18.0369 16.0934 17.7941 16.7163 17.3618 17.1756C16.9296 17.6348 16.3433 17.8929 15.732 17.8929ZM15.732 3.19898C16.3433 3.19898 16.9296 3.457 17.3618 3.91627C17.7941 4.37554 18.0369 4.99845 18.0369 5.64796C18.0369 4.99845 18.2798 4.37554 18.712 3.91627C19.1443 3.457 19.7305 3.19898 20.3418 3.19898C19.7305 3.19898 19.1443 2.94096 18.712 2.48169C18.2798 2.02242 18.0369 1.39951 18.0369 0.75C18.0369 1.39951 17.7941 2.02242 17.3618 2.48169C16.9296 2.94096 16.3433 3.19898 15.732 3.19898ZM7.66477 17.8929C7.66477 15.9443 8.39328 14.0756 9.69005 12.6978C10.9868 11.32 12.7456 10.5459 14.5795 10.5459C12.7456 10.5459 10.9868 9.77187 9.69005 8.39405C8.39328 7.01623 7.66477 5.14751 7.66477 3.19898C7.66477 5.14751 6.93625 7.01623 5.63948 8.39405C4.34271 9.77187 2.58391 10.5459 0.75 10.5459C2.58391 10.5459 4.34271 11.32 5.63948 12.6978C6.93625 14.0756 7.66477 15.9443 7.66477 17.8929Z"
+                  stroke="url(#enhance-ai-sparkle-gradient-sidebar)"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <defs>
+                  <linearGradient
+                    id="enhance-ai-sparkle-gradient-sidebar"
+                    x1="1.7175"
+                    y1="4.20738"
+                    x2="18.0862"
+                    y2="15.6158"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stop-color="#9966FF">
+                      <animate
+                        attributeName="stop-color"
+                        values="#9966FF;#0073E6;#FAB000;#15BE53;#9966FF"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                    </stop>
+                    <stop offset="35%" stop-color="#0073E6">
+                      <animate
+                        attributeName="stop-color"
+                        values="#0073E6;#FAB000;#15BE53;#9966FF;#0073E6"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                    </stop>
+                    <stop offset="65%" stop-color="#FAB000">
+                      <animate
+                        attributeName="stop-color"
+                        values="#FAB000;#15BE53;#9966FF;#0073E6;#FAB000"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                    </stop>
+                    <stop offset="100%" stop-color="#15BE53">
+                      <animate
+                        attributeName="stop-color"
+                        values="#15BE53;#9966FF;#0073E6;#FAB000;#15BE53"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                    </stop>
+                    <animateTransform
+                      attributeName="gradientTransform"
+                      type="rotate"
+                      from="0 10.5 10.5"
+                      to="360 10.5 10.5"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </button>
+            <span
+              role="tooltip"
+              class="pointer-events-none absolute bottom-full right-0 z-10 mb-sm hidden whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md group-hover/enhance:block group-focus-within/enhance:block"
+            >
+              Improve prompt with AI
+            </span>
+          </div>
         </div>
         <p v-if="promptError" class="label_3_regular text-error-600 mt-sm">{{ promptError }}</p>
         <p v-else-if="enhanceError" class="label_3_regular text-error-600 mt-sm">{{ enhanceError }}</p>
@@ -256,3 +333,39 @@ async function handleSave() {
   }
 }
 </script>
+
+<style scoped>
+.enhance-ai-icon {
+  animation: enhance-ai-glitter 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.enhance-ai-icon--busy {
+  animation: enhance-ai-glitter 0.8s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes enhance-ai-glitter {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(153, 102, 255, 0.55));
+    opacity: 0.92;
+    transform: scale(1);
+  }
+  25% {
+    filter: drop-shadow(0 0 4px rgba(0, 115, 230, 0.75));
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(250, 176, 0, 0.85));
+    opacity: 1;
+    transform: scale(1);
+  }
+  75% {
+    filter: drop-shadow(0 0 4px rgba(21, 190, 83, 0.75));
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+</style>
