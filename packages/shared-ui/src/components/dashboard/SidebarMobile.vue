@@ -338,8 +338,11 @@ const onChatSessionRename = (session) => {
   editingSessionId.value = session.id;
   editingTitle.value = session.title || "";
   nextTick(() => {
-    editInputRef.value?.focus?.();
-    editInputRef.value?.select?.();
+    const el = Array.isArray(editInputRef.value) ? editInputRef.value[0] : editInputRef.value;
+    if (el) {
+      el.focus();
+      el.select();
+    }
   });
 };
 

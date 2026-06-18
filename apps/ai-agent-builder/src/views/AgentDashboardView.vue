@@ -33,7 +33,22 @@
             class="flex shrink-0 items-center justify-between gap-4xl border-b primary_border_color px-6xl py-4xl"
           >
             <div class="flex min-w-0 items-center gap-4xl">
-              <h1 class="label_1_semibold primary_text_color truncate rounded-xl border primary_border_color px-4xl py-md">
+              <input
+                v-if="isEditingName"
+                ref="nameInputRef"
+                v-model="editNameInput"
+                type="text"
+                class="label_1_semibold primary_text_color rounded-md border primary_border_color px-4xl py-md outline-none bg-white focus:border-info-500 max-w-[300px]"
+                @keydown.enter="handleSaveName"
+                @keydown.esc="handleCancelRename"
+                @blur="handleSaveName"
+              />
+              <h1
+                v-else
+                class="label_1_semibold primary_text_color truncate rounded-md border primary_border_color px-4xl py-md cursor-pointer hover:bg-gray-50"
+                title="Click to rename"
+                @click="startRename"
+              >
                 {{ agent?.name || 'AI Agent' }}
               </h1>
               <span
@@ -94,23 +109,32 @@
         </template>
       </div>
     </template>
+    <SuccessToastNotification
+      :open="toastOpen"
+      :main-message="toastMessage"
+      :secondary-message="toastSecondaryMessage"
+      :type="toastType"
+      @close="toastOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AgentDashboardSidebar from '../components/agents/dashboard/AgentDashboardSidebar.vue'
 import AgentDashboardChat from '../components/agents/dashboard/AgentDashboardChat.vue'
 import AgentSetupView from '../components/agents/dashboard/AgentSetupView.vue'
 import VoiceToggle from '../components/agents/dashboard/VoiceToggle.vue'
+import { SuccessToastNotification } from '@ai-suite/shared-ui'
 import {
   createAgentChat,
   extractChatFromCreateResponse,
   fetchAgentChats,
 } from '../services/agents/chats.js'
 import { fetchAgentDetails, getStatusLabel } from '../services/agents/agents.js'
-import { refreshAgentDetails } from '../services/agents/update.js'
+import { refreshAgentDetails, updateAgentInfo } from '../services/agents/update.js'
+import { validateAgentName } from '../services/agents/validation.js'
 import {
   getCreatedAgentContext,
   getSelectedAgentId,
@@ -375,4 +399,71 @@ watch(
     }
   }
 )
+
+// Rename inline state and handlers
+const isEditingName = ref(false)
+const editNameInput = ref('')
+const nameInputRef = ref(null)
+
+const toastOpen = ref(false)
+const toastMessage = ref('')
+const toastSecondaryMessage = ref('')
+const toastType = ref('success')
+
+function showToast(main, secondary = '', type = 'success') {
+  toastMessage.value = main
+  toastSecondaryMessage.value = secondary
+  toastType.value = type
+  toastOpen.value = true
+}
+
+function startRename() {
+  editNameInput.value = agent.value?.name || ''
+  isEditingName.value = true
+  nextTick(() => {
+    nameInputRef.value?.focus()
+  })
+}
+
+function handleCancelRename() {
+  isEditingName.value = false
+}
+
+async function handleSaveName() {
+  if (!isEditingName.value) return
+  const newName = editNameInput.value.trim()
+  if (!newName) {
+    showToast('Rename Failed', 'Agent name cannot be empty.', 'error')
+    isEditingName.value = false
+    return
+  }
+
+  if (newName === agent.value?.name) {
+    isEditingName.value = false
+    return
+  }
+
+  const validation = validateAgentName(newName)
+  if (!validation.valid) {
+    showToast('Rename Failed', validation.message, 'error')
+    isEditingName.value = false
+    return
+  }
+
+  try {
+    const updated = await updateAgentInfo(agent.value.id, {
+      name: newName,
+      prompt: agent.value.prompt,
+      role: agent.value.role,
+      rules: agent.value.rules,
+      language: agent.value.language,
+    })
+    agent.value = updated
+    showToast('Agent Renamed', `Agent name updated to "${newName}" successfully.`, 'success')
+  } catch (err) {
+    showToast('Rename Failed', err?.message || 'Failed to update agent name.', 'error')
+  } finally {
+    isEditingName.value = false
+  }
+}
 </script>

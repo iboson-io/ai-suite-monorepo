@@ -453,9 +453,10 @@
     editingTitle.value = session.title || '';
 
     nextTick(() => {
-      if (editInputRef.value) {
-        editInputRef.value.focus();
-        editInputRef.value.select();
+      const el = Array.isArray(editInputRef.value) ? editInputRef.value[0] : editInputRef.value;
+      if (el) {
+        el.focus();
+        el.select();
       }
     });
   };

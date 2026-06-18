@@ -22,41 +22,26 @@
 
       <div class="mt-12 flex items-center justify-between">
         <div class="flex gap-2">
-          <div class="relative" ref="productsDropdownRef">
-            <button
-              @click="toggleProducts"
-              class="flex items-center gap-md rounded-lg border primary_border_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
-            >
+          <SelectBox
+            :model-value="selectedProduct.id"
+            :options="allProductsOptions"
+            :disabled="disableProductSelect"
+            :show-arrow="!disableProductSelect"
+            dropdown-class="w-40"
+            @change="selectProduct"
+          >
+            <template #trigger="{ selectedOption, isOpen }">
               <img :src="ProductIcon" alt="" />
-              <span class="hidden md:inline">{{ selectedProduct.name }}</span>
-              <img :src="DownArrow" alt="" />
-            </button>
-
-            <div
-              v-if="showProducts"
-              ref="productsDropdownMenuRef"
-              :class="[
-                'absolute left-0 z-10 w-40 rounded-md border primary_border_color bg_secondary_color max-h-48 overflow-y-auto',
-                productsDropdownPosition === 'above' ? 'bottom-full mb-xs' : 'top-9'
-              ]"
-            >
-              <div
-                v-if="showAllProductsOption"
-                @click="selectProduct(allProductsOption)"
-                class="cursor-pointer px-xl py-md label_2_medium secondary_text_color hover:bg-gray-50"
-              >
-                {{ allProductsLabel }}
-              </div>
-              <div
-                v-for="item in products"
-                :key="item.id"
-                @click="selectProduct(item)"
-                class="cursor-pointer px-xl py-md label_2_medium secondary_text_color hover:bg-gray-50"
-              >
-                {{ item.name }}
-              </div>
-            </div>
-          </div>
+              <span class="hidden md:inline">{{ selectedOption?.name || selectedProduct.name }}</span>
+              <img
+                v-if="!disableProductSelect"
+                :src="DownArrow"
+                alt=""
+                class="transition-transform duration-200"
+                :class="{ 'rotate-180': isOpen }"
+              />
+            </template>
+          </SelectBox>
 
           <label
             class="flex cursor-pointer items-center gap-md rounded-md border primary_border_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
@@ -66,40 +51,25 @@
             <input type="file" class="hidden" multiple @change="handleFiles" />
           </label>
 
-          <div v-if="showModelsDropdown !== false" class="relative" ref="modelsDropdownRef">
-            <button
-              @click="toggleModels"
-              class="flex items-center gap-md rounded-md border primary_border_color bg_secondary_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
-            >
+          <SelectBox
+            v-if="showModelsDropdown !== false"
+            :model-value="selectedModel"
+            :options="models"
+            :loading="isLoadingModels"
+            dropdown-class="w-40"
+            @change="selectModel"
+          >
+            <template #trigger="{ selectedOption, isOpen }">
               <img :src="GeminiIcon" alt="" />
-              <span class="hidden md:inline">{{ selectedModelDisplayLabel }}</span>
-              <img :src="DownArrow" alt="" />
-            </button>
-
-            <div
-              v-if="showModels"
-              ref="modelsDropdownMenuRef"
-              :class="[
-                'absolute left-0 z-10 w-40 rounded-md border primary_border_color bg_secondary_color shadow max-h-48 overflow-y-auto',
-                modelsDropdownPosition === 'above' ? 'bottom-full mb-xs' : 'top-9'
-              ]"
-            >
-              <div
-                v-for="model in models"
-                :key="model.id"
-                @click="selectModel(model)"
-                class="cursor-pointer px-xl py-xs label_2_medium secondary_text_color hover:bg-gray-50"
-              >
-                {{ model.name }}
-              </div>
-              <div
-                v-if="isLoadingModels"
-                class="px-xl py-xs label_2_medium secondary_text_color"
-              >
-                Loading...
-              </div>
-            </div>
-          </div>
+              <span class="hidden md:inline">{{ selectedOption?.name || selectedModel || 'Model' }}</span>
+              <img
+                :src="DownArrow"
+                alt=""
+                class="transition-transform duration-200"
+                :class="{ 'rotate-180': isOpen }"
+              />
+            </template>
+          </SelectBox>
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
@@ -155,6 +125,7 @@ import DownArrow from '../../assets/images/DownArrow.svg'
 import MikeIcon from '../../assets/images/MikeIcon.svg'
 import SendIcon from '../../assets/images/SendIcon.svg'
 import ActiveMikeIcon from '../../assets/images/ActiveMikeIcon.svg'
+import SelectBox from '../common/SelectBox.vue'
 import {
   fetchProducts as fetchProductsApi,
   fetchModels as fetchModelsApi,
@@ -177,6 +148,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  disableProductSelect: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['send-message'])
@@ -187,24 +162,17 @@ const isInputFocused = ref(false)
 
 const products = ref([])
 const selectedProduct = ref({ id: null, name: 'All products' })
-const showProducts = ref(false)
-const productsDropdownRef = ref(null)
-const productsDropdownMenuRef = ref(null)
-const productsDropdownPosition = ref('below')
 const isLoadingProducts = ref(false)
+
+const allProductsOptions = computed(() => {
+  if (props.showAllProductsOption) {
+    return [allProductsOption, ...products.value]
+  }
+  return products.value
+})
 
 const models = ref([])
 const selectedModel = ref('')
-const selectedModelDisplayLabel = computed(() => {
-  const id = selectedModel.value
-  if (!id) return 'Model'
-  const row = models.value.find((m) => m.id === id)
-  return row?.name || id
-})
-const showModels = ref(false)
-const modelsDropdownRef = ref(null)
-const modelsDropdownMenuRef = ref(null)
-const modelsDropdownPosition = ref('below')
 const isLoadingModels = ref(false)
 
 const files = ref([])
@@ -321,60 +289,14 @@ function startVoiceRecognition() {
   }
 }
 
-const calculateDropdownPosition = (dropdownRef, menuRef, positionRef) => {
-  if (!dropdownRef || !menuRef) return
-
-  nextTick(() => {
-    const rect = dropdownRef.getBoundingClientRect()
-    const menuRect = menuRef.getBoundingClientRect()
-    const viewportHeight = window.innerHeight
-    const spaceBelow = viewportHeight - rect.bottom
-    const spaceAbove = rect.top
-    const menuHeight = menuRect.height || 200
-
-    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-      positionRef.value = 'above'
-    } else {
-      positionRef.value = 'below'
-    }
-  })
-}
-
-const toggleProducts = () => {
-  showProducts.value = !showProducts.value
-  showModels.value = false
-
-  if (showProducts.value) {
-    calculateDropdownPosition(
-      productsDropdownRef.value,
-      productsDropdownMenuRef.value,
-      productsDropdownPosition
-    )
-  }
-}
-
-const toggleModels = () => {
-  showModels.value = !showModels.value
-  showProducts.value = false
-
-  if (showModels.value) {
-    calculateDropdownPosition(
-      modelsDropdownRef.value,
-      modelsDropdownMenuRef.value,
-      modelsDropdownPosition
-    )
-  }
-}
-
 const selectProduct = (item) => {
   selectedProduct.value = item
-  showProducts.value = false
 }
 
 function syncProductFromId(productId) {
   if (productId == null || productId === '' || productId === allProductsLabel) {
     if (!props.showAllProductsOption && products.value.length > 0) {
-      selectedProduct.value = { id: products.value[0].id, name: products.value[0].name }
+      selectedProduct.value = { id: products.value[0].id, name: products.value[0].name, kind: products.value[0].kind }
     } else {
       selectedProduct.value = { ...allProductsOption }
     }
@@ -383,9 +305,9 @@ function syncProductFromId(productId) {
   const idStr = String(productId)
   const match = products.value.find((p) => p.id != null && String(p.id) === idStr)
   selectedProduct.value = match
-    ? { id: match.id, name: match.name }
+    ? { id: match.id, name: match.name, kind: match.kind }
     : (!props.showAllProductsOption && products.value.length > 0
-        ? { id: products.value[0].id, name: products.value[0].name }
+        ? { id: products.value[0].id, name: products.value[0].name, kind: products.value[0].kind }
         : { id: productId, name: idStr })
 }
 
@@ -412,7 +334,6 @@ const selectModel = (model) => {
   } else if (model != null) {
     selectedModel.value = String(model)
   }
-  showModels.value = false
 }
 
 const fetchModels = async () => {
@@ -517,69 +438,7 @@ watch(products, () => {
 
 defineExpose({ setPrompt, setSelectedProduct, focus: () => promptInputRef.value?.focus?.() })
 
-const handleClickOutside = (event) => {
-  if (
-    showProducts.value &&
-    productsDropdownRef.value &&
-    !productsDropdownRef.value.contains(event.target)
-  ) {
-    showProducts.value = false
-  }
-
-  if (
-    showModels.value &&
-    modelsDropdownRef.value &&
-    !modelsDropdownRef.value.contains(event.target)
-  ) {
-    showModels.value = false
-  }
-}
-
-const handleResize = () => {
-  if (showProducts.value) {
-    calculateDropdownPosition(
-      productsDropdownRef.value,
-      productsDropdownMenuRef.value,
-      productsDropdownPosition
-    )
-  }
-  if (showModels.value) {
-    calculateDropdownPosition(
-      modelsDropdownRef.value,
-      modelsDropdownMenuRef.value,
-      modelsDropdownPosition
-    )
-  }
-}
-
-watch(showProducts, (newVal) => {
-  if (newVal) {
-    nextTick(() => {
-      calculateDropdownPosition(
-        productsDropdownRef.value,
-        productsDropdownMenuRef.value,
-        productsDropdownPosition
-      )
-    })
-  }
-})
-
-watch(showModels, (newVal) => {
-  if (newVal) {
-    nextTick(() => {
-      calculateDropdownPosition(
-        modelsDropdownRef.value,
-        modelsDropdownMenuRef.value,
-        modelsDropdownPosition
-      )
-    })
-  }
-})
-
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-  window.addEventListener('resize', handleResize)
-  window.addEventListener('scroll', handleResize, true)
   fetchProducts()
   if (showModelsDropdown !== false) {
     fetchModels()
@@ -588,8 +447,5 @@ onMounted(() => {
 
 onUnmounted(() => {
   abortVoiceRecognition()
-  document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('resize', handleResize)
-  window.removeEventListener('scroll', handleResize, true)
 })
 </script>
