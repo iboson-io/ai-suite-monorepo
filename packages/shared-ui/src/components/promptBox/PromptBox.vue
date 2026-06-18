@@ -24,12 +24,13 @@
         <div class="flex gap-2">
           <div class="relative" ref="productsDropdownRef">
             <button
+              :disabled="disableProductSelect"
               @click="toggleProducts"
-              class="flex items-center gap-md rounded-lg border primary_border_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
+              class="flex items-center gap-md rounded-lg border primary_border_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25 disabled:opacity-75 disabled:cursor-not-allowed"
             >
               <img :src="ProductIcon" alt="" />
               <span class="hidden md:inline">{{ selectedProduct.name }}</span>
-              <img :src="DownArrow" alt="" />
+              <img v-if="!disableProductSelect" :src="DownArrow" alt="" />
             </button>
 
             <div
@@ -176,6 +177,10 @@ const props = defineProps({
   showAllProductsOption: {
     type: Boolean,
     default: true,
+  },
+  disableProductSelect: {
+    type: Boolean,
+    default: false,
   },
 })
 
