@@ -1,11 +1,11 @@
 <template>
-  <div class="relative" ref="dropdownRef">
+  <div class="relative" :class="wrapperClass" ref="dropdownRef">
     <button
       type="button"
       :disabled="disabled"
       @click="toggleDropdown"
-      class="flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color text-left outline-none primary_text_color disabled:opacity-75 disabled:cursor-not-allowed"
-      :class="customClass || 'px-xl py-xs label_2_medium'"
+      v-bind="$attrs"
+      :class="customClass || 'flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color text-left outline-none primary_text_color disabled:opacity-75 disabled:cursor-not-allowed px-xl py-xs label_2_medium'"
     >
       <slot name="trigger" :selected-option="selectedOption" :is-open="isOpen">
         <img v-if="icon" :src="icon" alt="" class="shrink-0" />
@@ -26,7 +26,7 @@
       :class="[
         'absolute left-0 z-50 rounded-md border primary_border_color bg_secondary_color max-h-48 overflow-y-auto shadow-md',
         dropdownClass || 'w-40',
-        dropdownPosition === 'above' ? 'bottom-full mb-xs' : 'top-9'
+        dropdownPosition === 'above' ? 'bottom-full mb-xs' : 'top-full mt-xs'
       ]"
     >
       <div
@@ -52,6 +52,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import DownArrow from '../../assets/images/DownArrow.svg'
+
+defineOptions({
+  inheritAttrs: false,
+})
 
 const props = defineProps({
   modelValue: {
@@ -83,6 +87,10 @@ const props = defineProps({
     default: '',
   },
   dropdownClass: {
+    type: String,
+    default: '',
+  },
+  wrapperClass: {
     type: String,
     default: '',
   },

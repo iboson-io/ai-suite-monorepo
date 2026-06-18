@@ -4,21 +4,16 @@
       <label class="label_2_semibold primary_text_color">
         Database Type <span class="text-error-600">*</span>
       </label>
-      <select
-        :value="dbConfig.type"
-        class="label_2_regular primary_text_color mt-md w-full rounded-xl border bg-white px-4xl py-3xl outline-none focus:border-info-500"
-        :class="validationErrors.type ? 'border-error-200' : 'primary_border_color'"
-        @change="updateField('type', $event.target.value)"
-      >
-        <option value="">Select database type</option>
-        <option value="postgresql">PostgreSQL</option>
-        <option value="mysql">MySQL</option>
-        <option value="sqlite">SQLite</option>
-        <option value="mongodb">MongoDB</option>
-        <option value="redis">Redis</option>
-        <option value="oracle">Oracle</option>
-        <option value="mssql">MSSQL</option>
-      </select>
+      <SelectBox
+        :model-value="dbConfig.type"
+        :options="dbTypeOptions"
+        placeholder="Select database type"
+        wrapper-class="w-full"
+        custom-class="flex items-center justify-between gap-md rounded-xl border bg-white px-4xl py-3xl outline-none label_2_regular primary_text_color disabled:opacity-75 disabled:cursor-not-allowed mt-md w-full text-left focus:border-info-500"
+        :class="validationErrors.type ? 'border-error-200 focus:border-error-400' : 'primary_border_color'"
+        dropdown-class="w-full"
+        @change="updateField('type', $event.id)"
+      />
     </div>
 
     <div>
@@ -94,10 +89,14 @@
         />
         <button
           type="button"
-          class="absolute inset-y-0 right-0 px-4xl caption_1_medium secondary_text_color hover:primary_text_color"
+          class="absolute inset-y-0 right-0 px-4xl flex items-center"
           @click="$emit('toggle-db-password')"
         >
-          {{ showDbPassword ? 'Hide' : 'Show' }}
+          <img
+            :src="showDbPassword ? EyeCloseIcon : EyeOpenIcon"
+            :alt="showDbPassword ? 'Hide password' : 'Show password'"
+            class="h-5 w-5 opacity-60 hover:opacity-100 transition-opacity"
+          />
         </button>
       </div>
     </div>
@@ -105,6 +104,10 @@
 </template>
 
 <script setup>
+import { SelectBox } from '@ai-suite/shared-ui'
+import EyeOpenIcon from '../../../../../../packages/shared-ui/src/assets/images/EyeOpen.svg'
+import EyeCloseIcon from '../../../../../../packages/shared-ui/src/assets/images/EyeCloseIcon.svg'
+
 const props = defineProps({
   dbConfig: {
     type: Object,
@@ -122,6 +125,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:db-config', 'toggle-db-password', 'validate-field'])
+
+const dbTypeOptions = [
+  { id: 'postgresql', name: 'PostgreSQL' },
+  { id: 'mysql', name: 'MySQL' },
+  { id: 'sqlite', name: 'SQLite' },
+  { id: 'mongodb', name: 'MongoDB' },
+  { id: 'redis', name: 'Redis' },
+  { id: 'oracle', name: 'Oracle' },
+  { id: 'mssql', name: 'MSSQL' },
+]
 
 function updateField(field, value) {
   emit('update:db-config', { ...props.dbConfig, [field]: value })
