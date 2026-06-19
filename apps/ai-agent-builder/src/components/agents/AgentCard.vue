@@ -91,6 +91,9 @@
       <span class="caption_1_medium shrink-0 rounded-md px-md py-xs" :class="statusBadgeClass">
         {{ statusLabel }}
       </span>
+      <span v-if="showType" class="caption_1_medium shrink-0 rounded-md px-md py-xs bg-info-50 text-info-600 border border-info-200">
+        {{ agentTypeLabel }}
+      </span>
       <span class="body_4_regular tertiary_text_color min-w-0 truncate">
         {{ lastUpdatedLabel }}
       </span>
@@ -107,12 +110,17 @@ import {
   formatLastUpdated,
   getStatusBadgeClass,
   getStatusLabel,
+  KNOWLEDGE_TYPE_LABELS,
 } from '../../services/agents/agents.js'
 
 const props = defineProps({
   agent: {
     type: Object,
     required: true,
+  },
+  showType: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -138,6 +146,13 @@ const statusLabel = computed(() => getStatusLabel(props.agent.status))
 const statusBadgeClass = computed(() => getStatusBadgeClass(props.agent.status))
 const lastUpdatedLabel = computed(() => formatLastUpdated(props.agent.updatedAt))
 const isActive = computed(() => props.agent.status === 'published')
+
+const agentTypeLabel = computed(() => {
+  if (props.agent.kind === 'multi' || props.agent.agentType === 'multi') {
+    return 'Multi Agent'
+  }
+  return KNOWLEDGE_TYPE_LABELS[props.agent.agentType] || 'Agent'
+})
 
 function updateMenuPosition() {
   if (!menuTriggerRef.value || !isMenuOpen.value) return

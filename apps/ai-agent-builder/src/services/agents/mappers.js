@@ -164,6 +164,7 @@ export function mapAgentItem(raw, kind) {
     status: kind === 'multi' ? mapMultiAgentStatus(raw) : normalizeStatus(raw.status),
     updatedAt: raw.updated_at ?? raw.updatedAt ?? raw.created_at ?? raw.createdAt,
     kind,
+    agentType: kind === 'multi' ? 'multi' : resolveAgentKnowledgeType(raw),
   }
 }
 

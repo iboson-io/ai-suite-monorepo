@@ -100,21 +100,11 @@
             </div>
           </div>
 
-          <div class="relative w-80 shrink-0">
-            <img
-              :src="SearchIcon"
-              alt=""
-              class="pointer-events-none absolute left-3xl top-1/2 h-6 w-6 -translate-y-1/2"
-              aria-hidden="true"
-            />
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Search"
-              class="w-full rounded-[1px] border primary_border_color bg-white py-md pl-11 pr-3xl label_2_medium primary_text_color outline-none transition-colors placeholder:text-gray-400"
-              autocomplete="off"
-            />
-          </div>
+          <SearchInput
+            v-model="searchQuery"
+            placeholder="Search"
+            wrapper-class="w-80 shrink-0"
+          />
         </div>
       </div>
 
@@ -167,6 +157,7 @@
             v-for="agent in agents"
             :key="`${agent.kind}-${agent.id}`"
             :agent="agent"
+            :show-type="activeCategory !== 'multi'"
             @toggle-active="handleToggleAgentActive"
             @delete="handleDeleteAgent"
             @select="handleSelectAgent"
@@ -209,8 +200,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { SearchInput } from '@ai-suite/shared-ui'
 import DownArrow from '../assets/images/DownArrow.svg'
-import SearchIcon from '../assets/images/search.svg'
 import ListIcon from '../assets/images/list.svg'
 import UserIcon from '../assets/images/user.svg'
 import UsersGroupIcon from '../assets/images/users-group.svg'
