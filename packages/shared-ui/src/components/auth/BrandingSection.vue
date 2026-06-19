@@ -40,7 +40,7 @@
     <p class="label_1_regular primary_text_color text-center mt-6xl">
       {{ description }}
     </p>
-    <p class="label_1_regular primary_text_color text-center mt-3xl">
+    <p class="label_1_regular primary_text_color text-center ">
       {{ description2 }}
     </p>
   </div>
