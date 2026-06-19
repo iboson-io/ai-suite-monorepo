@@ -135,9 +135,9 @@
             />
             <span class="secondary_text_color">
               I agree to the
-              <a class="underline primary_text_color">Terms of Service</a>
+              <a :href="termsLink" :target="termsLink ? '_blank' : undefined" :rel="termsLink ? 'noopener noreferrer' : undefined" class="underline primary_text_color">Terms of Service</a>
               and
-              <a class="underline primary_text_color">Privacy Policy</a>
+              <a :href="privacyLink" :target="privacyLink ? '_blank' : undefined" :rel="privacyLink ? 'noopener noreferrer' : undefined" class="underline primary_text_color">Privacy Policy</a>
             </span>
           </label>
 
@@ -184,8 +184,12 @@ import Logo from "../common/Logo.vue"
 import EyeCloseIcon from "../../assets/images/EyeCloseIcon.svg"
 import WarningIcon from "../../assets/images/WarningIcon.svg"
 import { register, parseRegisterError } from "@app/services/auth/signUp.js"
+import { getBrandingSectionConfig } from "@app/services/auth/branding.js"
 
 const router = useRouter()
+const brandingConfig = getBrandingSectionConfig()
+const termsLink = brandingConfig.termsLink
+const privacyLink = brandingConfig.privacyLink
 
 /* Form State */
 const form = reactive({
