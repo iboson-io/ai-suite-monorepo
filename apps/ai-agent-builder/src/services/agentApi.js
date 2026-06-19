@@ -757,13 +757,18 @@ class ApiService {
     })
   }
 
-  async getMultiAgents(page = 1, limit = 12, status = 'MultiAgents', search = null) {
+  async getMultiAgents(page = 1, limit = 12, status = 'MultiAgents', search = null, isActive = undefined) {
     const queryParams = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      is_active: 'true',
       status: status || 'MultiAgents',
     })
+
+    if (isActive !== undefined && isActive !== null) {
+      queryParams.append('is_active', String(isActive))
+    } else {
+      queryParams.append('is_active', 'true')
+    }
 
     if (search && search.trim()) {
       queryParams.append('search', search.trim())

@@ -75,8 +75,32 @@ async function fetchSingleAgents(page, limit, statusLabel, search) {
   }
 }
 
-async function fetchMultiAgents(page, limit, search) {
-  const response = await apiService.getMultiAgents(page, limit, 'MultiAgents', search)
+async function fetchMultiAgents(page, limit, search, statuses = []) {
+  const hasPublished = !statuses.length || statuses.includes('published')
+  const hasArchived = statuses.includes('archived')
+
+  let response
+  if (hasArchived && !hasPublished) {
+    response = await apiService.getMultiAgents(page, limit, 'MultiAgents', search, 'false')
+  } else if (hasPublished && !hasArchived) {
+    response = await apiService.getMultiAgents(page, limit, 'MultiAgents', search, 'true')
+  } else {
+    const [activeRes, inactiveRes] = await Promise.all([
+      apiService.getMultiAgents(page, limit, 'MultiAgents', search, 'true'),
+      apiService.getMultiAgents(page, limit, 'MultiAgents', search, 'false')
+    ])
+
+    const activeGroups = extractList(activeRes, ['groups'])
+    const inactiveGroups = extractList(inactiveRes, ['groups'])
+
+    response = {
+      groups: activeGroups.concat(inactiveGroups),
+      pagination: {
+        total: (activeRes.pagination?.total_items ?? 0) + (inactiveRes.pagination?.total_items ?? 0)
+      }
+    }
+  }
+
   const items = extractList(response, ['groups'])
     .map((item) => mapAgentItem(item, 'multi'))
     .filter(Boolean)
@@ -118,7 +142,8 @@ export async function fetchAgentsList({
     const { items: multiAgents, hasMore } = await fetchMultiAgents(
       page,
       multiLimit,
-      trimmedSearch
+      trimmedSearch,
+      statuses
     )
     items = items.concat(multiAgents)
     multiHasMore = hasMore
