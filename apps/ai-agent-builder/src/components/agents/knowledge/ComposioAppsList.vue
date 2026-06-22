@@ -39,11 +39,14 @@
         </div>
       </div>
 
-      <div class="mb-4xl flex items-center justify-between gap-4xl">
+      <div
+        class="mb-4xl flex"
+        :class="editMode ? 'flex-col items-stretch gap-y-3' : 'items-center justify-between gap-4xl'"
+      >
         <p class="label_2_semibold primary_text_color shrink-0">
           Connect tools to enable actions
         </p>
-        <div class="relative w-full max-w-[280px]">
+        <div class="relative w-full" :class="editMode ? '' : 'max-w-[280px]'">
           <img
             :src="SearchIcon"
             alt=""
@@ -212,6 +215,7 @@ const COMPOSIO_LOGO_CDN = 'https://logos.composio.dev/api'
 
 const props = defineProps({
   selectedApps: { type: Array, default: () => [] },
+  editMode: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
