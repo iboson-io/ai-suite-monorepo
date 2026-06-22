@@ -86,8 +86,8 @@ export async function updateAgentKnowledge(agentId, {
   return details
 }
 
-export async function deleteAgentKnowledgeFile(agentId, fileId) {
-  return apiService.deleteAgentFile(agentId, fileId)
+export async function deleteAgentKnowledgeFile(agentId, fileId, fileType = null) {
+  return apiService.deleteAgentFile(agentId, fileId, fileType)
 }
 
 export async function refreshAgentDetails(agentId) {

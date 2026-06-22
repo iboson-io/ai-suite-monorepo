@@ -1257,18 +1257,25 @@ class ApiService {
     })
   }
 
-  async updateAgentWithFiles(agentId, agentData, schemaFiles = [], documentFiles = []) {
+  async updateAgentWithFiles(agentId, agentData, schemaFiles = [], documentFiles = [], knowledgeType = 'api') {
     const formData = new FormData()
 
     Object.keys(agentData).forEach(key => {
       if (key !== 'schema_files' && key !== 'document_files') {
         let val = agentData[key]
-        if (key === 'rules' && Array.isArray(val)) {
+        if ((key === 'base_url' || key === 'token') && val === '') {
+          return
+        }
+        if (typeof val === 'object' && val !== null) {
           val = JSON.stringify(val)
         }
         formData.append(key, val)
       }
     })
+
+    if (!agentData.agent_type && knowledgeType) {
+      formData.append('agent_type', knowledgeType)
+    }
 
     schemaFiles.forEach((file, index) => {
       formData.append('schema_files', file)
@@ -1303,8 +1310,14 @@ class ApiService {
     }
   }
 
-  async deleteAgentFile(agentId, fileId) {
-    return this.requestAgent(`${API_ENDPOINTS.DELETE_AGENT_FILE}/${agentId}/files/${fileId}`, {
+  async deleteAgentFile(agentId, fileId, fileType = null) {
+    const queryParams = new URLSearchParams()
+    if (fileType) {
+      queryParams.append('type', fileType)
+    }
+    const queryStr = queryParams.toString()
+    const url = `${API_ENDPOINTS.DELETE_AGENT_FILE}/${agentId}/files/${fileId}${queryStr ? `?${queryStr}` : ''}`
+    return this.requestAgent(url, {
       method: 'DELETE'
     })
   }
