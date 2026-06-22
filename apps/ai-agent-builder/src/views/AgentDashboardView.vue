@@ -346,6 +346,7 @@ function handleChatPageChange(page) {
 async function handleAgentUpdated(updatedAgent) {
   if (updatedAgent?.id) {
     agent.value = updatedAgent
+    showToast('Success', 'Agent updated successfully.', 'success')
     return
   }
 
@@ -353,6 +354,7 @@ async function handleAgentUpdated(updatedAgent) {
 
   try {
     agent.value = await refreshAgentDetails(agent.value.id)
+    showToast('Success', 'Agent updated successfully.', 'success')
   } catch {
     // keep current agent state on refresh failure
   }
