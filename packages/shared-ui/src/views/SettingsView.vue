@@ -89,6 +89,7 @@
 
 <script setup>
 import { ref, reactive, h, onMounted, nextTick } from "vue";
+import { getBrandingSectionConfig } from "@app/services/auth/branding.js";
 import UserProfile from "../components/settings/UserProfile.vue"
 import Billing from "../components/settings/Billing.vue"
 import Localization from "../components/settings/localization.vue"
@@ -189,6 +190,14 @@ const tabRefs = ref({});
 const canScrollLeft = ref(false);
 const canScrollRight = ref(true);
 
+const brandingConfig = (() => {
+  try {
+    return getBrandingSectionConfig() || {};
+  } catch {
+    return {};
+  }
+})();
+
 const tabs = [
   {
     id: "account",
@@ -215,7 +224,12 @@ const tabs = [
     label: "Data & Privacy Settings",
     iconComponent: DatabaseIcon,
   },
-];
+].filter((tab) => {
+  if (tab.id === "localization" && brandingConfig.excludeLocalization) {
+    return false;
+  }
+  return true;
+});
 
 const checkScrollPosition = () => {
   if (!tabsContainer.value) return;
