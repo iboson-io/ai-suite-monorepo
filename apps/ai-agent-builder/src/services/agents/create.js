@@ -16,10 +16,14 @@ export function resolveKnowledgeType({
   dbConfig = null,
   selectedComposioApps = [],
 }) {
-  if (knowledgeTab === 'composio' && selectedComposioApps.length > 0) return 'composio'
-  if (knowledgeTab === 'db' && dbConfig?.type) return 'db'
-  if (knowledgeTab === 'api' && schemaFiles.length > 0) return 'api'
-  if (knowledgeTab === 'documents' && documentFiles.length > 0) return 'doc'
+  const normalizedTab = String(knowledgeTab ?? '').toLowerCase()
+  if (normalizedTab === 'documents' || normalizedTab === 'doc') return 'doc'
+  if (normalizedTab === 'db') return 'db'
+  if (normalizedTab === 'composio') return 'composio'
+  if (normalizedTab === 'api') return 'api'
+
+  if (selectedComposioApps.length > 0) return 'composio'
+  if (dbConfig?.type) return 'db'
   if (documentFiles.length > 0) return 'doc'
   if (schemaFiles.length > 0) return 'api'
   return 'api'
@@ -61,10 +65,8 @@ export function buildCreateAgentPayload({
     name: String(name).trim(),
     status: 'published',
     system_type: 'single',
-    base_url: '',
-    token: '',
+    agent_type: knowledgeType,
     auth_type: 'none',
-    auth_config: {},
     voice: true,
   }
 
@@ -90,17 +92,19 @@ export function buildCreateAgentPayload({
         token: trimmedToken,
       }
       agentData.base_url = trimmedBaseUrl
-      agentData.token = trimmedToken
+      if (trimmedToken) agentData.token = trimmedToken
       break
 
     case 'doc':
       agentData.auth_type = 'document_access'
-      agentData.auth_config = {
-        base_url: trimmedBaseUrl,
-        token: trimmedToken,
+      if (trimmedBaseUrl || trimmedToken) {
+        agentData.auth_config = {
+          base_url: trimmedBaseUrl,
+          token: trimmedToken,
+        }
+        if (trimmedBaseUrl) agentData.base_url = trimmedBaseUrl
+        if (trimmedToken) agentData.token = trimmedToken
       }
-      agentData.base_url = trimmedBaseUrl
-      agentData.token = trimmedToken
       break
 
     case 'db':
