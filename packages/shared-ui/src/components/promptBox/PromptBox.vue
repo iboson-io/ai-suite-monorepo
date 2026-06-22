@@ -107,9 +107,19 @@
         <span
           v-for="file in files"
           :key="file.name"
-          class="rounded bg_primary_color px-md py-xs label_2_medium secondary_text_color"
+          class="inline-flex items-center gap-sm rounded bg_primary_color pl-md pr-sm py-xs label_2_medium secondary_text_color"
         >
-          {{ file.name }}
+          <span class="truncate max-w-[200px]" :title="file.name">{{ file.name }}</span>
+          <button
+            type="button"
+            class="inline-flex h-4 w-4 items-center justify-center rounded-full text-secondary_text_color transition-colors hover:bg-gray-200 hover:text-error-600"
+            aria-label="Remove file"
+            @click.stop="removeFile(file)"
+          >
+            <svg class="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </span>
       </div>
     </div>
@@ -354,7 +364,19 @@ const fetchModels = async () => {
 }
 
 const handleFiles = (e) => {
-  files.value = Array.from(e.target.files)
+  const newFiles = Array.from(e.target.files || [])
+  const merged = [...files.value]
+  newFiles.forEach((file) => {
+    if (!merged.some((f) => f.name === file.name && f.size === file.size)) {
+      merged.push(file)
+    }
+  })
+  files.value = merged
+  e.target.value = ''
+}
+
+function removeFile(fileToRemove) {
+  files.value = files.value.filter((f) => f !== fileToRemove)
 }
 
 function submitPrompt() {
