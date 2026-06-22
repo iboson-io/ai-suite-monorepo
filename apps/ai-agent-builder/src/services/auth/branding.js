@@ -1,6 +1,7 @@
 export function getBrandingSectionConfig() {
   return {
     brandName: 'AI Agent',
+    excludeLocalization: true,
     headline: 'Let AI Agents Handle Your Work',
     description:
       'Create, automate, and manage tasks and ',

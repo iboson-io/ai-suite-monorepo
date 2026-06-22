@@ -177,9 +177,10 @@
 
             
           <!-- Connected Social Accounts Section -->
+          <div v-if="isGoogleLinked">
             <h2 class="heading_h6_semibold mt-10xl primary_text_color">Connected social accounts</h2>
             <p class="label_1_regular secondary_text_color mt-md">
-              Services that you use to log in to Genius AI
+              Services that you use to log in to {{ brandName }}
             </p>
 
             <div class="mt-10xl w-[100%] md:w-1/2">
@@ -200,10 +201,10 @@
                 </div>
                 <button
                   type="button"
-                  @click="isGoogleLinked ? openDisconnectModal() : connectGoogleAccount()"
+                  @click="openDisconnectModal"
                   class="px-5xl md:px-12xl py-md rounded-md bg-gray-25 label_1_semibold primary_text_color hover:bg-black-25 active:bg-black-25"
                 >
-                  {{ isGoogleLinked ? "Disconnect" : "Connect" }}
+                  Disconnect
                 </button>
               </div>
               <p
@@ -214,6 +215,7 @@
                 {{ googleConnectError }}
               </p>
             </div>
+          </div>
           </div>
         
           
@@ -337,6 +339,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
+import { getBrandingSectionConfig } from "@app/services/auth/branding.js";
 import {
   TOKEN_KEY,
   parseSettingsError,
@@ -365,6 +368,15 @@ import WarningGrayIcon from "../../assets/images/WarningGrayIcon.svg";
 const profileForm = reactive({
   name: "",
   email: "",
+});
+
+const brandName = computed(() => {
+  try {
+    const config = getBrandingSectionConfig();
+    return config.brandName || "Genius AI";
+  } catch (e) {
+    return "Genius AI";
+  }
 });
 
 // Original values for cancel functionality
@@ -629,7 +641,7 @@ const closeEmailVerificationModal = () => {
 // Disconnect account functions
 const openDisconnectModal = () => {
   googleDisconnectError.value = "";
-  disconnectDescription.value = `You'll need to use your email address ${googleAccountEmail.value} and password next time you log in to Genius AI`;
+  disconnectDescription.value = `You'll need to use your email address ${googleAccountEmail.value} and password next time you log in to ${brandName.value}`;
   showDisconnectModal.value = true;
 };
 
