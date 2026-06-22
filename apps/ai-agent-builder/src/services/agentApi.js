@@ -911,10 +911,10 @@ class ApiService {
     // Use agent_type from agentData if provided (for composio), otherwise use knowledgeType
     formData.append('agent_type', agentData.agent_type || knowledgeType)
     formData.append('auth_type', agentData.auth_type)
-    if (agentData.base_url !== '') {
+    if (agentData.base_url !== undefined && agentData.base_url !== 'undefined' && agentData.base_url !== null && agentData.base_url !== '') {
       formData.append('base_url', agentData.base_url)
     }
-    if (agentData.token !== '') {
+    if (agentData.token !== undefined && agentData.token !== 'undefined' && agentData.token !== null && agentData.token !== '') {
       formData.append('token', agentData.token)
     }
 
@@ -1263,7 +1263,7 @@ class ApiService {
     Object.keys(agentData).forEach(key => {
       if (key !== 'schema_files' && key !== 'document_files') {
         let val = agentData[key]
-        if ((key === 'base_url' || key === 'token') && val === '') {
+        if ((key === 'base_url' || key === 'token') && (val === '' || val === undefined || val === 'undefined' || val === null)) {
           return
         }
         if (typeof val === 'object' && val !== null) {
