@@ -604,6 +604,26 @@ watch(
   }
 )
 
+watch(
+  () => props.documentFiles,
+  (newVal) => {
+    if (!newVal || newVal.length === 0) {
+      documentUpload.clear?.()
+    }
+  },
+  { deep: true }
+)
+
+watch(
+  () => props.schemaFiles,
+  (newVal) => {
+    if (!newVal || newVal.length === 0) {
+      schemaUpload.clear?.()
+    }
+  },
+  { deep: true }
+)
+
 const showFilePartition = computed(() => {
   if (props.editMode) return false
   if (effectiveActiveTab.value === 'documents') return documentUploadItems.value.length > 0

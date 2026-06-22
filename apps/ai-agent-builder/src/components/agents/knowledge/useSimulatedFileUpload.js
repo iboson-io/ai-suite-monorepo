@@ -90,9 +90,14 @@ export function useSimulatedFileUpload({ onValidate, onFileComplete }) {
     items.value = items.value.filter((f) => f.id !== item.id)
   }
 
+  function clear() {
+    Object.keys(intervals).forEach((id) => clearIntervalFor(Number(id)))
+    items.value = []
+  }
+
   onBeforeUnmount(() => {
     Object.keys(intervals).forEach((id) => clearIntervalFor(Number(id)))
   })
 
-  return { items, addFiles, cancelUpload, removeItem }
+  return { items, addFiles, cancelUpload, removeItem, clear }
 }
