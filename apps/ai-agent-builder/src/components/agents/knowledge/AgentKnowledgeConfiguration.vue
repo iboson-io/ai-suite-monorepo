@@ -367,6 +367,7 @@
       <template v-else-if="effectiveActiveTab === 'composio'">
         <ComposioAppsList
           :selected-apps="selectedComposioApps"
+          :edit-mode="editMode"
           @update:selected-apps="$emit('update:selected-composio-apps', $event)"
           @store-form-data-before-redirect="$emit('store-form-data-before-redirect')"
         />
