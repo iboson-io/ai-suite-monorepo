@@ -41,6 +41,11 @@
                 <path d="M5.33333 5.33333H12.6667M5.33333 9H10.8333M6.25 13.5833H3.5C2.77065 13.5833 2.07118 13.2936 1.55546 12.7779C1.03973 12.2622 0.75 11.5627 0.75 10.8333V3.5C0.75 2.77065 1.03973 2.07118 1.55546 1.55546C2.07118 1.03973 2.77065 0.75 3.5 0.75H14.5C15.2293 0.75 15.9288 1.03973 16.4445 1.55546C16.9603 2.07118 17.25 2.77065 17.25 3.5V10.8333C17.25 11.5627 16.9603 12.2622 16.4445 12.7779C15.9288 13.2936 15.2293 13.5833 14.5 13.5833H11.75L9 16.3333L6.25 13.5833Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
 
+              <!-- Phone (Calls) Icon -->
+              <svg v-else-if="tab.id === 'phone'" class="h-4 w-4" viewBox="0 0 18 18" fill="none" stroke="currentColor">
+                <path d="M2.58333 0.75H6.25L8.08333 5.33333L5.79167 6.70833C6.77338 8.6989 8.38443 10.31 10.375 11.2917L11.75 9L16.3333 10.8333V14.5C16.3333 14.9862 16.1402 15.4525 15.7964 15.7964C15.4525 16.1402 14.9862 16.3333 14.5 16.3333C10.9243 16.116 7.55181 14.5976 5.01876 12.0646C2.48571 9.53153 0.967295 6.15901 0.75 2.58333C0.75 2.0971 0.943154 1.63079 1.28697 1.28697C1.63079 0.943154 2.0971 0.75 2.58333 0.75Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+
               <!-- SDK Integration Icon -->
               <svg v-else-if="tab.id === 'sdk'" class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor">
                 <path d="M4.41667 2.58333C4.41667 3.06956 4.22351 3.53588 3.8797 3.8797C3.53588 4.22351 3.06956 4.41667 2.58333 4.41667C2.0971 4.41667 1.63079 4.22351 1.28697 3.8797C0.943154 3.53588 0.75 3.06956 0.75 2.58333C0.75 2.0971 0.943154 1.63079 1.28697 1.28697C1.63079 0.943154 2.0971 0.75 2.58333 0.75C3.06956 0.75 3.53588 0.943154 3.8797 1.28697C4.22351 1.63079 4.41667 2.0971 4.41667 2.58333ZM4.41667 2.58333H10.8333C11.0764 2.58333 11.3096 2.67991 11.4815 2.85182C11.6534 3.02373 11.75 3.25688 11.75 3.5V12.6667C11.75 12.9098 11.6534 13.1429 11.4815 13.3148C11.3096 13.4868 11.0764 13.5833 10.8333 13.5833H9M15.4167 8.08333C15.4167 8.56956 15.6098 9.03588 15.9536 9.3797C16.2975 9.72351 16.7638 9.91667 17.25 9.91667C17.7362 9.91667 18.2025 9.72351 18.5464 9.3797C18.8902 9.03588 19.0833 8.56956 19.0833 8.08333C19.0833 7.5971 18.8902 7.13079 18.5464 6.78697C18.2025 6.44315 17.7362 6.25 17.25 6.25C16.7638 6.25 16.2975 6.44315 15.9536 6.78697C15.6098 7.13079 15.4167 7.5971 15.4167 8.08333ZM15.4167 8.08333H11.75M4.41667 9.91667C4.41667 10.4029 4.22351 10.8692 3.8797 11.213C3.53588 11.5568 3.06956 11.75 2.58333 11.75C2.0971 11.75 1.63079 11.5568 1.28697 11.213C0.943154 10.8692 0.75 10.4029 0.75 9.91667C0.75 9.43044 0.943154 8.96412 1.28697 8.6203C1.63079 8.27649 2.0971 8.08333 2.58333 8.08333C3.06956 8.08333 3.53588 8.27649 3.8797 8.6203C4.22351 8.96412 4.41667 9.43044 4.41667 9.91667ZM4.41667 9.91667H7.16667C7.40978 9.91667 7.64294 10.0132 7.81485 10.1852C7.98676 10.3571 8.08333 10.5902 8.08333 10.8333V16.3333C8.08333 16.5764 7.98676 16.8096 7.81485 16.9815C7.64294 17.1534 7.40978 17.25 7.16667 17.25H4.41667M4.41667 17.25C4.41667 17.7362 4.22351 18.2025 3.8797 18.5464C3.53588 18.8902 3.06956 19.0833 2.58333 19.0833C2.0971 19.0833 1.63079 18.8902 1.28697 18.5464C0.943154 18.2025 0.75 17.7362 0.75 17.25C0.75 16.7638 0.943154 16.2975 1.28697 15.9536C1.63079 15.6098 2.0971 15.4167 2.58333 15.4167C3.06956 15.4167 3.53588 15.6098 3.8797 15.9536C4.22351 16.2975 4.41667 16.7638 4.41667 17.25Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -135,7 +140,15 @@
             @save="saveChanges"
           />
 
-
+          <PhoneCallsForm
+            v-else-if="activeTab === 'phone'"
+            :voice-webhook="voiceWebhook"
+            :voice-endpoint="voiceEndpoint"
+            :webhook-copied-label="copiedLabel['webhook']"
+            :endpoint-copied-label="copiedLabel['voice_endpoint']"
+            @copy-webhook="copyToClipboard(voiceWebhook, 'webhook')"
+            @copy-endpoint="copyToClipboard(voiceEndpoint, 'voice_endpoint')"
+          />
 
           <SdkIntegrationForm
             v-else-if="activeTab === 'sdk'"
@@ -189,7 +202,7 @@ import { SuccessToastNotification } from '@ai-suite/shared-ui'
 
 // Import Sub-components
 import ChatbotCustomizationForm from './setup/ChatbotCustomizationForm.vue'
-
+import PhoneCallsForm from './setup/PhoneCallsForm.vue'
 import SdkIntegrationForm from './setup/SdkIntegrationForm.vue'
 import ApiEndpointForm from './setup/ApiEndpointForm.vue'
 import ChatbotPreviewWidget from './setup/ChatbotPreviewWidget.vue'
@@ -197,7 +210,7 @@ import ChatbotPreviewWidget from './setup/ChatbotPreviewWidget.vue'
 
 // Import deployment icons
 import ChatbotIcon from '../../../assets/images/deployment/chatbot.svg'
-
+import PhoneCallIcon from '../../../assets/images/deployment/phonecall.svg'
 import SdkIntegrationIcon from '../../../assets/images/deployment/sdkintegration.svg'
 import ApiEndpointIcon from '../../../assets/images/deployment/apiendpoint.svg'
 
@@ -261,6 +274,7 @@ const selectedIconFile = ref(null)
 // Icons definition mapping
 const tabs = [
   { id: 'chat', label: 'Chatbot Customization', icon: ChatbotIcon },
+  { id: 'phone', label: 'Phone (Calls)', icon: PhoneCallIcon },
   { id: 'sdk', label: 'SDK Integration', icon: SdkIntegrationIcon },
   { id: 'api', label: 'API Endpoint', icon: ApiEndpointIcon },
 ]
@@ -284,6 +298,9 @@ const currentDeployment = computed(() => {
 })
 
 const apiKey = computed(() => currentDeployment.value?.api_key || '')
+
+const voiceWebhook = computed(() => currentDeployment.value?.voice_webhook || '')
+const voiceEndpoint = computed(() => currentDeployment.value?.voice_endpoint || '')
 
 const formattedEndpoint = computed(() => {
   const endpoint = currentDeployment.value?.api_endpoint || currentDeployment.value?.endpoint || ''
