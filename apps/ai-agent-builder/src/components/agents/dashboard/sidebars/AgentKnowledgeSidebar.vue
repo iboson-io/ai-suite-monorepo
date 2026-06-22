@@ -173,8 +173,10 @@ async function handleDeleteFile(file) {
   deletingFileId.value = fileId
   saveError.value = ''
 
+  const fileType = lockedKnowledgeTab.value === 'documents' ? 'document' : 'schema'
+
   try {
-    await deleteAgentKnowledgeFile(props.agent.id, fileId)
+    await deleteAgentKnowledgeFile(props.agent.id, fileId, fileType)
     emit('updated')
   } catch (error) {
     saveError.value = error?.message || 'Failed to remove file.'
