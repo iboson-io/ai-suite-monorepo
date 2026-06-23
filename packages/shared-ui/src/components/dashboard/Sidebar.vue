@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="fixed left-0 top-0 h-screen flex flex-col  bg_secondary_color transition-all duration-300 z-10 border primary_border_color"
+    class="fixed left-0 top-0 lg:top-[-20px] h-screen flex flex-col bg_secondary_color transition-all duration-300 z-10 border primary_border_color "
     :class="isCollapsed ? 'w-20 px-3xl' : 'w-64 pl-4xl pr-xs'" @click="handleSidebarContainerClick">
     <div
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -8,7 +8,7 @@
     >
       <div class="shrink-0">
       <!-- Logo + Toggle -->
-      <div class="relative group flex items-center pt-6xl lg:pt-11xl" 
+      <div class="relative group flex items-center pt-6xl lg:pt-11xl justify-center" 
         :class="isCollapsed ? 'justify-center':'justify-between' "
         @mouseenter="hoveredItem = 'logo'" 
         @mouseleave="hoveredItem = null"
