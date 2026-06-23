@@ -41,7 +41,7 @@
             :is-ai-generating="isLoading"
             :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
-            placeholder="What's on your mind?"
+            placeholder="Ask a question, select an agent, or create a new one"
             @send-message="handleFirstMessage"
           />
         </div>
