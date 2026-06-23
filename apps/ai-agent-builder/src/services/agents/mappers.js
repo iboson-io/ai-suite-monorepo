@@ -157,6 +157,23 @@ export function mapAgentItem(raw, kind) {
       ? String(descriptionSource).trim()
       : 'Description not available'
 
+  let agentCount = 0
+  if (kind === 'multi') {
+    const ids = raw.agent_ids ?? raw.agents
+    if (Array.isArray(ids)) {
+      agentCount = ids.length
+    } else if (typeof ids === 'string') {
+      try {
+        const parsed = JSON.parse(ids)
+        if (Array.isArray(parsed)) {
+          agentCount = parsed.length
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
   return {
     id,
     name: raw.name ?? raw.title ?? raw.group_name ?? 'Untitled Agent',
@@ -165,6 +182,7 @@ export function mapAgentItem(raw, kind) {
     updatedAt: raw.updated_at ?? raw.updatedAt ?? raw.created_at ?? raw.createdAt,
     kind,
     agentType: kind === 'multi' ? 'multi' : resolveAgentKnowledgeType(raw),
+    agentCount,
   }
 }
 
