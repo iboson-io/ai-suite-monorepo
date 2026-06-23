@@ -7,9 +7,11 @@
           <div>
             <div class="flex items-center gap-1.5 mb-2">
               <label class="block text-sm font-semibold text-gray-900">Twilio Voice Webhook</label>
-              <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Tooltip text="Configure this webhook URL in your Twilio Console under your phone number's &quot;A call comes in&quot; webhook setting." position="top" :show-tail="true">
+                <svg class="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors duration-200 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Tooltip>
             </div>
             
             <div class="flex items-center border border-gray-255 rounded-lg px-4 bg-white focus-within:border-info-500 transition-colors shadow-sm">
@@ -44,9 +46,11 @@
           <div>
             <div class="flex items-center gap-1.5 mb-2">
               <label class="block text-sm font-semibold text-gray-900">Voice Endpoint</label>
-              <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Tooltip text="The Twilio voice incoming call endpoint prefix for this environment." position="top" :show-tail="true">
+                <svg class="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors duration-200 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Tooltip>
             </div>
             
             <div class="flex items-center border border-gray-255 rounded-lg px-4 bg-white focus-within:border-info-500 transition-colors shadow-sm">
@@ -83,6 +87,8 @@
 </template>
 
 <script setup>
+import { Tooltip } from '@ai-suite/shared-ui';
+
 defineProps({
   voiceWebhook: { type: String, default: '' },
   voiceEndpoint: { type: String, default: '' },

@@ -14,7 +14,7 @@
         v-if="isVisible && !disabled && text"
         ref="tooltipRef"
         :style="tooltipStyle"
-        class="pointer-events-none fixed z-[99999] whitespace-nowrap rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md transition-opacity duration-200"
+        class="pointer-events-none fixed z-[99999] whitespace-normal w-max max-w-[200px] text-center rounded-lg bg-black-400 px-md py-xs caption_1_medium primary_2_text_color shadow-md transition-opacity duration-200"
       >
         {{ text }}
         <!-- Speech Bubble Tail -->

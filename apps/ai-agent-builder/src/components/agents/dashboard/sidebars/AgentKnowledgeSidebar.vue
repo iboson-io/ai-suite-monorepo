@@ -1,6 +1,7 @@
 <template>
   <AgentDashboardSubSidebarShell
     :title="panelTitle"
+    :tooltip-text="knowledgeTooltipText"
     :is-open="isOpen"
     @close="$emit('close')"
   >
@@ -94,6 +95,21 @@ const isSaving = ref(false)
 const deletingFileId = ref(null)
 
 const lockedKnowledgeTab = computed(() => props.agent?.knowledgeTab ?? 'api')
+
+const knowledgeTooltipText = computed(() => {
+  switch (lockedKnowledgeTab.value) {
+    case 'api':
+      return 'Configure API schemas for the agent to connect to external services.'
+    case 'documents':
+      return 'Upload files and documents to train the agent\'s knowledge base.'
+    case 'database':
+      return 'Configure database connection settings for the agent.'
+    case 'composio':
+      return 'Select and configure third-party application integrations via Composio.'
+    default:
+      return 'Manage the knowledge base and data sources for this agent.'
+  }
+})
 
 const panelTitle = computed(() => {
   const type = props.agent?.agentType ?? lockedKnowledgeTab.value

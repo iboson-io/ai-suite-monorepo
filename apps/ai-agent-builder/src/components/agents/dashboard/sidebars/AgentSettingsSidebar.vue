@@ -1,5 +1,10 @@
 <template>
-  <AgentDashboardSubSidebarShell title="Settings" :is-open="isOpen" @close="$emit('close')">
+  <AgentDashboardSubSidebarShell
+    title="Settings"
+    tooltip-text="Fine-tune behavior settings, hallucination controls, and safety filters for this agent."
+    :is-open="isOpen"
+    @close="$emit('close')"
+  >
     <div class="space-y-4xl">
       <div>
         <h4 class="label_1_semibold primary_text_color">Advanced settings</h4>
