@@ -69,11 +69,16 @@
             @toggle-audio="handleToggleAudio"
             @toast="showToast"
           />
-          <div ref="scrollAnchor" class="h-px" />
+          <div ref="scrollAnchor" class="h-64 md:h-56" />
         </div>
       </div>
 
-      <div class="px-6xl pb-8xl pt-4 shrink-0">
+      <div
+        class="fixed bottom-0 left-0 right-0 z-40 bg_primary_color px-4 transition-all duration-300 ease-in-out md:px-6"
+        :class="[
+          isSidebarCollapsed ? 'lg:left-16' : 'lg:left-64'
+        ]"
+      >
         <div class="mx-auto w-full max-w-3xl">
           <PromptBox
             :is-ai-generating="isLoading"
