@@ -7,9 +7,11 @@
           <div>
             <div class="flex items-center gap-1.5 mb-2">
               <label class="block text-sm font-semibold text-gray-900">API Endpoint</label>
-              <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Tooltip text="Use this endpoint to interact with your agent programmatically." position="top" :show-tail="true">
+                <svg class="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors duration-200 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Tooltip>
             </div>
             
             <div class="flex items-center border border-gray-50 rounded-md px-4 bg-white focus-within:border-info-500 transition-colors">
@@ -45,9 +47,11 @@
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-1.5">
                 <label class="block text-sm font-semibold text-gray-900">API Key</label>
-                <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Tooltip text="Required for authentication with the API." position="top" :show-tail="true">
+                  <svg class="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors duration-200 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </Tooltip>
               </div>
               <button
                 type="button"
@@ -107,6 +111,8 @@
 </template>
 
 <script setup>
+import { Tooltip } from '@ai-suite/shared-ui';
+
 defineProps({
   formattedEndpoint: { type: String, required: true },
   apiKey: { type: String, default: '' },

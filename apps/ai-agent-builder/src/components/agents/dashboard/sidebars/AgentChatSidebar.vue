@@ -1,5 +1,10 @@
 <template>
-  <AgentDashboardSubSidebarShell title="Chats" :is-open="isOpen" @close="$emit('close')">
+  <AgentDashboardSubSidebarShell
+    title="Chats"
+    tooltip-text="View and manage your recent conversations with this agent."
+    :is-open="isOpen"
+    @close="$emit('close')"
+  >
     <div v-if="loading" class="flex items-center justify-center py-10xl">
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-info-500" />
     </div>

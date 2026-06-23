@@ -1,5 +1,10 @@
 <template>
-  <AgentDashboardSubSidebarShell title="Agent Info" :is-open="isOpen" @close="$emit('close')">
+  <AgentDashboardSubSidebarShell
+    title="Agent Info"
+    tooltip-text="Configure basic information, core instructions, and language for this agent."
+    :is-open="isOpen"
+    @close="$emit('close')"
+  >
     <div class="space-y-5xl">
       <div>
         <label class="label_2_semibold primary_text_color">Agent name</label>
