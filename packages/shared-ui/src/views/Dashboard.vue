@@ -101,7 +101,8 @@ const views = getDashboardViews()
 
 const route = useRoute()
 const router = useRouter()
-const activeTab = ref('chat')
+const initialPath = typeof window !== 'undefined' ? window.location.pathname : route.path
+const activeTab = ref(config.routeToTabMap[initialPath] || 'chat')
 const showMobileSidebar = ref(false)
 const isSidebarCollapsed = ref(false)
 const resetChatFlag = ref(false)

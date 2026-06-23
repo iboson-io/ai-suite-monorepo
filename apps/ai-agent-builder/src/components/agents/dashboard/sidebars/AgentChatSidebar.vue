@@ -4,7 +4,7 @@
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-info-500" />
     </div>
 
-    <div v-else-if="chats.length === 0" class="py-8xl text-center">
+    <div v-else-if="chats.length === 0" class="h-full flex flex-col items-center justify-center text-center">
       <p class="label_2_medium primary_text_color">No chats yet</p>
       <p class="body_3_regular secondary_text_color mt-sm">Start a conversation to see it here.</p>
     </div>
