@@ -23,7 +23,7 @@
       <div class="mt-12 flex items-center justify-between">
         <div class="flex gap-2">
           <SelectBox
-            v-if="!disableProductSelect"
+            v-if="!hideProductSelect"
             :model-value="selectedProduct.id"
             :options="allProductsOptions"
             :disabled="disableProductSelect"
@@ -160,6 +160,10 @@ const props = defineProps({
     default: true,
   },
   disableProductSelect: {
+    type: Boolean,
+    default: false,
+  },
+  hideProductSelect: {
     type: Boolean,
     default: false,
   },

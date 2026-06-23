@@ -197,6 +197,7 @@ function closeSubSidebar() {
 
 function handleClickOutside(event) {
   if (!showSubSidebar.value) return
+  if (!isMobile.value) return
 
   const container = sidebarContainer.value
   if (container?.contains(event.target)) return
