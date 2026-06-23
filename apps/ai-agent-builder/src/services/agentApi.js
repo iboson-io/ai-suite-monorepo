@@ -214,6 +214,10 @@ class ApiService {
           throw new Error('Authentication required')
         }
 
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -1632,6 +1636,9 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}))
         console.error('Create chat failed with status:', response.status)
         console.error('Error data:', errorData)
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -1760,6 +1767,9 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}))
         console.error('Send message failed with status:', response.status)
         console.error('Error data:', errorData)
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -1793,6 +1803,9 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}))
         console.error('Update chat failed with status:', response.status)
         console.error('Error data:', errorData)
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -1932,6 +1945,9 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}))
         console.error('Update chat message failed with status:', response.status)
         console.error('Error data:', errorData)
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
