@@ -307,6 +307,13 @@
       :email="sidebarUserEmail"
       @close="showUserAccount = false"
     />
+    <SuccessToastNotification
+      :open="toastOpen"
+      :main-message="toastMessage"
+      :secondary-message="toastSecondaryMessage"
+      :type="toastType"
+      @close="toastOpen = false"
+    />
   </aside>
 
 
@@ -330,6 +337,7 @@
   } from "@app/services/dashboard/sidebarMenu.js";
   import NotificationPopup from "../../components/notifications/NotificationsView.vue";
   import UserAccountPopup from "./UserAccountPopup.vue";
+  import SuccessToastNotification from "../common/SuccessToastNotification.vue";
   import SidebarIcon from "../../assets/images/SidebarIcon.svg";
   import PlusIcon from "../../assets/images/PlusIcon.svg";
   import ImageEditIcon from "../../assets/images/ImageEditIcon.svg";
@@ -376,6 +384,19 @@
   const editingSessionId = ref(null);
   const editingTitle = ref("");
   const editInputRef = ref(null);
+
+  // Toast state
+  const toastOpen = ref(false);
+  const toastMessage = ref("");
+  const toastSecondaryMessage = ref("");
+  const toastType = ref("success");
+
+  function showToast(main, secondary = "", type = "success") {
+    toastMessage.value = main;
+    toastSecondaryMessage.value = secondary;
+    toastType.value = type;
+    toastOpen.value = true;
+  }
 
   const chatSessionForOpenMenu = computed(() => {
     const id = openChatSessionMenuId.value;
@@ -484,6 +505,7 @@
       editingTitle.value = '';
     } catch (error) {
       console.error('Failed to rename session:', error);
+      showToast('Failed to rename chat', error?.message || 'Please try again.', 'error');
       editingSessionId.value = null;
       editingTitle.value = '';
     }
@@ -524,9 +546,7 @@
       emit("sessionDeleted", sessionId);
     } catch (e) {
       console.error("Delete chat history failed:", e);
-      window.alert(
-        e?.response?.data?.message || e?.message || "Could not delete this chat"
-      );
+      showToast('Failed to delete chat', e?.response?.data?.message || e?.message || 'Could not delete this chat', 'error');
     } finally {
       deletingChatSessionId.value = null;
     }
