@@ -25,6 +25,7 @@
         @rename-chat="handleRenameChat"
         @page-change="handleChatPageChange"
         @agent-updated="handleAgentUpdated"
+        @tab-changed="isSubSidebarOpen = !!$event"
       />
 
       <div class="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -96,6 +97,7 @@
             :agent="agent"
             :created-context="createdContext"
             :selected-chat-id="selectedChatId"
+            :is-sidebar-collapsed="!isSubSidebarOpen"
             @chat-created="handleChatCreated"
             @chat-used="handleChatUsed"
           />
@@ -151,6 +153,7 @@ const createdContext = ref(null)
 const chatRef = ref(null)
 const sidebarRef = ref(null)
 const showSetupView = ref(false)
+const isSubSidebarOpen = ref(false)
 
 const chats = ref([])
 const loadingChats = ref(false)
