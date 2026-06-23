@@ -8,7 +8,7 @@
         ref="promptInputRef"
         v-model="prompt"
         type="text"
-        :placeholder="isListening ? 'Listening… speak now' : (placeholder || 'What\'s on your mind?')"
+        :placeholder="isListening ? 'Listening… speak now' : (props.placeholder || configPlaceholder || 'What\'s on your mind?')"
         class="w-full border-none outline-none label_1_regular"
         :class="[
           prompt ? 'primary_text_color' : 'secondary_text_color',
@@ -23,6 +23,7 @@
       <div class="mt-12 flex items-center justify-between">
         <div class="flex gap-2">
           <SelectBox
+            v-if="!disableProductSelect"
             :model-value="selectedProduct.id"
             :options="allProductsOptions"
             :disabled="disableProductSelect"
@@ -142,7 +143,7 @@ import {
   getPromptBoxConfig,
 } from '@app/services/promptBox/promptBox.js'
 
-const { allProductsLabel, placeholder, showModelsDropdown } = getPromptBoxConfig()
+const { allProductsLabel, placeholder: configPlaceholder, showModelsDropdown } = getPromptBoxConfig()
 const allProductsOption = { id: null, name: allProductsLabel }
 
 const props = defineProps({
@@ -161,6 +162,10 @@ const props = defineProps({
   disableProductSelect: {
     type: Boolean,
     default: false,
+  },
+  placeholder: {
+    type: String,
+    default: '',
   },
 })
 
