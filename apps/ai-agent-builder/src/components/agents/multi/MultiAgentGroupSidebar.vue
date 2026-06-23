@@ -1,5 +1,10 @@
 <template>
-  <AgentDashboardSubSidebarShell title="Agent Group" :is-open="isOpen" @close="$emit('close')">
+  <AgentDashboardSubSidebarShell
+    title="Agent Group"
+    tooltip-text="Create and configure a group of AI agents to collaborate on complex tasks."
+    :is-open="isOpen"
+    @close="$emit('close')"
+  >
     <div class="mb-5xl">
       <p class="body_3_regular secondary_text_color">Agent Groups allow multiple AI agents to collaborate</p>
       <div class="mt-4xl border-b primary_border_color" />
