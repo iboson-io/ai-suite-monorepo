@@ -79,12 +79,13 @@
             :is-ai-generating="isLoading || isReconnecting"
             :initial-product-id="promptProductId"
             :disable-product-select="true"
+            placeholder="What's on your mind?"
             @send-message="handleSendMessage"
           />
 
           <div class="text-center p-xl">
             <p class="body_4_regular tertiary_text_color">
-              AI Agent can make mistakes. Please check for accuracy.
+              Genius AI can make mistakes. Please check for accuracy.
             </p>
           </div>
         </div>

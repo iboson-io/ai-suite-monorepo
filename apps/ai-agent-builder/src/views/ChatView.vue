@@ -41,6 +41,7 @@
             :is-ai-generating="isLoading"
             :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
+            placeholder="What's on your mind?"
             @send-message="handleFirstMessage"
           />
         </div>
@@ -78,6 +79,8 @@
             :is-ai-generating="isLoading"
             :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
+            :disable-product-select="true"
+            placeholder="What's on your mind?"
             @send-message="handleFollowUpMessage"
           />
         </div>
