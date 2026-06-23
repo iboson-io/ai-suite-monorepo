@@ -413,8 +413,6 @@ async function loadSidebarUser() {
   }
 }
 
-const isFirstLoad = ref(true);
-
 const loadChatSessions = async () => {
   isLoadingSessions.value = true;
   currentPage.value = 1;
@@ -430,11 +428,7 @@ const loadChatSessions = async () => {
       hasNext.value = false;
     }
     
-    // Auto-select first session on first load if no activeSessionId is specified
-    if (chatSessions.value.length > 0 && !props.activeSessionId && isFirstLoad.value) {
-      isFirstLoad.value = false;
-      handleSessionClick(chatSessions.value[0].id);
-    }
+    syncActiveChatSession();
   } catch (error) {
     console.error("Error fetching chat sessions:", error);
     chatSessions.value = [];
@@ -536,6 +530,28 @@ onMounted(() => {
   fetchNotificationsForBadge();
   window.addEventListener("profile-updated", loadSidebarUser);
 });
+
+const syncActiveChatSession = () => {
+  if (props.activeTab !== 'chat' || chatSessions.value.length === 0) return;
+
+  const hasSelected = props.activeSessionId != null && props.activeSessionId !== '';
+  const exists = hasSelected && chatSessions.value.some(s => String(s.id) === String(props.activeSessionId));
+
+  if (exists) {
+    handleSessionClick(props.activeSessionId);
+  } else if (chatSessions.value.length > 0) {
+    handleSessionClick(chatSessions.value[0].id);
+  }
+};
+
+watch(
+  () => props.activeTab,
+  (newTab) => {
+    if (newTab === 'chat') {
+      syncActiveChatSession();
+    }
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("profile-updated", loadSidebarUser);
