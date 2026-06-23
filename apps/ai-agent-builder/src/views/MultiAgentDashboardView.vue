@@ -106,6 +106,7 @@
             mode="multi"
             :group="group"
             :selected-chat-id="selectedChatId"
+            :is-sidebar-collapsed="!isSubSidebarOpen"
             @chat-created="handleChatCreated"
             @chat-used="handleChatUsed"
           />

@@ -61,11 +61,17 @@
             />
           </template>
 
-          <div ref="scrollAnchor" class="h-px" />
+          <div ref="scrollAnchor" class="h-64 md:h-56" />
         </div>
       </div>
 
-      <div ref="promptSectionRef" class="shrink-0 px-6xl pb-2xl pt-2">
+      <div
+        ref="promptSectionRef"
+        class="fixed bottom-0 left-0 right-0 z-40 bg_primary_color px-4 transition-all duration-300 ease-in-out md:px-6"
+        :class="[
+          isSidebarCollapsed ? 'lg:left-20' : 'lg:left-[464px]'
+        ]"
+      >
         <div class="mx-auto max-w-3xl">
           <p
             v-if="isReconnecting && !isConnected"
@@ -136,6 +142,10 @@ const props = defineProps({
   selectedChatId: {
     type: [String, Number],
     default: null,
+  },
+  isSidebarCollapsed: {
+    type: Boolean,
+    default: false,
   },
 })
 
