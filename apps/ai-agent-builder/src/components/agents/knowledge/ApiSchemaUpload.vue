@@ -47,7 +47,7 @@
           Drag and drop API schema files or click to browse
         </p>
         <p class="caption_1_regular tertiary_text_color mt-sm">
-          Supported: .json, .yaml, .yml, .txt — max 5 MB each
+          Supported: .json, .yaml, .yml — max 50 MB each
         </p>
         <button
           type="button"
@@ -193,7 +193,7 @@
     <input
       ref="fileInput"
       type="file"
-      accept=".json,.yaml,.yml,.txt"
+      accept=".json,.yaml,.yml"
       multiple
       class="hidden"
       @change="handleSelect"

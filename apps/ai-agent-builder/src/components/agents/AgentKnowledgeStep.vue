@@ -27,7 +27,7 @@
             type="file"
             class="hidden"
             multiple
-            accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             @change="onDocumentInputChange"
           />
           <div
@@ -50,7 +50,7 @@
               </p>
             </div>
             <p class="caption_1_regular tertiary_text_color shrink-0">
-              Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 50MB
+              Accepted formats - .pdf, .docx | Max file size - 50MB
             </p>
           </div>
           <ul v-if="documentFiles.length > 0" class="mt-md flex flex-col gap-sm">
@@ -78,7 +78,7 @@
             type="file"
             class="hidden"
             multiple
-            accept=".json,.txt,.yaml,.yml"
+            accept=".json,.yaml,.yml"
             @change="onSchemaInputChange"
           />
           <div
@@ -101,7 +101,7 @@
               </p>
             </div>
             <p class="caption_1_regular tertiary_text_color shrink-0">
-              Accepted formats - .json, .txt, .yaml, .yml
+              Accepted formats - .json, .yaml, .yml
             </p>
           </div>
           <ul v-if="schemaFiles.length > 0" class="mt-md flex flex-col gap-sm">
@@ -147,8 +147,8 @@ import { computed, h, ref } from 'vue'
 import UploadIcon from '../../assets/images/uplaod.svg'
 
 const DOCUMENT_MAX_BYTES = 50 * 1024 * 1024
-const DOCUMENT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg']
-const SCHEMA_EXTENSIONS = ['.json', '.txt', '.yaml', '.yml']
+const DOCUMENT_EXTENSIONS = ['.pdf', '.docx']
+const SCHEMA_EXTENSIONS = ['.json', '.yaml', '.yml']
 
 const props = defineProps({
   activeTab: {
@@ -266,7 +266,7 @@ function hasAllowedExtension(fileName, extensions) {
 function validateDocumentFiles(files) {
   for (const file of files) {
     if (!hasAllowedExtension(file.name, DOCUMENT_EXTENSIONS)) {
-      return 'Accepted formats: .pdf, .png, .jpg, .jpeg'
+      return 'Accepted formats: .pdf, .docx'
     }
     if (file.size > DOCUMENT_MAX_BYTES) {
       return 'Max file size is 50MB per file.'
@@ -278,7 +278,7 @@ function validateDocumentFiles(files) {
 function validateSchemaFiles(files) {
   for (const file of files) {
     if (!hasAllowedExtension(file.name, SCHEMA_EXTENSIONS)) {
-      return 'Accepted formats: .json, .txt, .yaml, .yml'
+      return 'Accepted formats: .json, .yaml, .yml'
     }
   }
   return ''
