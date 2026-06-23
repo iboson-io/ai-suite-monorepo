@@ -76,7 +76,7 @@
               type="file"
               class="hidden"
               multiple
-              accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               @change="onDocumentInputChange"
             />
             <div
@@ -103,7 +103,7 @@
                 </p>
               </div>
               <p class="body_4_medium tertiary_text_color shrink-0">
-                Accepted formats - .pdf, .png, .jpg, .jpeg | Max file size - 50MB
+                Accepted formats - .pdf, .docx | Max file size - 50MB
               </p>
             </div>
           </div>
@@ -191,7 +191,7 @@
                   type="file"
                   class="hidden"
                   multiple
-                  accept=".json,.yaml,.yml,.txt"
+                  accept=".json,.yaml,.yml"
                   @change="onSchemaInputChange"
                 />
                 <div
@@ -218,7 +218,7 @@
                     </p>
                   </div>
                   <p class="body_4_medium tertiary_text_color shrink-0">
-                    Accepted formats - .json, .txt, .yaml, .yml | Max file size - 5MB
+                    Accepted formats - .json, .yaml, .yml | Max file size - 50MB
                   </p>
                 </div>
               </div>

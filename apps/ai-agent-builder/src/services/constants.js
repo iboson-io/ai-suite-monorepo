@@ -105,8 +105,8 @@ export const APP_CONFIG = {
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB to match backend
   MAX_SCHEMA_FILES: 10, // Maximum schema files per upload
   MAX_DOCUMENT_FILES: 10, // Maximum document files per upload
-  ALLOWED_SCHEMA_EXTENSIONS: ['.json', '.txt', '.yaml', '.yml'],
-  ALLOWED_DOCUMENT_EXTENSIONS: ['.pdf', '.doc', '.docx'],
+  ALLOWED_SCHEMA_EXTENSIONS: ['.json', '.yaml', '.yml'],
+  ALLOWED_DOCUMENT_EXTENSIONS: ['.pdf', '.docx'],
 }
 
 // ElevenLabs API Configuration
