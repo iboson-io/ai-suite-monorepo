@@ -7,6 +7,11 @@ export function parseSettingsError(error) {
 
   if (typeof data === 'string') return data
 
+  if (data.errors && typeof data.errors === 'object') {
+    const parts = Object.values(data.errors).flat().map((s) => String(s).trim()).filter(Boolean)
+    if (parts.length) return parts.join(' · ')
+  }
+
   if (data.message != null) {
     const message = data.message
     return Array.isArray(message) ? message.join(', ') : String(message)

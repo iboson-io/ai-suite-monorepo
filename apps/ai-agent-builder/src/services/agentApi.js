@@ -76,11 +76,8 @@ class ApiService {
           await this.handleAuthError()
           throw new Error('Authentication required')
         }
-        if (errorData.errors && errorData.errors.email) {
-          throw new Error(errorData.errors.email)
-        }
-        if (errorData.errors && errorData.errors.password) {
-          throw new Error(errorData.errors.password)
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
         }
 
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
@@ -177,6 +174,10 @@ class ApiService {
           throw new Error('Authentication required')
         }
 
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -263,6 +264,10 @@ class ApiService {
           throw new Error('Authentication required')
         }
 
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
+
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -282,8 +287,11 @@ class ApiService {
    * @returns {Error & { errors: Record<string, string>, status?: boolean }}
    */
   workflowValidationError(message, errorsRaw) {
-    const err = new Error(message || 'Validation failed')
-    err.errors = flattenWorkflowValidationErrors(errorsRaw || {})
+    const flat = flattenWorkflowValidationErrors(errorsRaw || {})
+    const parts = Object.values(flat).map((s) => s.trim()).filter(Boolean)
+    const formattedMessage = parts.length ? parts.join(' · ') : (message || 'Validation failed')
+    const err = new Error(formattedMessage)
+    err.errors = flat
     err.status = false
     return err
   }
@@ -1055,6 +1063,9 @@ class ApiService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
+        }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
@@ -1872,6 +1883,10 @@ class ApiService {
         if (this.isAuthError(response, errorData)) {
           await this.handleAuthError()
           throw new Error('Authentication required')
+        }
+
+        if (errorData.errors) {
+          throw new Error(formatWorkflowValidationToast(errorData.errors))
         }
 
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
