@@ -25,23 +25,22 @@
                     />
                   </div>
                   <button
-                    v-if="!hasCustomProfilePicture"
+                    v-if="hasCustomProfilePicture"
                     type="button"
-                    class="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-white bg_primary_color"
-                    aria-label="Change profile picture"
-                    @click="openProfilePictureFilePicker"
-                  >
-                    <img :src="CameraIcon" alt="" />
-                  </button>
-                  <button
-                    v-else
-                    type="button"
-                    class="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center bg_secondary_color rounded-full border border-white disabled:cursor-not-allowed disabled:opacity-50"
+                    class="absolute bottom-0 left-0 flex h-8 w-8 items-center justify-center bg_secondary_color rounded-full border border-[#D7DBDF] shadow-sm hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label="Remove profile picture"
                     :disabled="isDeletingProfilePicture"
                     @click="deleteProfilePicture"
                   >
-                    <img :src="TrashIcon" alt="" class="h-3.5 w-3.5" />
+                    <img :src="TrashIcon" alt="" class="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    class="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center bg_secondary_color rounded-full border border-[#D7DBDF] shadow-sm hover:bg-gray-50 transition-colors"
+                    aria-label="Change profile picture"
+                    @click="openProfilePictureFilePicker"
+                  >
+                    <img :src="ImageEditIcon" alt="" class="h-4.5 w-4.5" />
                   </button>
                   <input
                     ref="avatarFileInputRef"
@@ -361,6 +360,7 @@ import SuccessToastNotification from "../common/SuccessToastNotification.vue";
 import CameraIcon from "../../assets/images/CameraIcon.svg";
 import TrashIcon from "../../assets/images/TrashIcon.svg";
 import InputboxEditIcon from "../../assets/images/InputboxEditIcon.svg";
+import ImageEditIcon from "../../assets/images/ImageEditIcon.svg";
 import GoogleIcon from "../../assets/images/GoogleIcon.svg";
 import WarningGrayIcon from "../../assets/images/WarningGrayIcon.svg";
 

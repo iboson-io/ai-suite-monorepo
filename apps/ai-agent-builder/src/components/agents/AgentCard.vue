@@ -94,6 +94,9 @@
       <span v-if="showType" class="caption_1_medium shrink-0 rounded-md px-md py-xs bg-info-50 text-info-600 border border-info-200">
         {{ agentTypeLabel }}
       </span>
+      <span v-if="agent.kind === 'multi'" class="caption_1_medium shrink-0 rounded-md px-md py-xs bg-purple-50 text-purple-600 border border-purple-100">
+        {{ agent.agentCount || 0 }} {{ (agent.agentCount || 0) === 1 ? 'agent' : 'agents' }} in group
+      </span>
       <span class="body_4_regular tertiary_text_color min-w-0 truncate">
         {{ lastUpdatedLabel }}
       </span>
