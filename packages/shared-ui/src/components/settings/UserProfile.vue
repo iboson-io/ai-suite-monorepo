@@ -56,7 +56,14 @@
               <div class="flex flex-col items-start mt-10xl">
                 <label class="label_2_semibold primary_text_color w-20 flex-shrink-0 flex items-center gap-lg"
                 :class="[!isEditing ? 'disable_text_color cursor-not-allowed' : '']">
-                  Name: <span><img :src="WarningGrayIcon" alt=""></span>
+                  Name:
+                  <Tooltip text="This name is used for display purposes across the platform." position="top" :show-tail="true">
+                    <span class="cursor-pointer flex items-center">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#9c9da6] hover:text-[#28293d] transition-colors duration-200">
+                        <path d="M6.75 10.0833V10.09M6.75 7.75001C6.73773 7.53359 6.7961 7.31904 6.91635 7.13868C7.03659 6.95832 7.21218 6.82192 7.41667 6.75001C7.66725 6.65418 7.89217 6.5015 8.07371 6.30398C8.25526 6.10646 8.38848 5.86949 8.46288 5.61173C8.53729 5.35398 8.55084 5.08247 8.50249 4.81859C8.45413 4.5547 8.34518 4.30564 8.18421 4.09102C8.02324 3.87639 7.81465 3.70206 7.57486 3.58175C7.33507 3.46144 7.07063 3.39844 6.80235 3.39769C6.53407 3.39695 6.26928 3.45849 6.02883 3.57747C5.78838 3.69644 5.57882 3.86961 5.41667 4.08334M0.75 6.75C0.75 7.53793 0.905195 8.31815 1.20672 9.0461C1.50825 9.77405 1.95021 10.4355 2.50736 10.9926C3.06451 11.5498 3.72595 11.9917 4.4539 12.2933C5.18185 12.5948 5.96207 12.75 6.75 12.75C7.53793 12.75 8.31815 12.5948 9.0461 12.2933C9.77405 11.9917 10.4355 11.5498 10.9926 10.9926C11.5498 10.4355 11.9917 9.77405 12.2933 9.0461C12.5948 8.31815 12.75 7.53793 12.75 6.75C12.75 5.96207 12.5948 5.18185 12.2933 4.4539C11.9917 3.72595 11.5498 3.06451 10.9926 2.50736C10.4355 1.95021 9.77405 1.50825 9.0461 1.20672C8.31815 0.905195 7.53793 0.75 6.75 0.75C5.96207 0.75 5.18185 0.905195 4.4539 1.20672C3.72595 1.50825 3.06451 1.95021 2.50736 2.50736C1.95021 3.06451 1.50825 3.72595 1.20672 4.4539C0.905195 5.18185 0.75 5.96207 0.75 6.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  </Tooltip>
                 </label>
               <div class="flex w-[100%] gap-xl items-center mt-sm"> 
                 <div class="flex items-center gap-xl w-1/2 lg:w-[40%]">
@@ -362,7 +369,7 @@ import TrashIcon from "../../assets/images/TrashIcon.svg";
 import InputboxEditIcon from "../../assets/images/InputboxEditIcon.svg";
 import ImageEditIcon from "../../assets/images/ImageEditIcon.svg";
 import GoogleIcon from "../../assets/images/GoogleIcon.svg";
-import WarningGrayIcon from "../../assets/images/WarningGrayIcon.svg";
+import Tooltip from "../common/Tooltip.vue";
 
 // Profile form state (name = API `username`)
 const profileForm = reactive({

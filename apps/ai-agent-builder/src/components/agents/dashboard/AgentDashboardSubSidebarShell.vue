@@ -15,7 +15,10 @@
         <div class="flex shrink-0 items-center justify-between gap-md border-b primary_border_color px-4xl py-3xl">
           <div class="flex min-w-0 items-center gap-md">
             <h3 class="label_1_semibold primary_text_color truncate">{{ title }}</h3>
-            <img v-if="infoIcon" :src="infoIcon" alt="" class="h-4 w-4 shrink-0 opacity-50" />
+            <Tooltip v-if="infoIcon && tooltipText" :text="tooltipText" position="bottom" :show-tail="true">
+              <img :src="infoIcon" alt="" class="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 transition-opacity duration-200 cursor-pointer" />
+            </Tooltip>
+            <img v-else-if="infoIcon" :src="infoIcon" alt="" class="h-4 w-4 shrink-0 opacity-50" />
           </div>
           <button
             type="button"
@@ -43,6 +46,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { Tooltip } from '@ai-suite/shared-ui'
 import InfoIcon from '../../../assets/images/agents/dashboard/info.svg'
 
 const props = defineProps({
@@ -61,6 +65,10 @@ const props = defineProps({
   infoIcon: {
     type: String,
     default: InfoIcon,
+  },
+  tooltipText: {
+    type: String,
+    default: '',
   },
 })
 
