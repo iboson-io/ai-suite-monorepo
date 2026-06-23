@@ -1,23 +1,21 @@
 import { validateApiBaseUrl, validateDbConfig } from './validation.js'
 
-const SCHEMA_MAX_BYTES = 5 * 1024 * 1024
+const SCHEMA_MAX_BYTES = 50 * 1024 * 1024
 const DOCUMENT_MAX_BYTES = 50 * 1024 * 1024
 
-const SCHEMA_EXTENSIONS = ['.json', '.txt', '.yaml', '.yml']
+const SCHEMA_EXTENSIONS = ['.json', '.yaml', '.yml']
 const SCHEMA_MIME_TYPES = [
   'application/json',
-  'text/plain',
   'application/x-yaml',
   'text/yaml',
   'application/yaml',
   'text/x-yaml',
 ]
 
-const DOCUMENT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg']
+const DOCUMENT_EXTENSIONS = ['.pdf', '.docx']
 const DOCUMENT_MIME_TYPES = [
   'application/pdf',
-  'image/png',
-  'image/jpeg',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ]
 
 function getExtension(fileName) {
@@ -35,12 +33,12 @@ export async function validateApiSchemaFiles(files) {
       SCHEMA_MIME_TYPES.includes(file.type) || SCHEMA_EXTENSIONS.includes(extension)
 
     if (!isValidType) {
-      errors.push(`${file.name}: Upload a JSON, TXT, or YAML file.`)
+      errors.push(`${file.name}: Upload a JSON or YAML file.`)
       continue
     }
 
     if (file.size > SCHEMA_MAX_BYTES) {
-      errors.push(`${file.name}: File must be under 5 MB.`)
+      errors.push(`${file.name}: File must be under 50 MB.`)
       continue
     }
 
@@ -69,12 +67,12 @@ export async function validateSchemaFiles(files) {
       SCHEMA_MIME_TYPES.includes(file.type) || SCHEMA_EXTENSIONS.includes(extension)
 
     if (!isValidType) {
-      errors.push(`${file.name}: Upload a JSON, TXT, or YAML file.`)
+      errors.push(`${file.name}: Upload a JSON or YAML file.`)
       continue
     }
 
     if (file.size > SCHEMA_MAX_BYTES) {
-      errors.push(`${file.name}: File must be under 5 MB.`)
+      errors.push(`${file.name}: File must be under 50 MB.`)
       continue
     }
 
@@ -103,7 +101,7 @@ export function validateDocumentFiles(files) {
       DOCUMENT_MIME_TYPES.includes(file.type) || DOCUMENT_EXTENSIONS.includes(extension)
 
     if (!isValidType) {
-      errors.push(`${file.name}: Upload a PDF, PNG, JPG, or JPEG file.`)
+      errors.push(`${file.name}: Upload a PDF or DOCX file.`)
       continue
     }
 

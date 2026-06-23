@@ -386,6 +386,12 @@ async function copyToClipboard(text, id) {
 
 function handleLogoChange(file) {
   if (!file) return
+  const extension = '.' + file.name.split('.').pop().toLowerCase()
+  const allowed = ['.jpeg', '.jpg', '.png', '.gif', '.svg']
+  if (!allowed.includes(extension)) {
+    showToast('Invalid File Type', 'Supported formats are .jpeg, .jpg, .png, .gif, .svg', 'error')
+    return
+  }
   if (file.size > 5 * 1024 * 1024) {
     showToast('File Too Large', 'Max file size is 5MB.', 'error')
     return
@@ -396,6 +402,12 @@ function handleLogoChange(file) {
 
 function handleIconChange(file) {
   if (!file) return
+  const extension = '.' + file.name.split('.').pop().toLowerCase()
+  const allowed = ['.jpeg', '.jpg', '.png', '.gif', '.svg']
+  if (!allowed.includes(extension)) {
+    showToast('Invalid File Type', 'Supported formats are .jpeg, .jpg, .png, .gif, .svg', 'error')
+    return
+  }
   if (file.size > 5 * 1024 * 1024) {
     showToast('File Too Large', 'Max file size is 5MB.', 'error')
     return

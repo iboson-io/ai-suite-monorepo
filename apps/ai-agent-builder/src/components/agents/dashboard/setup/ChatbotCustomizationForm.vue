@@ -60,7 +60,7 @@
               ref="logoInputRef"
               type="file"
               class="hidden"
-              accept="image/*"
+              accept=".jpeg,.jpg,.png,.gif,.svg"
               @change="handleLogoChange"
             />
           </div>
@@ -71,7 +71,7 @@
             >
               Replace
             </button>
-          <p class="text-[11px] text-gray-400">Accepted formats - .png, .jpg, .jpeg, .mp4</p>
+          <p class="text-[11px] text-gray-400">Accepted formats - .jpeg, .jpg, .png, .gif, .svg</p>
           <p class="text-[11px] text-gray-400">Max file size - 5MB</p>
         </div>
 
@@ -94,7 +94,7 @@
               ref="iconInputRef"
               type="file"
               class="hidden"
-              accept="image/*"
+              accept=".jpeg,.jpg,.png,.gif,.svg"
               @change="handleIconChange"
             />
           </div>
@@ -105,7 +105,7 @@
             >
               Replace
             </button>
-          <p class="text-[11px] text-gray-400">Accepted formats - .png, .jpg, .jpeg, .mp4</p>
+          <p class="text-[11px] text-gray-400">Accepted formats - .jpeg, .jpg, .png, .gif, .svg</p>
           <p class="text-[11px] text-gray-400">Max file size - 5MB</p>
         </div>
       </div>

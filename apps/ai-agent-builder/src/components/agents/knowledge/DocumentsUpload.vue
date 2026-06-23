@@ -20,7 +20,7 @@
         Drop documents here or click to browse
       </p>
       <p class="caption_1_regular tertiary_text_color mt-sm">
-        PDF, DOC, DOCX — max 20 MB per file
+        PDF, DOCX — max 50 MB per file
       </p>
       <button
         type="button"
@@ -59,7 +59,7 @@
   <input
     ref="fileInput"
     type="file"
-    accept=".pdf,.doc,.docx"
+    accept=".pdf,.docx"
     multiple
     class="hidden"
     @change="handleSelect"
