@@ -655,14 +655,15 @@
     <div
       v-if="showWorkflowEditModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showWorkflowEditModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showWorkflowEditModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">Edit workflow</h3>
         <label class="block text-xs font-medium text-slate-600 mb-1">Name</label>
-        <input v-model="workflowEditForm.name" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
+        <input v-model="workflowEditForm.name" class="focus:outline-none w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
         <label class="block text-xs font-medium text-slate-600 mb-1">Description</label>
-        <textarea v-model="workflowEditForm.description" rows="3" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
+        <textarea v-model="workflowEditForm.description" rows="3" class="focus:outline-none w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
         <div class="flex justify-end gap-2">
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showWorkflowEditModal = false">Cancel</button>
           <button type="button" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitWorkflowEdit">
@@ -678,7 +679,8 @@
     <div
       v-if="showPatternModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showPatternModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showPatternModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">Add pattern</h3>
@@ -773,7 +775,8 @@
     <div
       v-if="showPatternEditModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showPatternEditModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showPatternEditModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">Edit pattern</h3>
@@ -851,7 +854,8 @@
     <div
       v-if="showRouterModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 overflow-y-auto"
-      @click.self="showRouterModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showRouterModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 my-8" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-2">Workflow router</h3>
@@ -906,7 +910,8 @@
     <div
       v-if="showAgentModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showAgentModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showAgentModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">Add agent to pattern</h3>
@@ -998,7 +1003,8 @@
     <div
       v-if="showManageAgentsModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="showManageAgentsModal = false"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => showManageAgentsModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">Pattern agents</h3>
@@ -1089,7 +1095,8 @@
     <div
       v-if="showOutputChannelModal"
       class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
-      @click.self="closeOutputChannelModal"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, closeOutputChannelModal)"
     >
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
         <h3 class="font-semibold text-slate-900 mb-3">
@@ -1237,7 +1244,8 @@
     <div
       v-if="showConfirmModal"
       class="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/50"
-      @click.self="closeConfirmModal(false)"
+      @mousedown.self="handleBackdropMousedown"
+      @click.self="handleBackdropClick($event, () => closeConfirmModal(false))"
     >
       <div
         class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 border border-slate-100"
@@ -1367,6 +1375,21 @@ function closeConfirmModal(confirmed) {
   const r = confirmModalResolve.value
   confirmModalResolve.value = null
   r?.(confirmed)
+}
+
+const isBackdropMousedown = ref(false)
+
+function handleBackdropMousedown(e) {
+  if (e.target === e.currentTarget) {
+    isBackdropMousedown.value = true
+  }
+}
+
+function handleBackdropClick(e, closeFn) {
+  if (isBackdropMousedown.value && e.target === e.currentTarget) {
+    closeFn()
+  }
+  isBackdropMousedown.value = false
 }
 
 const patterns = ref([])
