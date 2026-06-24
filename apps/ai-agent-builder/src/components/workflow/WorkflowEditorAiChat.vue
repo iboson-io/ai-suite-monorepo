@@ -4,9 +4,7 @@ import { marked } from 'marked'
 import { useAuth } from '@app/composables/useAuth'
 import { WORKFLOW_AGENT_WS_URL, WORKFLOW_AGENT_WS_PATH } from '@app/services/constants'
 import AgentChatIcon from '../../assets/images/agents/dashboard/chatIcon.svg'
-import { ChatActionBar } from '@ai-suite/shared-ui'
-import MikeIcon from '../../../../../packages/shared-ui/src/assets/images/MikeIcon.svg'
-import ActiveMikeIcon from '../../../../../packages/shared-ui/src/assets/images/ActiveMikeIcon.svg'
+import { ChatActionBar, PromptBox } from '@ai-suite/shared-ui'
 
 marked.setOptions({ breaks: true, gfm: true })
 
@@ -26,36 +24,11 @@ const userName = computed(() => {
   return name.split(' ')[0]
 })
 
-const suggestions = [
-  {
-    text: 'Build me an automation from scratch',
-    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`
-  },
-  {
-    text: 'Help me brainstorm ideas for an automation',
-    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`
-  },
-  {
-    text: 'What can you do?',
-    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-  },
-  {
-    text: 'What are custom nodes and how do I use them?',
-    icon: `<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>`
-  }
-]
 
-function selectSuggestion(text) {
-  prompt.value = text
-  nextTick(() => {
-    send()
-  })
-}
 
 const messages = ref(
   /** @type {{ kind: 'user' | 'assistant' | 'system' | 'error', text: string, raw?: boolean, isLiked?: boolean, isDisliked?: boolean }[]} */ ([])
 )
-const prompt = ref('')
 const connected = ref(false)
 const connecting = ref(false)
 const sending = ref(false)
@@ -70,132 +43,19 @@ let reconnectTimer = null
 let syncDebounce = null
 
 const messagesBodyRef = ref(null)
-/** @type {import('vue').Ref<HTMLTextAreaElement | null>} */
+const scrollAnchor = ref(null)
+/** @type {import('vue').Ref<any | null>} */
 const promptInputRef = ref(null)
 
-const isListening = ref(false)
-const speechUnsupportedMessage = ref('')
-const speechRecognition = ref(null)
-const voiceFinal = ref('')
-
-const canUseSpeechApi = () =>
-  typeof window !== 'undefined' &&
-  !!(window.SpeechRecognition || window.webkitSpeechRecognition)
-
-function stopVoiceRecognition() {
-  const r = speechRecognition.value
-  if (!r) {
-    isListening.value = false
-    return
-  }
-  speechRecognition.value = null
-  r.onresult = null
-  r.onerror = null
-  r.onend = null
-  try {
-    r.stop()
-  } catch {
-    /* ignore */
-  }
-  isListening.value = false
-}
-
-function abortVoiceRecognition() {
-  const r = speechRecognition.value
-  if (!r) {
-    isListening.value = false
-    return
-  }
-  speechRecognition.value = null
-  r.onresult = null
-  r.onerror = null
-  r.onend = null
-  try {
-    r.abort()
-  } catch {
-    /* ignore */
-  }
-  isListening.value = false
-}
-
-function startVoiceRecognition() {
-  speechUnsupportedMessage.value = ''
-  if (!canUseSpeechApi()) {
-    speechUnsupportedMessage.value =
-      'Voice input is not supported in this browser. Try Chrome, Edge, or Safari.'
-    return
-  }
-  if (sending.value || isListening.value) return
-
-  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition
-  const recognition = new Ctor()
-  voiceFinal.value = ''
-  prompt.value = ''
-
-  recognition.lang = navigator.language || 'en-US'
-  recognition.continuous = true
-  recognition.interimResults = true
-
-  recognition.onresult = (event) => {
-    let interim = ''
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const piece = event.results[i][0].transcript
-      if (event.results[i].isFinal) {
-        voiceFinal.value += piece
-      } else {
-        interim += piece
-      }
-    }
-    prompt.value = (voiceFinal.value + interim).trim()
-  }
-
-  recognition.onerror = (e) => {
-    if (e.error === 'aborted') {
-      if (speechRecognition.value === recognition) {
-        speechRecognition.value = null
-      }
-      isListening.value = false
-      return
-    }
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-      speechUnsupportedMessage.value =
-        'Microphone access was denied. Allow the microphone to use voice input.'
-    } else if (e.error !== 'no-speech') {
-      speechUnsupportedMessage.value = 'Voice input error. Try again.'
-    }
-    stopVoiceRecognition()
-  }
-
-  recognition.onend = () => {
-    if (speechRecognition.value === recognition) {
-      speechRecognition.value = null
-    }
-    isListening.value = false
-  }
-
-  speechRecognition.value = recognition
-
-  try {
-    recognition.start()
-    isListening.value = true
-  } catch {
-    speechUnsupportedMessage.value = 'Could not start voice input.'
-    speechRecognition.value = null
-    isListening.value = false
-  }
-}
-
-function toggleVoice() {
-  if (isListening.value) {
-    stopVoiceRecognition()
-  } else {
-    startVoiceRecognition()
-  }
-}
+const hasMessages = computed(() => messages.value.length > 0)
+const isLoading = computed(() => sending.value)
+const isPromptDisabled = computed(() => sending.value || !connected.value)
 
 function focusPromptInput() {
   nextTick(() => {
-    promptInputRef.value?.focus()
+    if (promptInputRef.value?.focus) {
+      promptInputRef.value.focus()
+    }
   })
 }
 
@@ -251,11 +111,9 @@ function renderMarkdown(content) {
   return escapeHtml(s).replace(/\n/g, '<br>')
 }
 
-function scrollToBottom() {
-  nextTick(() => {
-    const el = messagesBodyRef.value
-    if (el) el.scrollTop = el.scrollHeight
-  })
+async function scrollToBottom() {
+  await nextTick()
+  scrollAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
 function append(kind, text, raw = false) {
@@ -344,14 +202,12 @@ function connect() {
     }
 
     if (data.type === 'workflow_sync') {
-      sending.value = false
       append('system', 'Workflow updated.')
       return
     }
 
-    sending.value = false
-
     if (data.type === 'response') {
+      sending.value = false
       const msg = data.message ?? ''
       append('assistant', msg, true)
       emit('ai-response', {
@@ -368,11 +224,13 @@ function connect() {
     }
 
     if (data.type === 'error') {
+      sending.value = false
       const reason = data.error_reason ? ` ${data.error_reason}` : ''
       append('error', `${data.message || 'Error'}${reason}`)
       return
     }
 
+    sending.value = false
     append('system', data.message || JSON.stringify(data))
   }
 
@@ -396,6 +254,7 @@ function connect() {
 
   ws.onerror = () => {
     connecting.value = false
+    sending.value = false
     append('error', 'Could not reach the assistant. Check that the service is running and you are signed in.')
   }
 }
@@ -411,22 +270,16 @@ function sendPromptText(text) {
   return true
 }
 
-function send() {
-  const text = String(prompt.value || '').trim()
+function handlePromptBoxSend(messageData) {
+  const text = String(messageData?.text || '').trim()
   if (!text || sending.value || !connected.value) return
 
-  if (isListening.value) {
-    stopVoiceRecognition()
-  }
-
   append('user', text)
-  prompt.value = ''
 
   if (!sendPromptText(text)) {
     sending.value = false
     append('error', 'Not connected — wait for connection or click Reconnect.')
   }
-  focusPromptInput()
 }
 
 function newChat() {
@@ -459,12 +312,7 @@ function notifyWorkflowSaved() {
   }, 650)
 }
 
-function onKeydown(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault()
-    send()
-  }
-}
+
 
 watch(
   () => props.workflowId,
@@ -541,14 +389,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (syncDebounce) clearTimeout(syncDebounce)
-  abortVoiceRecognition()
   disconnect()
-})
-
-defineExpose({
-  notifyWorkflowSaved,
-  reconnect: reconnectManual,
-  newChat
 })
 
 const statusLabel = computed(() => {
@@ -558,182 +399,109 @@ const statusLabel = computed(() => {
 })
 
 const statusDotClass = computed(() => {
-  if (connected.value) return 'bg-sky-500 shadow-[0_0_0_3px_rgba(14,165,233,0.35)]'
+  if (connected.value) return 'bg-info-500'
   if (connecting.value) return 'bg-amber-400 animate-pulse'
-  return 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.2)]'
+  return 'bg-error-600'
+})
+
+defineExpose({
+  notifyWorkflowSaved,
+  reconnect: reconnectManual,
+  newChat,
+  connected,
+  connecting,
+  statusLabel,
+  statusDotClass
 })
 </script>
 
 <template>
   <aside
-    class="workflow-agent-chat flex min-h-[220px] flex-col bg_primary_color lg:h-full lg:min-h-0"
+    class="workflow-agent-chat relative flex min-h-[220px] flex-col overflow-visible bg_secondary_color lg:h-full lg:min-h-0"
     aria-label="Workflow assistant chat"
   >
-    <!-- Header with Logo and Exit Button -->
     <div
-      class="flex shrink-0 flex-wrap items-center gap-4 border-b primary_border_color bg_secondary_color px-6xl py-4xl justify-between"
+      ref="messagesBodyRef"
+      class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl"
+      :class="[
+        { 'flex flex-col justify-center': !hasMessages },
+        hasMessages ? 'pb-56' : '',
+      ]"
     >
-      <div class="flex min-w-0 items-center gap-3">
-        <!-- Logo -->
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-white font-bold text-lg select-none">
-          G
-        </div>
-        <!-- Status Indicator -->
-        <div class="flex items-center gap-2">
-          <span class="relative flex h-2.5 w-2.5 shrink-0">
-            <span
-              class="absolute inline-flex h-full w-full rounded-full opacity-75"
-              :class="connected ? 'animate-ping bg-sky-400' : ''"
-            />
-            <span class="relative inline-flex h-2.5 w-2.5 rounded-full" :class="statusDotClass" />
-          </span>
-          <div class="min-w-0">
-            <p class="truncate label_2_bold primary_text_color select-none">Workflow co-pilot</p>
-            <p class="truncate caption_1_medium secondary_text_color select-none">{{ statusLabel }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="flex shrink-0 gap-2">
-        <button
-          v-if="hasChatSession"
-          type="button"
-          @click="newChat"
-          class="flex items-center gap-2 rounded-lg border primary_border_color bg_secondary_color px-3.5 py-2 label_2_semibold primary_text_color hover:bg-gray-25 shadow-sm transition-all"
-        >
-          <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          New chat
-        </button>
-        <button
-          type="button"
-          @click="$emit('back')"
-          class="flex items-center gap-2 rounded-lg border primary_border_color bg_secondary_color px-3.5 py-2 label_2_semibold primary_text_color hover:bg-gray-25 shadow-sm transition-all"
-        >
-          <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Exit
-        </button>
-      </div>
-    </div>
+      <div
+        class="mx-auto flex w-full max-w-md flex-col"
+        :class="hasMessages ? 'gap-6' : 'items-center justify-center text-center py-8'"
+      >
+        <template v-if="!hasMessages">
+          <h1 class="primary_text_color heading_h5_semibold md:heading_h4_semibold">
+            Chat with your workflow
+          </h1>
+          <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color">
+            Automate support and resolve issues
+          </p>
 
-    <!-- Welcoming view when messages list is empty -->
-    <div 
-      v-if="!messages.length" 
-      class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl flex flex-col justify-center items-center"
-    >
-      <div class="w-full max-w-md flex flex-col items-center justify-center text-center my-auto py-8">
-        <!-- Welcoming title -->
-        <h1 class="text-3xl font-bold primary_text_color tracking-tight mb-2">
-          Hey {{ userName }}, how can I help?
-        </h1>
-        <p class="text-sm secondary_text_color max-w-sm mb-8 leading-relaxed">
-          I'm your AI co-pilot. I can build flows, help you answer questions, and make you a workflow expert.
-        </p>
-
-        <!-- Centered Prompt Box -->
-        <div class="w-full button-gradient mb-8">
-          <div class="prompt-box-inner rounded-xl bg_secondary_color p-5xl flex flex-col text-left">
-            <textarea
+          <div class="mt-5 w-full overflow-visible">
+            <PromptBox
               ref="promptInputRef"
-              v-model="prompt"
-              rows="3"
-              :placeholder="isListening ? 'Listening… speak now' : 'Describe what you want to automate today'"
-              class="w-full border-none outline-none label_1_regular resize-none bg-transparent"
-              :class="[
-                prompt ? 'primary_text_color' : 'secondary_text_color',
-                !connected || sending ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-              @keydown="onKeydown"
-              :disabled="!connected || sending"
+              :is-ai-generating="isPromptDisabled"
+              :disable-product-select="true"
+              :hide-product-select="true"
+              :hide-files="true"
+              placeholder="Describe what you want to automate today"
+              class="mt-0 w-full max-w-none"
+              @send-message="handlePromptBoxSend"
             />
+          </div>
+        </template>
 
-            <div class="mt-4 flex items-center justify-end">
-              <div class="flex items-center gap-3">
-                <!-- Microphone Button -->
-                <div class="group/voice relative">
-                  <button
-                    type="button"
-                    class="transition-transform duration-100 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
-                    :disabled="sending"
-                    @click="toggleVoice"
-                  >
-                    <img v-if="isListening" class="h-[34px] w-[34px] animate-pulse" :src="ActiveMikeIcon" alt="Listening" />
-                    <img v-else class="h-[34px] w-[34px]" :src="MikeIcon" alt="Start Voice" />
-                  </button>
-                  <span
-                    role="tooltip"
-                    class="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-medium leading-tight text-white shadow-md group-hover/voice:block"
-                  >
-                    {{ isListening ? 'Stop listening' : 'Voice input' }}
-                  </span>
-                </div>
-
-                <!-- Send Button with Gradient -->
-                <button
-                  type="button"
-                  class="rounded-full p-0.5 transition-transform"
-                  :class="[!connected || sending || !prompt.trim() ? 'opacity-50 cursor-not-allowed' : '']"
-                  :disabled="!connected || sending || !prompt.trim()"
-                  @click="send"
-                >
-                  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="34" height="34" rx="17" fill="url(#purpleGradient)"/>
-                    <path d="M17 10V24M17 10L23 16M17 10L11 16" stroke="#F3F0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <defs>
-                      <linearGradient id="purpleGradient" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#FAB000"/>
-                        <stop offset="0.30" stop-color="#9966FF"/>
-                        <stop offset="0.85" stop-color="#0073E6"/>
-                        <stop offset="1.00" stop-color="#15BE53"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </button>
+        <template v-else>
+          <template v-for="(m, i) in messages" :key="i">
+            <div v-if="m.kind === 'user'" class="flex justify-end">
+              <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
+                <p class="Body_2_regular primary_text_color">{{ m.text }}</p>
               </div>
             </div>
-            <p
-              v-if="speechUnsupportedMessage"
-              class="mt-2 text-[10px] text-amber-700 font-medium select-none text-left"
-              role="status"
-            >
-              {{ speechUnsupportedMessage }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Suggestion List -->
-        <div class="w-full flex flex-col gap-2">
-          <button
-            v-for="(suggestion, idx) in suggestions"
-            :key="idx"
-            type="button"
-            @click="selectSuggestion(suggestion.text)"
-            class="flex items-center justify-between w-full px-4 py-3.5 rounded-xl border border-slate-200/60 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all text-left text-sm primary_text_color shadow-sm"
-          >
-            <div class="flex items-center gap-3">
-              <span class="text-slate-400" v-html="suggestion.icon" />
-              <span>{{ suggestion.text }}</span>
+            <div v-else-if="m.kind === 'assistant'" class="flex items-start gap-3">
+              <img
+                :src="AgentChatIcon"
+                alt=""
+                class="h-8 w-8 shrink-0 rounded-full"
+                aria-hidden="true"
+              />
+              <div class="min-w-0 flex-1">
+                <div
+                  class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                  v-html="renderMarkdown(m.text)"
+                />
+                <ChatActionBar
+                  :is-liked="m.isLiked"
+                  :is-disliked="m.isDisliked"
+                  :padded="false"
+                  compact-icons
+                  show-regenerate
+                  class="lg:px-3xl"
+                  @copy="handleCopy(m.text)"
+                  @like="toggleChatReaction(i, 'like')"
+                  @dislike="toggleChatReaction(i, 'dislike')"
+                  @regenerate="handleRegenerate(i)"
+                />
+              </div>
             </div>
-            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Active Messages view when messages list is not empty -->
-    <template v-else>
-      <div ref="messagesBodyRef" class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl space-y-6">
-        <template v-for="(m, i) in messages" :key="i">
-          <div v-if="m.kind === 'user'" class="flex justify-end">
-            <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
-              <p class="Body_2_regular primary_text_color">{{ m.text }}</p>
+            <div v-else class="flex justify-center">
+              <div
+                class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center label_3_regular"
+                :class="
+                  m.kind === 'error'
+                    ? 'border error_border_color bg-error-50 text-error-600'
+                    : 'border primary_border_color bg-info-50 secondary_text_color'
+                "
+              >
+                {{ m.text }}
+              </div>
             </div>
-          </div>
-          <div v-else-if="m.kind === 'assistant'" class="flex items-start gap-3">
+          </template>
+
+          <div v-if="isLoading" class="flex items-start gap-3">
             <img
               :src="AgentChatIcon"
               alt=""
@@ -741,135 +509,52 @@ const statusDotClass = computed(() => {
               aria-hidden="true"
             />
             <div class="min-w-0 flex-1">
-              <div
-                class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
-                v-html="renderMarkdown(m.text)"
-              />
-              <ChatActionBar
-                :is-liked="m.isLiked"
-                :is-disliked="m.isDisliked"
-                :padded="false"
-                compact-icons
-                show-regenerate
-                class="lg:px-3xl"
-                @copy="handleCopy(m.text)"
-                @like="toggleChatReaction(i, 'like')"
-                @dislike="toggleChatReaction(i, 'dislike')"
-                @regenerate="handleRegenerate(i)"
-              />
-            </div>
-          </div>
-          <div v-else class="flex justify-center">
-            <div
-              class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
-              :class="
-                m.kind === 'error'
-                  ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
-                  : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
-              "
-            >
-              {{ m.text }}
-            </div>
-          </div>
-        </template>
-
-        <div v-if="sending" class="flex items-start gap-3">
-          <img
-            :src="AgentChatIcon"
-            alt=""
-            class="h-8 w-8 shrink-0 rounded-full"
-            aria-hidden="true"
-          />
-          <div class="min-w-0 flex-1">
-            <div class="rounded-2xl py-xs">
-              <p class="primary_text_color body_3_regular">
-                Got it, give me a moment<span class="loading-dots" />
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Docked Prompt Box at the bottom -->
-      <div class="shrink-0 px-6xl pb-6xl pt-2">
-        <div
-          class="w-full"
-          :class="sending ? 'prompt-box-animated' : 'button-gradient'"
-        >
-          <div class="prompt-box-inner rounded-xl bg_secondary_color p-5xl flex flex-col">
-            <textarea
-              ref="promptInputRef"
-              v-model="prompt"
-              rows="2"
-              :placeholder="isListening ? 'Listening… speak now' : 'Ask the workflow assistant…'"
-              class="w-full border-none outline-none label_1_regular bg-transparent resize-none"
-              :class="[
-                prompt ? 'primary_text_color' : 'secondary_text_color',
-                !connected || sending ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-              @keydown="onKeydown"
-              :disabled="!connected || sending"
-            />
-
-            <div class="mt-4 flex items-center justify-end">
-              <div class="flex items-center gap-3">
-                <!-- Microphone Button -->
-                <div class="group/voice relative">
-                  <button
-                    type="button"
-                    class="transition-transform duration-100 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
-                    :disabled="sending"
-                    @click="toggleVoice"
-                  >
-                    <img v-if="isListening" class="h-[34px] w-[34px] animate-pulse" :src="ActiveMikeIcon" alt="Listening" />
-                    <img v-else class="h-[34px] w-[34px]" :src="MikeIcon" alt="Start Voice" />
-                  </button>
-                  <span
-                    role="tooltip"
-                    class="pointer-events-none absolute bottom-full left-1/2 z-[100] mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-medium leading-tight text-white shadow-md group-hover/voice:block"
-                  >
-                    {{ isListening ? 'Stop listening' : 'Voice input' }}
-                  </span>
-                </div>
-
-                <!-- Send Button with Gradient -->
-                <button
-                  type="button"
-                  class="rounded-full p-0.5 transition-transform"
-                  :class="[!connected || sending || !prompt.trim() ? 'opacity-50 cursor-not-allowed' : '']"
-                  :disabled="!connected || sending || !prompt.trim()"
-                  @click="send"
-                >
-                  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="34" height="34" rx="17" fill="url(#purpleGradient)"/>
-                    <path d="M17 10V24M17 10L23 16M17 10L11 16" stroke="#F3F0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <defs>
-                      <linearGradient id="purpleGradient" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#FAB000"/>
-                        <stop offset="0.30" stop-color="#9966FF"/>
-                        <stop offset="0.85" stop-color="#0073E6"/>
-                        <stop offset="1.00" stop-color="#15BE53"/>
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </button>
+              <div class="rounded-2xl py-xs">
+                <p class="primary_text_color body_3_regular">
+                  Got it, give me a moment<span class="loading-dots" />
+                </p>
               </div>
             </div>
-            <p
-              v-if="speechUnsupportedMessage"
-              class="mt-2 text-[10px] text-amber-700 font-medium select-none text-left"
-              role="status"
-            >
-              {{ speechUnsupportedMessage }}
-            </p>
           </div>
-        </div>
+
+          <div ref="scrollAnchor" class="h-64 md:h-56" />
+        </template>
       </div>
-    </template>
+    </div>
+
+    <div
+      v-if="hasMessages"
+      class="workflow-prompt-dock absolute inset-x-0 bottom-0 z-20 overflow-visible bg_secondary_color px-6xl pb-6xl pt-6 transition-all duration-300 ease-in-out"
+    >
+      <PromptBox
+        ref="promptInputRef"
+        :is-ai-generating="isPromptDisabled"
+        :disable-product-select="true"
+        :hide-product-select="true"
+        :hide-files="true"
+        placeholder="Ask the workflow assistant…"
+        class="mt-0 w-full max-w-none"
+        @send-message="handlePromptBoxSend"
+      />
+      <div class="text-center p-xl">
+        <p class="body_4_regular tertiary_text_color">
+          AI Agent can make mistakes. Please check for accuracy.
+        </p>
+      </div>
+    </div>
   </aside>
 </template>
 
 <style scoped>
+.workflow-prompt-dock {
+  isolation: isolate;
+}
+
+.workflow-prompt-dock :deep(.prompt-box-animated),
+.workflow-prompt-dock :deep(.button-gradient) {
+  overflow: visible;
+}
+
 .chat-markdown :deep(p) {
   margin: 0 0 0.75em;
 }
@@ -1002,27 +687,4 @@ const statusDotClass = computed(() => {
   }
 }
 
-.custom_scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-}
-
-.custom_scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom_scrollbar::-webkit-scrollbar-track {
-  margin: 0;
-  background: transparent;
-}
-
-.custom_scrollbar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 9999px;
-}
-
-.custom_scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
-}
 </style>

@@ -114,23 +114,23 @@ onUnmounted(() => {
 <template>
   <div class="space-y-3">
     <div class="space-y-2">
-      <p class="text-[11px] font-medium text-slate-700">Routing rules</p>
+      <p class="text-[11px] font-medium primary_text_color">Routing rules</p>
       <div
         v-for="(rule, rIdx) in model.rules"
         :key="ruleKeyPrefix + '-' + rIdx"
-        class="flex flex-col gap-1.5 rounded-md border border-slate-200 bg-white p-2"
+        class="flex flex-col gap-1.5 rounded-md border regular_border_color bg_secondary_color p-2"
       >
-        <label class="text-[10px] font-medium text-slate-600">Condition</label>
+        <label class="text-[10px] font-medium secondary_text_color">Condition</label>
         <input
           v-model="rule.condition"
           type="text"
-          class="w-full border rounded px-2 py-1.5 text-xs focus:outline-none"
+          class="w-full border regular_border_color rounded px-2 py-1.5 text-xs focus:outline-none bg_secondary_color"
           placeholder="Describe when this agent should run"
         >
-        <label class="text-[10px] font-medium text-slate-600">Agent</label>
+        <label class="text-[10px] font-medium secondary_text_color">Agent</label>
         <div
           v-if="!patternAgents.length"
-          class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-slate-50 text-slate-400"
+          class="w-full border regular_border_color rounded-lg px-2 py-1.5 text-xs bg_primary_color tertiary_text_color"
         >
           Select agent
         </div>
@@ -141,14 +141,14 @@ onUnmounted(() => {
         >
           <button
             type="button"
-            class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none min-w-0"
+            class="w-full border regular_border_color rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg_primary_color hover:bg-gray-50-hover text-left primary_text_color focus:outline-none min-w-0"
             :aria-expanded="openDropdownKey === ruleDdKey(rIdx)"
             aria-haspopup="listbox"
             @click.stop="toggleDropdown(ruleDdKey(rIdx))"
           >
             <span class="truncate min-w-0">{{ labelForRuleAgent(rule) }}</span>
             <svg
-              class="w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform duration-200"
+              class="w-3.5 h-3.5 secondary_text_color shrink-0 transition-transform duration-200"
               :class="{ 'rotate-180': openDropdownKey === ruleDdKey(rIdx) }"
               fill="none"
               stroke="currentColor"
@@ -160,7 +160,7 @@ onUnmounted(() => {
           </button>
           <ul
             v-show="openDropdownKey === ruleDdKey(rIdx)"
-            class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+            class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
             role="listbox"
           >
             <li
@@ -168,8 +168,8 @@ onUnmounted(() => {
               :key="pa.id"
               role="option"
               :aria-selected="String(rule.agent_id) === String(pa.agent_id)"
-              class="px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50"
-              :class="{ 'bg-slate-100 font-medium': String(rule.agent_id) === String(pa.agent_id) }"
+              class="px-2 py-1.5 text-xs cursor-pointer hover:bg_primary_color"
+              :class="{ 'bg_primary_color font-medium': String(rule.agent_id) === String(pa.agent_id) }"
               @click="selectRuleAgent(rIdx, String(pa.agent_id))"
             >
               {{ agentLabel(pa.agent_id) }}
@@ -178,7 +178,7 @@ onUnmounted(() => {
         </div>
         <button
           type="button"
-          class="text-[11px] text-red-600 self-end hover:underline"
+          class="text-[11px] delete_text_color self-end hover:underline"
           @click="removeRule(rIdx)"
         >
           Remove rule
@@ -193,24 +193,24 @@ onUnmounted(() => {
       </button>
     </div>
     <div>
-      <label class="block text-[11px] font-medium text-slate-600 mb-1">Fallback agent</label>
+      <label class="block text-[11px] font-medium secondary_text_color mb-1">Fallback agent</label>
       <div
         v-if="!patternAgents.length"
-        class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-slate-50 text-slate-400"
+        class="w-full border regular_border_color rounded-lg px-2 py-1.5 text-xs bg_primary_color tertiary_text_color"
       >
         None
       </div>
       <div v-else class="relative" data-router-dd-key="fallback">
         <button
           type="button"
-          class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none min-w-0"
+          class="w-full border regular_border_color rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg_primary_color hover:bg-gray-50-hover text-left primary_text_color focus:outline-none min-w-0"
           :aria-expanded="openDropdownKey === 'fallback'"
           aria-haspopup="listbox"
           @click.stop="toggleDropdown('fallback')"
         >
           <span class="truncate min-w-0">{{ labelForFallback() }}</span>
           <svg
-            class="w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform duration-200"
+            class="w-3.5 h-3.5 secondary_text_color shrink-0 transition-transform duration-200"
             :class="{ 'rotate-180': openDropdownKey === 'fallback' }"
             fill="none"
             stroke="currentColor"
@@ -222,14 +222,14 @@ onUnmounted(() => {
         </button>
         <ul
           v-show="openDropdownKey === 'fallback'"
-          class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+          class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
           role="listbox"
         >
           <li
             role="option"
             :aria-selected="!model.fallback_agent_id"
-            class="px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50"
-            :class="{ 'bg-slate-100 font-medium': !model.fallback_agent_id }"
+            class="px-2 py-1.5 text-xs cursor-pointer hover:bg_primary_color"
+            :class="{ 'bg_primary_color font-medium': !model.fallback_agent_id }"
             @click="selectFallbackAgent('')"
           >
             None
@@ -239,8 +239,8 @@ onUnmounted(() => {
             :key="ruleKeyPrefix + '-fb-' + pa.id"
             role="option"
             :aria-selected="String(model.fallback_agent_id) === String(pa.agent_id)"
-            class="px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50"
-            :class="{ 'bg-slate-100 font-medium': String(model.fallback_agent_id) === String(pa.agent_id) }"
+            class="px-2 py-1.5 text-xs cursor-pointer hover:bg_primary_color"
+            :class="{ 'bg_primary_color font-medium': String(model.fallback_agent_id) === String(pa.agent_id) }"
             @click="selectFallbackAgent(String(pa.agent_id))"
           >
             {{ agentLabel(pa.agent_id) }}
@@ -249,18 +249,18 @@ onUnmounted(() => {
       </div>
     </div>
     <div>
-      <label class="block text-[11px] font-medium text-slate-600 mb-1">Status</label>
+      <label class="block text-[11px] font-medium secondary_text_color mb-1">Status</label>
       <div class="relative" data-router-dd-key="status">
         <button
           type="button"
-          class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none min-w-0"
+          class="w-full border regular_border_color rounded-lg px-2 py-1.5 text-xs flex items-center justify-between gap-2 bg_primary_color hover:bg-gray-50-hover text-left primary_text_color focus:outline-none min-w-0"
           :aria-expanded="openDropdownKey === 'status'"
           aria-haspopup="listbox"
           @click.stop="toggleDropdown('status')"
         >
           <span class="truncate min-w-0">{{ labelForStatus() }}</span>
           <svg
-            class="w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform duration-200"
+            class="w-3.5 h-3.5 secondary_text_color shrink-0 transition-transform duration-200"
             :class="{ 'rotate-180': openDropdownKey === 'status' }"
             fill="none"
             stroke="currentColor"
@@ -272,7 +272,7 @@ onUnmounted(() => {
         </button>
         <ul
           v-show="openDropdownKey === 'status'"
-          class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+          class="absolute z-[1000] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
           role="listbox"
         >
           <li
@@ -280,8 +280,8 @@ onUnmounted(() => {
             :key="opt.value"
             role="option"
             :aria-selected="(model.status || 'active') === opt.value"
-            class="px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50"
-            :class="{ 'bg-slate-100 font-medium': (model.status || 'active') === opt.value }"
+            class="px-2 py-1.5 text-xs cursor-pointer hover:bg_primary_color"
+            :class="{ 'bg_primary_color font-medium': (model.status || 'active') === opt.value }"
             @click="selectStatus(opt.value)"
           >
             {{ opt.label }}

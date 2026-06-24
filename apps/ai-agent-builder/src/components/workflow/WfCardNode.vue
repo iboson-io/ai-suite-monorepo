@@ -1,8 +1,21 @@
 <script setup>
 import { computed, ref, watch, inject } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
+import { SelectBox } from '@ai-suite/shared-ui'
 import { useWorkflow } from '@app/composables/useWorkflow'
 import { apiService } from '@app/services/agentApi.js'
+import WfHitlFormFields from './WfHitlFormFields.vue'
+import WfFormField from './WfFormField.vue'
+import {
+  WF_FIELD_INPUT,
+  WF_FIELD_SELECT,
+  WF_POPOVER_PANEL,
+  WF_TAB_PANEL,
+  WF_BTN_ROW,
+  WF_BTN_PRIMARY,
+  WF_BTN_DANGER,
+  WF_CHECKBOX
+} from './workflowFormStyles.js'
 
 const props = defineProps({
   id: {
@@ -45,6 +58,13 @@ const channelId = computed(() => {
 // Catalog agents list
 const agentsList = ref([])
 const agentsLoading = ref(false)
+
+const agentOptions = computed(() =>
+  agentsList.value.map((a) => ({
+    id: String(a.id),
+    name: a.name || a.agent_name || String(a.id)
+  }))
+)
 
 async function fetchAgents() {
   if (agentsList.value.length > 0) return
@@ -317,11 +337,11 @@ watch(
 
 const surfaceClass = computed(() => {
   const r = props.data?.role
-  if (r === 'trigger') return 'bg-white text-blue-950'
-  if (r === 'agent') return 'bg-white text-slate-900'
-  if (r === 'output') return 'bg-violet-50/90 text-violet-950'
-  if (r === 'hitl') return 'bg-orange-50/90 text-orange-950'
-  return 'bg-white text-slate-900'
+  if (r === 'trigger') return 'bg_secondary_color primary_text_color'
+  if (r === 'agent') return 'bg_secondary_color primary_text_color'
+  if (r === 'output') return 'bg-violet-50/90 primary_text_color'
+  if (r === 'hitl') return 'bg-orange-50/90 primary_text_color'
+  return 'bg_secondary_color primary_text_color'
 })
 
 const accentClass = computed(() => {
@@ -348,7 +368,7 @@ const isSupervisorAgent = computed(
 
 <template>
   <div
-    class="wf-card rounded-lg border border-y border-r border-slate-200/90 py-2.5 px-3 text-left shadow-md overflow-visible"
+    class="wf-card rounded-lg border border-y border-r regular_border_color py-2.5 px-3 text-left shadow-md overflow-visible"
     :class="[
       surfaceClass,
       accentClass,
@@ -366,7 +386,7 @@ const isSupervisorAgent = computed(
         type="target"
         :position="Position.Left"
         :style="{ top: '50%', transform: 'translateY(-50%)' }"
-        class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+        class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
       />
       <Handle
         v-if="isSupervisorAgent"
@@ -374,7 +394,7 @@ const isSupervisorAgent = computed(
         type="target"
         :position="Position.Right"
         :style="{ top: '72%', transform: 'translateY(-50%)' }"
-        class="!h-2.5 !w-2.5 !border !border-emerald-500 !bg-white"
+        class="!h-2.5 !w-2.5 !border !border-emerald-500 !bg_secondary_color"
       />
       <Handle
         v-if="showSource"
@@ -386,7 +406,7 @@ const isSupervisorAgent = computed(
             ? { top: '28%', transform: 'translateY(-50%)' }
             : { top: '50%', transform: 'translateY(-50%)' }
         "
-        class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+        class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
       />
     </template>
     <template v-else>
@@ -394,13 +414,13 @@ const isSupervisorAgent = computed(
         v-if="showTarget"
         type="target"
         :position="Position.Left"
-        class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+        class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
       />
       <Handle
         v-if="showSource"
         type="source"
         :position="Position.Right"
-        class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+        class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
       />
     </template>
 
@@ -428,150 +448,110 @@ const isSupervisorAgent = computed(
     <!-- Edit Popover Overlay (floats under the card node when selected) -->
     <div
       v-if="selected"
-      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[300px] -translate-x-1/2 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl text-xs text-slate-800"
+      :class="[WF_POPOVER_PANEL, 'w-[300px]']"
       @pointerdown.stop
       @mousedown.stop
     >
-      <div class="flex items-center justify-between border-b pb-1 mb-1 font-bold text-slate-700">
+      <div class="mb-1 flex items-center justify-between border-b primary_border_color pb-1 label_3_semibold primary_text_color">
         <span class="capitalize">Edit {{ data?.role }}</span>
       </div>
 
-      <div v-if="loading" class="py-4 text-center text-slate-500">
+      <div v-if="loading" class="py-4 text-center body_3_regular secondary_text_color">
         Loading details…
       </div>
 
       <template v-else>
         <!-- A. AGENT CARD EDITOR -->
-        <div v-if="data?.role === 'agent'" class="flex flex-col gap-2">
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Agent</label>
-            <select v-model="localAgentId" class="border rounded px-1.5 py-1 text-xs outline-none bg-slate-50">
-              <option value="" disabled>Select agent</option>
-              <option v-for="a in agentsList" :key="a.id" :value="String(a.id)">{{ a.name || a.agent_name || a.id }}</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Timeout (seconds)</label>
-            <input v-model="localTimeoutSec" type="number" min="1" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <label class="flex items-center gap-1.5 text-[10px] text-slate-600 mt-1 cursor-pointer">
-            <input type="checkbox" v-model="localFallback" class="rounded border-slate-300" />
+        <div v-if="data?.role === 'agent'" :class="WF_TAB_PANEL">
+          <WfFormField label="Agent">
+            <SelectBox
+              :model-value="localAgentId"
+              :options="agentOptions"
+              :loading="agentsLoading"
+              placeholder="Select agent"
+              wrapper-class="w-full"
+              :custom-class="WF_FIELD_SELECT"
+              dropdown-class="w-full"
+              @change="localAgentId = $event.id"
+            />
+          </WfFormField>
+          <WfFormField label="Timeout (seconds)">
+            <input v-model="localTimeoutSec" type="number" min="1" :class="WF_FIELD_INPUT" />
+          </WfFormField>
+          <label class="flex cursor-pointer items-center gap-md label_3_regular secondary_text_color">
+            <input v-model="localFallback" type="checkbox" :class="WF_CHECKBOX" />
             Fallback agent
           </label>
-          <div class="flex gap-2 mt-2">
-            <button type="button" class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]" :disabled="saving" @click="saveAgentDetails">
+          <div :class="WF_BTN_ROW">
+            <button type="button" :class="WF_BTN_PRIMARY" :disabled="saving" @click="saveAgentDetails">
               {{ saving ? 'Saving…' : 'Save' }}
             </button>
-            <button type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]" :disabled="saving" @click="deleteAgentStep">
+            <button type="button" :class="WF_BTN_DANGER" :disabled="saving" @click="deleteAgentStep">
               Remove
             </button>
           </div>
         </div>
 
         <!-- B. OUTPUT CHANNEL CARD EDITOR -->
-        <div v-else-if="data?.role === 'output'" class="flex flex-col gap-2">
-          <div class="border rounded-lg bg-slate-50 p-2 border-slate-100 flex items-center justify-between text-[11px]">
-            <span class="font-medium text-slate-500">Type</span>
-            <span class="font-bold text-slate-700 capitalize">{{ channelType }}</span>
+        <div v-else-if="data?.role === 'output'" :class="WF_TAB_PANEL">
+          <div class="flex items-center justify-between rounded-lg border primary_border_color bg_primary_color p-2 label_3_regular">
+            <span class="secondary_text_color">Type</span>
+            <span class="label_3_semibold capitalize primary_text_color">{{ channelType }}</span>
           </div>
 
           <template v-if="channelType === 'email'">
-            <div class="flex flex-col gap-0.5">
-              <label class="text-[10px] font-medium text-slate-500">To Email</label>
-              <input v-model="emailTo" type="email" placeholder="owner@company.com" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-            </div>
-            <div class="flex flex-col gap-0.5">
-              <label class="text-[10px] font-medium text-slate-500">Subject</label>
-              <input v-model="emailSubject" type="text" placeholder="Workflow result" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-            </div>
+            <WfFormField label="To Email">
+              <input v-model="emailTo" type="email" placeholder="owner@company.com" :class="WF_FIELD_INPUT" />
+            </WfFormField>
+            <WfFormField label="Subject">
+              <input v-model="emailSubject" type="text" placeholder="Workflow result" :class="WF_FIELD_INPUT" />
+            </WfFormField>
           </template>
 
           <template v-else-if="channelType === 'sms' || channelType === 'outbound_call'">
-            <div class="flex flex-col gap-0.5">
-              <label class="text-[10px] font-medium text-slate-500">From Number</label>
-              <input v-model="smsFromNumber" type="text" placeholder="+15551234567" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-            </div>
+            <WfFormField label="From Number">
+              <input v-model="smsFromNumber" type="text" placeholder="+15551234567" :class="WF_FIELD_INPUT" />
+            </WfFormField>
             <template v-if="channelType === 'outbound_call'">
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[10px] font-medium text-slate-500">TTS Voice</label>
-                <input v-model="outboundTtsVoice" type="text" placeholder="Polly.Joanna" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <label class="text-[10px] font-medium text-slate-500">Language</label>
-                <input v-model="outboundLanguage" type="text" placeholder="en-US" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-              </div>
+              <WfFormField label="TTS Voice">
+                <input v-model="outboundTtsVoice" type="text" placeholder="Polly.Joanna" :class="WF_FIELD_INPUT" />
+              </WfFormField>
+              <WfFormField label="Language">
+                <input v-model="outboundLanguage" type="text" placeholder="en-US" :class="WF_FIELD_INPUT" />
+              </WfFormField>
             </template>
           </template>
 
           <template v-else>
-            <div class="flex flex-col gap-0.5">
-              <label class="text-[10px] font-medium text-slate-500">Config (JSON)</label>
-              <textarea v-model="configJson" rows="4" class="font-mono border rounded px-1.5 py-1 text-[11px] outline-none focus:border-blue-400 bg-white" />
-            </div>
+            <WfFormField label="Config (JSON)">
+              <textarea v-model="configJson" rows="4" class="w-full rounded-lg border primary_border_color bg_secondary_color px-xl py-xs font-mono label_3_regular primary_text_color outline-none focus:border-info-500" />
+            </WfFormField>
           </template>
 
-          <label class="flex items-center gap-1.5 text-[10px] text-slate-600 mt-1 cursor-pointer">
-            <input type="checkbox" v-model="isPrimary" class="rounded border-slate-300" />
+          <label class="flex cursor-pointer items-center gap-md label_3_regular secondary_text_color">
+            <input v-model="isPrimary" type="checkbox" :class="WF_CHECKBOX" />
             Primary Channel
           </label>
 
-          <div class="flex gap-2 mt-2">
-            <button type="button" class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]" :disabled="saving" @click="saveOutputDetails">
+          <div :class="WF_BTN_ROW">
+            <button type="button" :class="WF_BTN_PRIMARY" :disabled="saving" @click="saveOutputDetails">
               {{ saving ? 'Saving…' : 'Save' }}
             </button>
-            <button type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]" :disabled="saving" @click="deleteOutputChannelStep">
+            <button type="button" :class="WF_BTN_DANGER" :disabled="saving" @click="deleteOutputChannelStep">
               Remove
             </button>
           </div>
         </div>
 
         <!-- C. HITL CARD EDITOR -->
-        <div v-else-if="data?.role === 'hitl'" class="flex flex-col gap-2 max-h-[240px] overflow-y-auto pr-1">
-          <label class="flex items-center gap-1.5 text-[10px] text-slate-600 cursor-pointer">
-            <input type="checkbox" v-model="hitlForm.is_enabled" class="rounded border-slate-300" />
-            Enabled
-          </label>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Pause On</label>
-            <select v-model="hitlForm.pause_on" class="border rounded px-1.5 py-1 text-xs bg-slate-50 outline-none">
-              <option value="failure">Failure</option>
-              <option value="before_confidential">Before Confidential</option>
-              <option value="both">Both</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Contact Channel</label>
-            <input v-model="hitlForm.contact_channel" type="text" placeholder="email" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Message Template</label>
-            <textarea v-model="hitlForm.message_template" rows="2" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Timeout (Hours)</label>
-            <input v-model.number="hitlForm.timeout_hours" type="number" min="1" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">On Timeout</label>
-            <select v-model="hitlForm.on_timeout" class="border rounded px-1.5 py-1 text-xs bg-slate-50 outline-none">
-              <option value="reject">Reject</option>
-              <option value="approve">Approve</option>
-              <option value="escalate">Escalate</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Owner Message</label>
-            <input v-model="hitlForm.owner_message" type="text" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button type="button" class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]" :disabled="saving" @click="saveHitlDetails">
-              {{ saving ? 'Saving…' : hitlExists ? 'Update' : 'Create' }}
-            </button>
-            <button v-if="hitlExists" type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]" :disabled="saving" @click="removeHitlStep">
-              Delete
-            </button>
-          </div>
+        <div v-else-if="data?.role === 'hitl'" :class="WF_TAB_PANEL">
+          <WfHitlFormFields
+            v-model="hitlForm"
+            :saving="saving"
+            :hitl-exists="hitlExists"
+            @save="saveHitlDetails"
+            @delete="removeHitlStep"
+          />
         </div>
       </template>
     </div>

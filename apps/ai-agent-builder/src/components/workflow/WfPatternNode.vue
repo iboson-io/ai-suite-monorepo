@@ -1,8 +1,22 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, inject } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
+import { SelectBox } from '@ai-suite/shared-ui'
 import { useWorkflow } from '@app/composables/useWorkflow'
 import { apiService } from '@app/services/agentApi.js'
+import WfPopoverTabs from './WfPopoverTabs.vue'
+import WfFormField from './WfFormField.vue'
+import {
+  WF_POPOVER_PANEL,
+  WF_TAB_PANEL,
+  WF_FIELD_INPUT,
+  WF_FIELD_SELECT,
+  WF_BTN_ROW,
+  WF_BTN_PRIMARY,
+  WF_BTN_DANGER,
+  WF_LIST_ITEM,
+  PATTERN_TYPE_OPTIONS
+} from './workflowFormStyles.js'
 
 const props = defineProps({
   data: {
@@ -77,6 +91,26 @@ const agentNameMap = ref({})
 const newAgentId = ref('')
 const newTimeoutSec = ref('30')
 
+const patternTabs = [
+  { id: 'edit', label: 'Details' },
+  { id: 'add', label: 'Add Agent' },
+  { id: 'manage', label: 'Manage' }
+]
+
+const agentOptions = computed(() =>
+  agentsList.value.map((a) => ({
+    id: String(a.id),
+    name: a.name || a.agent_name || String(a.id)
+  }))
+)
+
+watch(localTab, async (tab) => {
+  if (tab === 'add') await fetchAgents()
+  if (tab === 'manage') {
+    await Promise.all([fetchPatternAgents(), loadAgentNames()])
+  }
+})
+
 function syncLocalFromData() {
   localType.value = props.data?.patternType || 'sequential'
   localName.value = props.data?.title || ''
@@ -138,8 +172,6 @@ watch(
   (val) => {
     if (val) {
       localTab.value = val
-      if (val === 'add') fetchAgents()
-      if (val === 'manage') clickManageTab()
     }
   },
   { immediate: true }
@@ -152,21 +184,9 @@ watch(
       localTab.value = 'edit'
     } else {
       syncLocalFromData()
-      if (localTab.value === 'add') fetchAgents()
-      if (localTab.value === 'manage') clickManageTab()
     }
   }
 )
-
-async function clickAddTab() {
-  localTab.value = 'add'
-  await fetchAgents()
-}
-
-async function clickManageTab() {
-  localTab.value = 'manage'
-  await Promise.all([fetchPatternAgents(), loadAgentNames()])
-}
 
 const sortedPatternAgents = computed(() => {
   return [...patternAgents.value].sort((a, b) => {
@@ -301,7 +321,7 @@ async function removeAgent(row) {
         top: `${Number(data?.handleInTopPct ?? 50)}%`,
         transform: 'translateY(-50%)'
       }"
-      class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+      class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
     />
     <Handle
       id="out"
@@ -311,7 +331,7 @@ async function removeAgent(row) {
         top: `${Number(data?.handleOutTopPct ?? 50)}%`,
         transform: 'translateY(-50%)'
       }"
-      class="!h-2.5 !w-2.5 !border !border-slate-400 !bg-white"
+      class="!h-2.5 !w-2.5 !border regular_border_color !bg_secondary_color"
     />
 
     <!-- Header: always visible (name, type badge, + menu for agents) -->
@@ -331,22 +351,22 @@ async function removeAgent(row) {
       </span>
       <span
         v-if="typeLabel"
-        class="max-w-[40%] shrink-0 truncate rounded bg-white/70 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-600"
+        class="max-w-[40%] shrink-0 truncate rounded bg_secondary_color/70 px-1.5 py-0.5 caption_1_semibold uppercase tracking-wide secondary_text_color"
       >
         {{ typeLabel }}
       </span>
       <div class="min-w-0 flex-1">
-        <div class="truncate text-xs font-bold leading-tight text-slate-900">
+        <div class="truncate text-xs font-bold leading-tight primary_text_color">
           {{ data.title }}
         </div>
-        <div v-if="data.subtitle" class="truncate text-[10px] leading-tight text-slate-600">
+        <div v-if="data.subtitle" class="truncate text-[10px] leading-tight secondary_text_color">
           {{ data.subtitle }}
         </div>
       </div>
       <div ref="patternMenuRef" class="relative z-40 shrink-0">
         <button
           type="button"
-          class="group/wf-pmenu relative inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-slate-300/80 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
+          class="group/wf-pmenu relative inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border regular_border_color bg_secondary_color secondary_text_color shadow-sm hover:bg-gray-25"
           aria-label="Pattern actions"
           :aria-expanded="menuOpen"
           aria-haspopup="menu"
@@ -359,13 +379,13 @@ async function removeAgent(row) {
         </button>
         <div
           v-show="menuOpen"
-          class="absolute right-0 bottom-full z-50 mb-1 w-44 rounded-lg border border-slate-200 bg-white p-1 py-1 shadow-xl shadow-slate-900/10"
+          class="absolute right-0 bottom-full z-50 mb-1 w-44 rounded-lg border regular_border_color bg_secondary_color p-1 py-1 shadow-xl"
           role="menu"
         >
           <button
             type="button"
             data-action="add-agent-to-pattern"
-            class="w-full rounded-md px-2 py-1.5 text-left text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+            class="w-full rounded-md px-2 py-1.5 text-left text-[11px] font-medium primary_text_color hover:bg-gray-25"
             role="menuitem"
             @click="menuOpen = false"
           >
@@ -374,7 +394,7 @@ async function removeAgent(row) {
           <button
             type="button"
             data-action="manage-pattern-agents"
-            class="w-full rounded-md px-2 py-1.5 text-left text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+            class="w-full rounded-md px-2 py-1.5 text-left text-[11px] font-medium primary_text_color hover:bg-gray-25"
             role="menuitem"
             @click="menuOpen = false"
           >
@@ -387,72 +407,45 @@ async function removeAgent(row) {
     <!-- Edit Popover Overlay when selected -->
     <div
       v-if="selected"
-      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[320px] -translate-x-1/2 flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-xl text-xs text-slate-800"
+      :class="[WF_POPOVER_PANEL, 'w-[320px]']"
       @pointerdown.stop
       @mousedown.stop
     >
-      <!-- Tabs header -->
-      <div class="flex border-b border-slate-200 pb-1.5 mb-0.5">
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'edit' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']"
-          @click="localTab = 'edit'"
-        >
-          Details
-        </button>
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'add' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']"
-          @click="clickAddTab"
-        >
-          Add Agent
-        </button>
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'manage' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']"
-          @click="clickManageTab"
-        >
-          Manage
-        </button>
-      </div>
+      <WfPopoverTabs v-model="localTab" :tabs="patternTabs" />
 
       <!-- Tab 1: Edit Pattern Details -->
-      <div v-if="localTab === 'edit'" class="flex flex-col gap-2">
-        <div class="flex flex-col gap-0.5">
-          <label class="text-[10px] font-medium text-slate-500">Name</label>
+      <div v-if="localTab === 'edit'" :class="WF_TAB_PANEL">
+        <WfFormField label="Name">
           <input
             v-model="localName"
             type="text"
-            class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white"
+            :class="WF_FIELD_INPUT"
             placeholder="Pattern name"
             @keydown.enter="savePatternDetails"
           >
-        </div>
-        <div class="flex flex-col gap-0.5">
-          <label class="text-[10px] font-medium text-slate-500">Pattern type</label>
-          <select v-model="localType" class="border rounded px-1.5 py-1 text-xs bg-white outline-none">
-            <option value="sequential">Sequential</option>
-            <option value="parallel">Parallel</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="agent_to_agent">Agent-to-agent</option>
-          </select>
-        </div>
-        <div class="flex flex-col gap-0.5">
-          <label class="text-[10px] font-medium text-slate-500">Description</label>
+        </WfFormField>
+        <WfFormField label="Pattern type">
+          <SelectBox
+            :model-value="localType"
+            :options="PATTERN_TYPE_OPTIONS"
+            wrapper-class="w-full"
+            :custom-class="WF_FIELD_SELECT"
+            dropdown-class="w-full"
+            @change="localType = $event.id"
+          />
+        </WfFormField>
+        <WfFormField label="Description">
           <textarea
             v-model="localDesc"
             rows="2"
-            class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white"
+            :class="WF_FIELD_INPUT"
             placeholder="What does this pattern do?"
           />
-        </div>
-        <div class="flex gap-2 mt-1">
+        </WfFormField>
+        <div :class="WF_BTN_ROW">
           <button
             type="button"
-            class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]"
+            :class="WF_BTN_PRIMARY"
             :disabled="saving || !localName.trim() || !localDesc.trim()"
             @click="savePatternDetails"
           >
@@ -460,7 +453,7 @@ async function removeAgent(row) {
           </button>
           <button
             type="button"
-            class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]"
+            :class="WF_BTN_DANGER"
             :disabled="saving"
             @click="deletePattern"
           >
@@ -470,31 +463,28 @@ async function removeAgent(row) {
       </div>
 
       <!-- Tab 2: Add Agent to Pattern -->
-      <div v-else-if="localTab === 'add'" class="flex flex-col gap-2">
-        <div class="flex flex-col gap-0.5">
-          <label class="text-[10px] font-medium text-slate-500">Agent</label>
-          <p v-if="agentsLoading" class="text-xs text-slate-500 py-1">Loading agents…</p>
-          <p v-else-if="!agentsList.length" class="text-xs text-amber-700 py-1">No agents found.</p>
-          <select v-else v-model="newAgentId" class="border rounded px-1.5 py-1 text-xs outline-none bg-white">
-            <option value="" disabled>Select agent</option>
-            <option v-for="a in agentsList" :key="a.id" :value="String(a.id)">
-              {{ a.name || a.agent_name || a.id }}
-            </option>
-          </select>
-        </div>
-        <div class="flex flex-col gap-0.5">
-          <label class="text-[10px] font-medium text-slate-500">Timeout (seconds)</label>
-          <input
-            v-model="newTimeoutSec"
-            type="number"
-            min="1"
-            class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white"
+      <div v-else-if="localTab === 'add'" :class="WF_TAB_PANEL">
+        <WfFormField label="Agent">
+          <p v-if="agentsLoading" class="body_3_regular secondary_text_color py-1">Loading agents…</p>
+          <p v-else-if="!agentsList.length" class="body_3_regular text-amber-700 py-1">No agents found.</p>
+          <SelectBox
+            v-else
+            :model-value="newAgentId"
+            :options="agentOptions"
+            placeholder="Select agent"
+            wrapper-class="w-full"
+            :custom-class="WF_FIELD_SELECT"
+            dropdown-class="w-full"
+            @change="newAgentId = $event.id"
           />
-        </div>
-        <div class="flex gap-2 mt-2">
+        </WfFormField>
+        <WfFormField label="Timeout (seconds)">
+          <input v-model="newTimeoutSec" type="number" min="1" :class="WF_FIELD_INPUT" />
+        </WfFormField>
+        <div :class="WF_BTN_ROW">
           <button
             type="button"
-            class="flex-1 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px] disabled:opacity-50"
+            :class="WF_BTN_PRIMARY"
             :disabled="saving || !newAgentId"
             @click="submitAddAgent"
           >
@@ -504,62 +494,58 @@ async function removeAgent(row) {
       </div>
 
       <!-- Tab 3: Manage Pattern Agents -->
-      <div v-else-if="localTab === 'manage'" class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
-          <p v-if="patternAgentsLoading" class="text-xs text-slate-500 text-center py-2">Loading...</p>
-          <p v-else-if="!patternAgents.length" class="text-xs text-slate-500 text-center py-2">No agents inside this pattern.</p>
-          <template v-else>
-            <div
-              v-for="(row, idx) in sortedPatternAgents"
-              :key="row.id"
-              class="flex items-center justify-between gap-1.5 rounded border border-slate-100 bg-slate-50/70 p-1.5 text-[11px]"
-            >
-              <div class="min-w-0 flex-1">
-                <div class="font-bold text-slate-700 truncate">
-                  {{ row.agent_name || agentNameMap[String(row.agent_id)] || row.agent_id }}
-                </div>
-                <div class="text-[9px] text-slate-500">Order: {{ row.execution_order }}</div>
+      <div v-else-if="localTab === 'manage'" :class="WF_TAB_PANEL">
+        <p v-if="patternAgentsLoading" class="body_3_regular secondary_text_color py-2 text-center">Loading...</p>
+        <p v-else-if="!patternAgents.length" class="body_3_regular secondary_text_color py-2 text-center">No agents inside this pattern.</p>
+        <template v-else>
+          <div
+            v-for="(row, idx) in sortedPatternAgents"
+            :key="row.id"
+            :class="WF_LIST_ITEM"
+          >
+            <div class="min-w-0 flex-1">
+              <div class="label_3_semibold primary_text_color truncate">
+                {{ row.agent_name || agentNameMap[String(row.agent_id)] || row.agent_id }}
               </div>
-              
-              <!-- Reordering / deletion controls -->
-              <div class="flex items-center gap-0.5 shrink-0">
-                <button
-                  type="button"
-                  class="p-0.5 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-30"
-                  :disabled="idx === 0 || saving"
-                  @click="moveAgent(row, -1)"
-                  title="Move Up"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="p-0.5 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-30"
-                  :disabled="idx === sortedPatternAgents.length - 1 || saving"
-                  @click="moveAgent(row, 1)"
-                  title="Move Down"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="p-0.5 rounded text-slate-400 hover:bg-red-100 hover:text-red-600 disabled:opacity-30 ml-1"
-                  :disabled="saving"
-                  @click="removeAgent(row)"
-                  title="Remove agent from pattern"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
+              <div class="caption_1_medium secondary_text_color">Order: {{ row.execution_order }}</div>
             </div>
-          </template>
-        </div>
+            <div class="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === 0 || saving"
+                title="Move Up"
+                @click="moveAgent(row, -1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === sortedPatternAgents.length - 1 || saving"
+                title="Move Down"
+                @click="moveAgent(row, 1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ml-1 rounded p-0.5 tertiary_text_color delete_text_color hover:bg-error-50 disabled:opacity-30"
+                :disabled="saving"
+                title="Remove agent from pattern"
+                @click="removeAgent(row)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 

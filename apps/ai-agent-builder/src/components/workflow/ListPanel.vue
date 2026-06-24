@@ -2,7 +2,7 @@
   <main class="flex min-h-0 flex-1 flex-col overflow-hidden bg_primary_color px-6xl pt-13xl pb-6xl lg:py-6xl">
     <div class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-hidden">
       <!-- Title area -->
-      <div class="flex shrink-0 flex-col gap-xl rounded-[18px] bg-white p-5 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex shrink-0 flex-col gap-xl rounded-[18px] bg_secondary_color p-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 class="heading_h6_bold primary_text_color leading-6">Workflows</h1>
           <p class="body_3_regular secondary_text_color mt-md">
@@ -49,7 +49,7 @@
             v-model="searchQuery"
             type="search"
             placeholder="Search"
-            class="w-full rounded-[1px] border primary_border_color bg-white py-md pl-11 pr-3xl label_2_medium primary_text_color outline-none transition-colors placeholder:text-gray-400"
+            class="w-full rounded-[1px] border primary_border_color bg_secondary_color py-md pl-11 pr-3xl label_2_medium primary_text_color outline-none transition-colors placeholder:text-gray-400"
             autocomplete="off"
           />
         </div>
@@ -65,7 +65,7 @@
         class="mt-6xl flex min-h-[min(68vh,calc(100dvh-17rem))] flex-1 flex-col"
       >
         <div
-          class="flex min-h-0 flex-1 w-full items-center justify-center rounded-2xl border primary_border_color bg-white px-6xl py-10xl"
+          class="flex min-h-0 flex-1 w-full items-center justify-center rounded-2xl border primary_border_color bg_secondary_color px-6xl py-10xl"
         >
           <div class="flex max-w-md flex-col items-center text-center">
             <div class="w-16 h-16 mb-5xl rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
@@ -94,7 +94,7 @@
       <div
         v-else
         ref="workflowScrollRoot"
-        class="agents-grid-scroll mt-6xl max-h-[calc(100dvh-17rem)] overflow-y-auto overflow-x-hidden rounded-[18px] bg-white p-6 pr-3"
+        class="agents-grid-scroll mt-6xl max-h-[calc(100dvh-17rem)] overflow-y-auto overflow-x-hidden rounded-[18px] bg_secondary_color p-6 pr-3"
       >
         <div class="grid grid-cols-1 gap-5xl md:grid-cols-2 xl:grid-cols-3">
           <WorkflowCard
@@ -126,7 +126,7 @@
         @click="closeCreateModal"
       >
         <div
-          class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg_secondary_color shadow-2xl"
           @click.stop
         >
           <div class="flex shrink-0 items-center justify-between px-5xl pb-4xl pt-5xl">
@@ -152,7 +152,7 @@
                   v-model="createForm.name"
                   type="text"
                   placeholder="Teacher workflow"
-                  class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200"
+                  class="w-full rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200"
                   autocomplete="off"
                   @keydown.enter.prevent="submitCreateWorkflow"
                 />
@@ -165,16 +165,16 @@
                   v-model="createForm.description"
                   rows="3"
                   placeholder="Optional description"
-                  class="w-full rounded-lg border primary_border_color bg-white px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200 resize-y min-h-[80px]"
+                  class="w-full rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_regular primary_text_color outline-none transition-colors placeholder:text-gray-400 focus:border-info-200 resize-y min-h-[80px]"
                 />
               </div>
             </div>
           </div>
 
-          <div class="flex shrink-0 items-center justify-end gap-md border-t border-gray-100 px-5xl py-4xl">
+          <div class="flex shrink-0 items-center justify-end gap-md border-t primary_border_color px-5xl py-4xl">
             <button
               type="button"
-              class="rounded-lg bg-gray-25 px-5xl py-md label_2_medium primary_text_color transition-colors hover:bg-gray-50-hover disabled:opacity-50"
+              class="secondary_button rounded-lg px-5xl py-md text-center disabled:opacity-50"
               :disabled="creating"
               @click="closeCreateModal"
             >
