@@ -376,8 +376,13 @@ import * as userProfileService from "@app/services/settings/userProfile.js";
 import GeminiIcon from "../../assets/images/GeminiIcon.svg";
 import PostIcon from "../../assets/images/PostIcon.svg";
 import PcircleIcon from "../../assets/images/PcircleIcon.svg";
-import GalleryIcon from "../../assets/images/GalleryIcon.svg";
-import PublishIcon from "../../assets/images/PublishIcon.svg";
+
+const props = defineProps({
+  onPlanSelect: {
+    type: Function,
+    default: null,
+  },
+});
 
 // Safely destructure billing functions with defaults to prevent compile/runtime breaks in other apps
 const {
@@ -705,7 +710,7 @@ const refreshPurchaseHistory = async () => {
   }
 };
 
-// Choose Plan Handler (Paddle integration)
+// Choose Plan Handler (Paddle integration via parent or inline fallback)
 const selectPlan = async (plan) => {
   if (plan.current) return;
   
@@ -716,6 +721,13 @@ const selectPlan = async (plan) => {
   
   loadingStates.value[plan.id] = true;
   try {
+    if (props.onPlanSelect) {
+      await props.onPlanSelect(plan);
+      await loadSubscriptionData();
+      showPlansView.value = false;
+      return;
+    }
+
     const result = await upgradePlan(plan.id, {
       email: profile.value?.email || '',
       name: profile.value?.username || ''
@@ -1021,7 +1033,10 @@ async function loadSubscriptionData() {
     purchaseHistoryData.value = historyRes?.data || historyRes || { transactions: [], pagination: {} };
     
     // Check if user is on Free / has no active plan, auto-show the available plans listing
-    if (!sub || sub.planName?.toLowerCase() === 'free') {
+    const isFreePlan = !sub || sub.planName?.toLowerCase() === 'free'
+    const hasActiveSubscription = sub?.status === 'active' || (sub?.id && !isFreePlan)
+
+    if (!hasActiveSubscription) {
       showPlansView.value = true;
     }
   } catch (e) {
@@ -1047,13 +1062,17 @@ async function loadProfile() {
   }
 }
 
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value;
+};
+
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value;
-};
+defineExpose({
+  reload: loadSubscriptionData,
+});
 </script>
 
 <style scoped>
