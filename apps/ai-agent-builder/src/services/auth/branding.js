@@ -1,6 +1,9 @@
+import AiagentIcon from '../../assets/images/agents/dashboard/aiagenticon.svg'
+
 export function getBrandingSectionConfig() {
   return {
     brandName: 'AI Agent',
+    brandIcon: AiagentIcon,
     excludeLocalization: true,
     headline: 'Let AI Agents Handle Your Work',
     description:
