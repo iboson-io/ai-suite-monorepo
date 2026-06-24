@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import SignIn from '../views/auth/SignIn.vue'
 import SignUp from '../../../../packages/shared-ui/src/views/auth/SignUp.vue'
-import EmailValidation from '../../../../packages/shared-ui/src/views/auth/EmailValidation.vue'
+import EmailValidation from '../views/auth/EmailValidation.vue'
 import Password from '../../../../packages/shared-ui/src/views/auth/Password.vue'
 import ForgotPassword from '../../../../packages/shared-ui/src/views/auth/ForgotPassword.vue'
 import ResetLink from '../../../../packages/shared-ui/src/views/auth/ResetLink.vue'
