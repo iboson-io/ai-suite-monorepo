@@ -654,7 +654,7 @@
     <!-- Workflow edit -->
     <div
       v-if="showWorkflowEditModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showWorkflowEditModal = false)"
     >
@@ -678,7 +678,7 @@
     <!-- Pattern create -->
     <div
       v-if="showPatternModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showPatternModal = false)"
     >
@@ -774,7 +774,7 @@
     <!-- Pattern edit -->
     <div
       v-if="showPatternEditModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showPatternEditModal = false)"
     >
@@ -853,7 +853,7 @@
     <!-- Router (supervisor) — same structured UI as canvas “Workflow router” -->
     <div
       v-if="showRouterModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 overflow-y-auto"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay overflow-y-auto"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showRouterModal = false)"
     >
@@ -909,7 +909,7 @@
     <!-- Agent add -->
     <div
       v-if="showAgentModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showAgentModal = false)"
     >
@@ -1002,7 +1002,7 @@
     <!-- Manage pattern agents -->
     <div
       v-if="showManageAgentsModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showManageAgentsModal = false)"
     >
@@ -1094,7 +1094,7 @@
     <!-- Output channel (create / edit) -->
     <div
       v-if="showOutputChannelModal"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, closeOutputChannelModal)"
     >
@@ -1243,7 +1243,7 @@
     <!-- Confirm (replaces window.confirm; z above other modals) -->
     <div
       v-if="showConfirmModal"
-      class="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/50"
+      class="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg_overlay"
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => closeConfirmModal(false))"
     >

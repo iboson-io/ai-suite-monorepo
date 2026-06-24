@@ -791,12 +791,12 @@ watch(
     >
       <WorkflowFlowFitHelper :tick="fitTick" />
 
-      <Background gap="16" pattern-color="#d1d9e6" variant="lines" />
+      <Background gap="20" :size="1.2" pattern-color="#D7DBDF" variant="dots" />
       <MiniMap
-        class="workflow-minimap !rounded-lg !regular_border_color !shadow-md"
+        class="workflow-minimap !rounded-lg !border !primary_border_color !shadow-sm"
         :pannable="true"
         :zoomable="true"
-        :mask-color="'rgba(241, 245, 249, 0.72)'"
+        :mask-color="'rgba(246, 249, 252, 0.72)'"
         position="bottom-right"
       />
     </VueFlow>

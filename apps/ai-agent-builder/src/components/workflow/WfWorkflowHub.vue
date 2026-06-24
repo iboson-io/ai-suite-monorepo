@@ -4,6 +4,13 @@ import { Handle, Position, useVueFlow } from '@vue-flow/core'
 import { useWorkflow } from '@app/composables/useWorkflow'
 import { clearWorkflowDiagramLocal } from '@app/composables/useWorkflowDiagramLocal'
 import { useToast } from '@app/composables/useToast'
+import WfHitlFormFields from './WfHitlFormFields.vue'
+import WfPopoverTabs from './WfPopoverTabs.vue'
+import {
+  WF_POPOVER_PANEL,
+  WF_TAB_PANEL,
+  WF_LIST_ITEM
+} from './workflowFormStyles.js'
 
 const props = defineProps({
   data: {
@@ -37,6 +44,11 @@ const hubMenuPortalRef = ref(null)
 const hubMenuPortalStyle = ref({})
 
 const localTab = ref('patterns')
+
+const hubTabs = [
+  { id: 'patterns', label: 'Reorder' },
+  { id: 'hitl', label: 'HITL settings' }
+]
 const patternReorderSaving = ref(false)
 const loadingHitl = ref(false)
 const savingHitl = ref(false)
@@ -409,129 +421,64 @@ watch(
     <!-- Edit Popover Overlay when selected -->
     <div
       v-if="selected && !addStepOpen"
-      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[320px] -translate-x-1/2 flex-col gap-3 rounded-lg border regular_border_color bg_secondary_color p-3 shadow-xl text-xs primary_text_color"
+      :class="[WF_POPOVER_PANEL, 'w-[320px]']"
       @pointerdown.stop
       @mousedown.stop
     >
-      <!-- Tabs header -->
-      <div class="flex border-b regular_border_color pb-1.5 mb-0.5">
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'patterns' ? 'border-black-400 primary_text_color' : 'border-transparent secondary_text_color hover:primary_text_color']"
-          @click="localTab = 'patterns'"
-        >
-          Reorder
-        </button>
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'hitl' ? 'border-black-400 primary_text_color' : 'border-transparent secondary_text_color hover:primary_text_color']"
-          @click="localTab = 'hitl'; loadHitlDetails()"
-        >
-          HITL settings
-        </button>
-      </div>
+      <WfPopoverTabs v-model="localTab" :tabs="hubTabs" />
 
-      <!-- Tab 1: Reorder Patterns -->
-      <div v-if="localTab === 'patterns'" class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
-          <p v-if="!patternRows.length" class="text-xs secondary_text_color text-center py-2">No patterns inside this workflow.</p>
-          <template v-else>
-            <div
-              v-for="(row, idx) in patternRows"
-              :key="row.id"
-              class="flex items-center justify-between gap-1.5 rounded border primary_border_color bg_primary_color p-1.5 text-[11px]"
-            >
-              <div class="min-w-0 flex-1">
-                <div class="font-bold primary_text_color truncate">
-                  {{ row.data?.title || 'Pattern' }}
-                </div>
-                <div class="text-[9px] secondary_text_color">Order: {{ row.data?.executionOrder ?? idx + 1 }}</div>
-              </div>
-              
-              <!-- Reordering controls -->
-              <div class="flex items-center gap-0.5 shrink-0">
-                <button
-                  type="button"
-                  class="p-0.5 rounded tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
-                  :disabled="idx === 0 || patternReorderSaving"
-                  @click="movePatternInMenu(idx, -1)"
-                  title="Move Up"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="p-0.5 rounded tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
-                  :disabled="idx === patternRows.length - 1 || patternReorderSaving"
-                  @click="movePatternInMenu(idx, 1)"
-                  title="Move Down"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Tab 2: HITL Configuration -->
-      <div v-else-if="localTab === 'hitl'" class="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-1">
-        <div v-if="loadingHitl" class="py-4 text-center secondary_text_color">
-          Loading HITL config…
-        </div>
+      <div v-if="localTab === 'patterns'" :class="WF_TAB_PANEL">
+        <p v-if="!patternRows.length" class="body_3_regular secondary_text_color py-2 text-center">No patterns inside this workflow.</p>
         <template v-else>
-          <label class="flex items-center gap-1.5 text-[10px] secondary_text_color cursor-pointer">
-            <input type="checkbox" v-model="hitlForm.is_enabled" class="rounded regular_border_color" />
-            Enabled
-          </label>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">Pause On</label>
-            <select v-model="hitlForm.pause_on" class="border regular_border_color rounded px-1.5 py-1 text-xs bg_primary_color outline-none">
-              <option value="failure">Failure</option>
-              <option value="before_confidential">Before Confidential</option>
-              <option value="both">Both</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">Contact Channel</label>
-            <input v-model="hitlForm.contact_channel" type="text" placeholder="email" class="border regular_border_color rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg_secondary_color" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">Message Template</label>
-            <textarea v-model="hitlForm.message_template" rows="2" class="border regular_border_color rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg_secondary_color" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">Timeout (Hours)</label>
-            <input v-model.number="hitlForm.timeout_hours" type="number" min="1" class="border regular_border_color rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg_secondary_color" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">On Timeout</label>
-            <select v-model="hitlForm.on_timeout" class="border regular_border_color rounded px-1.5 py-1 text-xs bg_primary_color outline-none">
-              <option value="reject">Reject</option>
-              <option value="approve">Approve</option>
-              <option value="escalate">Escalate</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium secondary_text_color">Owner Message</label>
-            <input v-model="hitlForm.owner_message" type="text" class="border regular_border_color rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg_secondary_color" />
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button type="button" class="primary_add_button flex-1 py-1 rounded text-white font-medium text-[11px]" :disabled="savingHitl" @click="saveHitlDetails">
-              {{ savingHitl ? 'Saving…' : hitlExists ? 'Update' : 'Create' }}
-            </button>
-            <button v-if="hitlExists" type="button" class="flex-1 py-1 rounded border regular_border_color hover:bg-red-50 delete_text_color font-medium text-[11px]" :disabled="savingHitl" @click="removeHitlStep">
-              Delete
-            </button>
+          <div
+            v-for="(row, idx) in patternRows"
+            :key="row.id"
+            :class="WF_LIST_ITEM"
+          >
+            <div class="min-w-0 flex-1">
+              <div class="label_3_semibold primary_text_color truncate">
+                {{ row.data?.title || 'Pattern' }}
+              </div>
+              <div class="caption_1_medium secondary_text_color">Order: {{ row.data?.executionOrder ?? idx + 1 }}</div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === 0 || patternReorderSaving"
+                title="Move Up"
+                @click="movePatternInMenu(idx, -1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === patternRows.length - 1 || patternReorderSaving"
+                title="Move Down"
+                @click="movePatternInMenu(idx, 1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </template>
+      </div>
+
+      <div v-else-if="localTab === 'hitl'" :class="WF_TAB_PANEL">
+        <WfHitlFormFields
+          v-model="hitlForm"
+          :loading="loadingHitl"
+          :saving="savingHitl"
+          :hitl-exists="hitlExists"
+          @save="saveHitlDetails"
+          @delete="removeHitlStep"
+        />
       </div>
     </div>
 

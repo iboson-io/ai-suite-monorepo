@@ -399,9 +399,9 @@ const statusLabel = computed(() => {
 })
 
 const statusDotClass = computed(() => {
-  if (connected.value) return 'bg-sky-500 shadow-[0_0_0_3px_rgba(14,165,233,0.35)]'
+  if (connected.value) return 'bg-info-500'
   if (connecting.value) return 'bg-amber-400 animate-pulse'
-  return 'bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.2)]'
+  return 'bg-error-600'
 })
 
 defineExpose({
@@ -417,7 +417,7 @@ defineExpose({
 
 <template>
   <aside
-    class="workflow-agent-chat relative flex min-h-[220px] flex-col overflow-visible bg_primary_color lg:h-full lg:min-h-0"
+    class="workflow-agent-chat relative flex min-h-[220px] flex-col overflow-visible bg_secondary_color lg:h-full lg:min-h-0"
     aria-label="Workflow assistant chat"
   >
     <div
@@ -489,11 +489,11 @@ defineExpose({
             </div>
             <div v-else class="flex justify-center">
               <div
-                class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
+                class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center label_3_regular"
                 :class="
                   m.kind === 'error'
-                    ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
-                    : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
+                    ? 'border error_border_color bg-error-50 text-error-600'
+                    : 'border primary_border_color bg-info-50 secondary_text_color'
                 "
               >
                 {{ m.text }}
@@ -524,7 +524,7 @@ defineExpose({
 
     <div
       v-if="hasMessages"
-      class="workflow-prompt-dock absolute inset-x-0 bottom-0 z-20 overflow-visible bg_primary_color px-6xl pb-6xl pt-6 transition-all duration-300 ease-in-out"
+      class="workflow-prompt-dock absolute inset-x-0 bottom-0 z-20 overflow-visible bg_secondary_color px-6xl pb-6xl pt-6 transition-all duration-300 ease-in-out"
     >
       <PromptBox
         ref="promptInputRef"
