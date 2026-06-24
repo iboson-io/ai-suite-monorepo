@@ -45,6 +45,7 @@
           </SelectBox>
 
           <label
+            v-if="!hideFiles"
             class="flex cursor-pointer items-center gap-md rounded-md border primary_border_color px-xl py-xs label_2_medium primary_text_color hover:bg-gray-25"
           >
             <img :src="AttachmentIcon" alt="" />
@@ -170,6 +171,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '',
+  },
+  hideFiles: {
+    type: Boolean,
+    default: false,
   },
 })
 

@@ -4,6 +4,13 @@ import { Handle, Position, useVueFlow } from '@vue-flow/core'
 import { useWorkflow } from '@app/composables/useWorkflow'
 import { clearWorkflowDiagramLocal } from '@app/composables/useWorkflowDiagramLocal'
 import { useToast } from '@app/composables/useToast'
+import WfHitlFormFields from './WfHitlFormFields.vue'
+import WfPopoverTabs from './WfPopoverTabs.vue'
+import {
+  WF_POPOVER_PANEL,
+  WF_TAB_PANEL,
+  WF_LIST_ITEM
+} from './workflowFormStyles.js'
 
 const props = defineProps({
   data: {
@@ -37,6 +44,11 @@ const hubMenuPortalRef = ref(null)
 const hubMenuPortalStyle = ref({})
 
 const localTab = ref('patterns')
+
+const hubTabs = [
+  { id: 'patterns', label: 'Reorder' },
+  { id: 'hitl', label: 'HITL settings' }
+]
 const patternReorderSaving = ref(false)
 const loadingHitl = ref(false)
 const savingHitl = ref(false)
@@ -288,7 +300,7 @@ watch(
   <!-- Single root so Vue Flow node attrs (id, position, …) inherit; Teleport inside avoids a fragment. -->
   <div class="wf-workflow-hub-root relative h-full w-full min-h-0 overflow-visible">
     <div
-      class="wf-workflow-hub relative flex h-full w-full flex-col overflow-visible rounded-xl bg-white p-0 text-left shadow-lg"
+      class="wf-workflow-hub relative flex h-full w-full flex-col overflow-visible rounded-xl bg_secondary_color p-0 text-left shadow-lg"
       :class="[selected && 'z-[2] ring-2 ring-blue-500 ring-offset-2 ring-offset-[#f1f4f9]']"
       style="
         border: 2px solid transparent;
@@ -301,17 +313,17 @@ watch(
         type="source"
         :position="Position.Right"
         id="out"
-        class="!h-2.5 !w-2.5 !-translate-y-1/2 !border !border-slate-400 !bg-white"
+        class="!h-2.5 !w-2.5 !-translate-y-1/2 !border regular_border_color !bg_secondary_color"
         style="top: 50%"
       />
-      <div class="flex items-start gap-1 border-b border-slate-100 px-4 pb-2 pt-3">
-        <p class="mt-0.5 min-w-0 flex-1 truncate text-sm font-bold leading-snug text-slate-900">
+      <div class="flex items-start gap-1 border-b primary_border_color px-4 pb-2 pt-3">
+        <p class="mt-0.5 min-w-0 flex-1 truncate text-sm font-bold leading-snug primary_text_color">
           {{ data.workflowName || 'Workflow' }}
         </p>
         <div ref="hubMenuWrap" class="relative shrink-0 -mr-1 -mt-0.5">
           <button
             type="button"
-            class="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40"
+            class="rounded-md p-1.5 secondary_text_color hover:bg-gray-25 hover:primary_text_color disabled:opacity-40"
             title="Workflow options"
             aria-label="Workflow options"
             aria-haspopup="menu"
@@ -331,16 +343,16 @@ watch(
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-2 pt-2">
-        <p class="text-[11px] font-semibold text-slate-500">Triggers</p>
+        <p class="text-[11px] font-semibold secondary_text_color">Triggers</p>
         <div
           v-if="!data.triggerCount"
-          class="mt-2 flex min-h-[4.5rem] flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-2 py-3"
+          class="mt-2 flex min-h-[4.5rem] flex-1 flex-col items-center justify-center rounded-lg border border-dashed regular_border_color bg_primary_color px-2 py-3"
         >
-          <p class="mb-2 text-center text-[10px] text-slate-500">No triggers yet</p>
+          <p class="mb-2 text-center text-[10px] secondary_text_color">No triggers yet</p>
           <button
             type="button"
             data-action="add-trigger"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-800"
+            class="inline-flex items-center gap-1.5 rounded-lg primary_add_button px-3 py-1.5 label_3_semibold primary_2_text_color"
           >
             <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -352,13 +364,13 @@ watch(
 
       <!-- Zapier-style: dashed stem + add step (+) with action menu -->
       <div class="flex flex-shrink-0 flex-col items-center px-4 pb-1 pt-0">
-        <div class="h-7 shrink-0 border-l-2 border-dashed border-slate-300" aria-hidden="true" />
+        <div class="h-7 shrink-0 border-l-2 border-dashed regular_border_color" aria-hidden="true" />
       </div>
 
       <div class="relative flex flex-shrink-0 flex-col items-center px-3 pb-3 pt-0">
         <details ref="addStepDetails" class="relative z-20" @toggle="onAddStepToggle">
           <summary
-            class="group/wf-hub-add relative flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border-2 border-transparent bg-white text-lg font-light text-slate-600 shadow-sm outline-none ring-offset-2 transition hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400 [&::-webkit-details-marker]:hidden"
+            class="group/wf-hub-add relative flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border-2 border-transparent bg_secondary_color text-lg font-light secondary_text_color shadow-sm outline-none ring-offset-2 transition hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400 [&::-webkit-details-marker]:hidden"
             style="
               background-image: linear-gradient(white, white), linear-gradient(125deg, #fbbf24, #fb7185, #a78bfa);
               background-origin: border-box;
@@ -370,7 +382,7 @@ watch(
             <span role="tooltip" :class="addStepTip">Add step</span>
           </summary>
           <div
-            class="absolute left-1/2 top-[calc(100%+6px)] z-50 w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-slate-200/90 bg-white py-1 shadow-lg shadow-slate-900/10"
+            class="absolute left-1/2 top-[calc(100%+6px)] z-50 w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border regular_border_color bg_secondary_color py-1 shadow-lg"
             role="menu"
             aria-label="Add step options"
           >
@@ -378,7 +390,7 @@ watch(
               type="button"
               role="menuitem"
               data-action="add-trigger"
-              class="flex w-full px-4 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+              class="flex w-full px-4 py-2.5 text-left text-sm font-medium primary_text_color hover:bg-gray-25"
               @click="closeAddStepMenu"
             >
               Triggers
@@ -387,7 +399,7 @@ watch(
               type="button"
               role="menuitem"
               data-action="add-pattern"
-              class="flex w-full px-4 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+              class="flex w-full px-4 py-2.5 text-left text-sm font-medium primary_text_color hover:bg-gray-25"
               @click="closeAddStepMenu"
             >
               Add pattern
@@ -396,7 +408,7 @@ watch(
               type="button"
               role="menuitem"
               data-action="add-output-channel"
-              class="flex w-full px-4 py-2.5 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+              class="flex w-full px-4 py-2.5 text-left text-sm font-medium primary_text_color hover:bg-gray-25"
               @click="closeAddStepMenu"
             >
               Add output channel
@@ -409,129 +421,64 @@ watch(
     <!-- Edit Popover Overlay when selected -->
     <div
       v-if="selected && !addStepOpen"
-      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[320px] -translate-x-1/2 flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-xl text-xs text-slate-800"
+      :class="[WF_POPOVER_PANEL, 'w-[320px]']"
       @pointerdown.stop
       @mousedown.stop
     >
-      <!-- Tabs header -->
-      <div class="flex border-b border-slate-200 pb-1.5 mb-0.5">
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'patterns' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']"
-          @click="localTab = 'patterns'"
-        >
-          Reorder
-        </button>
-        <button
-          type="button"
-          class="flex-1 pb-1 text-center font-semibold border-b-2 transition-colors duration-150"
-          :class="[localTab === 'hitl' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']"
-          @click="localTab = 'hitl'; loadHitlDetails()"
-        >
-          HITL settings
-        </button>
-      </div>
+      <WfPopoverTabs v-model="localTab" :tabs="hubTabs" />
 
-      <!-- Tab 1: Reorder Patterns -->
-      <div v-if="localTab === 'patterns'" class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
-          <p v-if="!patternRows.length" class="text-xs text-slate-500 text-center py-2">No patterns inside this workflow.</p>
-          <template v-else>
-            <div
-              v-for="(row, idx) in patternRows"
-              :key="row.id"
-              class="flex items-center justify-between gap-1.5 rounded border border-slate-100 bg-slate-50/70 p-1.5 text-[11px]"
-            >
-              <div class="min-w-0 flex-1">
-                <div class="font-bold text-slate-700 truncate">
-                  {{ row.data?.title || 'Pattern' }}
-                </div>
-                <div class="text-[9px] text-slate-500">Order: {{ row.data?.executionOrder ?? idx + 1 }}</div>
-              </div>
-              
-              <!-- Reordering controls -->
-              <div class="flex items-center gap-0.5 shrink-0">
-                <button
-                  type="button"
-                  class="p-0.5 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-30"
-                  :disabled="idx === 0 || patternReorderSaving"
-                  @click="movePatternInMenu(idx, -1)"
-                  title="Move Up"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="p-0.5 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-30"
-                  :disabled="idx === patternRows.length - 1 || patternReorderSaving"
-                  @click="movePatternInMenu(idx, 1)"
-                  title="Move Down"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Tab 2: HITL Configuration -->
-      <div v-else-if="localTab === 'hitl'" class="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-1">
-        <div v-if="loadingHitl" class="py-4 text-center text-slate-500">
-          Loading HITL config…
-        </div>
+      <div v-if="localTab === 'patterns'" :class="WF_TAB_PANEL">
+        <p v-if="!patternRows.length" class="body_3_regular secondary_text_color py-2 text-center">No patterns inside this workflow.</p>
         <template v-else>
-          <label class="flex items-center gap-1.5 text-[10px] text-slate-600 cursor-pointer">
-            <input type="checkbox" v-model="hitlForm.is_enabled" class="rounded border-slate-300" />
-            Enabled
-          </label>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Pause On</label>
-            <select v-model="hitlForm.pause_on" class="border rounded px-1.5 py-1 text-xs bg-slate-50 outline-none">
-              <option value="failure">Failure</option>
-              <option value="before_confidential">Before Confidential</option>
-              <option value="both">Both</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Contact Channel</label>
-            <input v-model="hitlForm.contact_channel" type="text" placeholder="email" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Message Template</label>
-            <textarea v-model="hitlForm.message_template" rows="2" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Timeout (Hours)</label>
-            <input v-model.number="hitlForm.timeout_hours" type="number" min="1" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">On Timeout</label>
-            <select v-model="hitlForm.on_timeout" class="border rounded px-1.5 py-1 text-xs bg-slate-50 outline-none">
-              <option value="reject">Reject</option>
-              <option value="approve">Approve</option>
-              <option value="escalate">Escalate</option>
-            </select>
-          </div>
-          <div class="flex flex-col gap-0.5">
-            <label class="text-[10px] font-medium text-slate-500">Owner Message</label>
-            <input v-model="hitlForm.owner_message" type="text" class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button type="button" class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]" :disabled="savingHitl" @click="saveHitlDetails">
-              {{ savingHitl ? 'Saving…' : hitlExists ? 'Update' : 'Create' }}
-            </button>
-            <button v-if="hitlExists" type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]" :disabled="savingHitl" @click="removeHitlStep">
-              Delete
-            </button>
+          <div
+            v-for="(row, idx) in patternRows"
+            :key="row.id"
+            :class="WF_LIST_ITEM"
+          >
+            <div class="min-w-0 flex-1">
+              <div class="label_3_semibold primary_text_color truncate">
+                {{ row.data?.title || 'Pattern' }}
+              </div>
+              <div class="caption_1_medium secondary_text_color">Order: {{ row.data?.executionOrder ?? idx + 1 }}</div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === 0 || patternReorderSaving"
+                title="Move Up"
+                @click="movePatternInMenu(idx, -1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="rounded p-0.5 tertiary_text_color hover:bg-gray-50-hover hover:primary_text_color disabled:opacity-30"
+                :disabled="idx === patternRows.length - 1 || patternReorderSaving"
+                title="Move Down"
+                @click="movePatternInMenu(idx, 1)"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </template>
+      </div>
+
+      <div v-else-if="localTab === 'hitl'" :class="WF_TAB_PANEL">
+        <WfHitlFormFields
+          v-model="hitlForm"
+          :loading="loadingHitl"
+          :saving="savingHitl"
+          :hitl-exists="hitlExists"
+          @save="saveHitlDetails"
+          @delete="removeHitlStep"
+        />
       </div>
     </div>
 
@@ -539,7 +486,7 @@ watch(
       <div
         v-if="hubMenuOpen"
         ref="hubMenuPortalRef"
-        class="fixed z-[20000] w-44 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-xl shadow-slate-900/15"
+        class="fixed z-[20000] w-44 overflow-hidden rounded-lg border regular_border_color bg_secondary_color py-1 shadow-xl"
         role="menu"
         aria-label="Workflow hub options"
         :style="hubMenuPortalStyle"
@@ -549,7 +496,7 @@ watch(
         <button
           type="button"
           role="menuitem"
-          class="w-full px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+          class="w-full px-3 py-2 text-left text-sm font-medium primary_text_color hover:bg-gray-25"
           @click="onHubReorderPatterns"
         >
           Reorder patterns
@@ -557,7 +504,7 @@ watch(
         <button
           type="button"
           role="menuitem"
-          class="w-full px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+          class="w-full px-3 py-2 text-left text-sm font-medium primary_text_color hover:bg-gray-25"
           @click="onHubConfigureHitl"
         >
           Human-in-the-loop (HITL)
