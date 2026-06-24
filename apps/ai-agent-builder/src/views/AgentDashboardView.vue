@@ -25,7 +25,8 @@
         @rename-chat="handleRenameChat"
         @page-change="handleChatPageChange"
         @agent-updated="handleAgentUpdated"
-        @tab-changed="isSubSidebarOpen = !!$event"
+        @tab-changed="isSubSidebarOpen = ($event && $event !== 'chat')"
+        @collapse-change="isMainSidebarCollapsed = $event"
       />
 
       <div class="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -65,20 +66,6 @@
                 :model-value="chatRef.voiceEnabled"
                 @update:model-value="chatRef.handleVoiceToggle"
               />
-
-              <button
-                v-if="hasChatMessages"
-                type="button"
-                class="inline-flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_medium primary_text_color hover:bg-gray-25 disabled:opacity-50"
-                :disabled="creatingChat"
-                @click="handleCreateChat"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span class="hidden sm:inline">New Chat</span>
-              </button>
-
               <button
                 type="button"
                 class="primary_add_button inline-flex shrink-0 items-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color"
@@ -97,7 +84,8 @@
             :agent="agent"
             :created-context="createdContext"
             :selected-chat-id="selectedChatId"
-            :is-sidebar-collapsed="!isSubSidebarOpen"
+            :is-sidebar-collapsed="isMainSidebarCollapsed"
+            :is-sub-sidebar-open="isSubSidebarOpen"
             @chat-created="handleChatCreated"
             @chat-used="handleChatUsed"
           />
@@ -154,6 +142,7 @@ const chatRef = ref(null)
 const sidebarRef = ref(null)
 const showSetupView = ref(false)
 const isSubSidebarOpen = ref(false)
+const isMainSidebarCollapsed = ref(false)
 
 const chats = ref([])
 const loadingChats = ref(false)
