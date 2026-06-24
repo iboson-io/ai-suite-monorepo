@@ -34,9 +34,9 @@
       <header v-if="!hideSidebar" :class="config.mobileHeaderClass">
         <button
           type="button"
-          @click="showMobileSidebar = true"
+          @click="showMobileSidebar = !showMobileSidebar"
           class="text-xl"
-          :aria-label="config.mobileFixedHeader !== false ? 'Open menu' : undefined"
+          :aria-label="config.mobileFixedHeader !== false ? (showMobileSidebar ? 'Close menu' : 'Open menu') : undefined"
         >
           <img :src="MobileMenuIcon" alt="">
         </button>
