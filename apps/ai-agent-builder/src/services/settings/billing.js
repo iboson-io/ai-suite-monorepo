@@ -1,4 +1,10 @@
 import { apiService } from '../agentApi.js'
+import { fetchUserProfile } from './userProfile.js'
+import {
+  initializePaddle,
+  redirectToPaddleCheckout,
+  clearCheckoutUrlParameters,
+} from './paddle.js'
 
 function mapUsageBucket(raw) {
   if (!raw || typeof raw !== 'object') {
@@ -18,6 +24,7 @@ export function mapSubscription(raw) {
 
   return {
     id: subscription.id,
+    status: subscription.status ?? subscription.subscription_status ?? '',
     planName: subscription.planName ?? subscription.plan_name ?? subscription.name ?? 'Free',
     planPrice: subscription.planPrice ?? subscription.plan_price ?? subscription.price ?? subscription.plan_amount ?? '',
     expiryDate: subscription.expiryDate ?? subscription.expiry_date ?? subscription.renewAt ?? subscription.next_billing_date ?? '',
@@ -58,6 +65,97 @@ export async function cancelSubscription(subscriptionId) {
 export async function upgradePlan(planId, customerData = {}) {
   return await apiService.createSubscription(planId, customerData)
 }
+
+export function getBillingCheckoutConfig() {
+  return {
+    provider: 'paddle',
+  }
+}
+
+function extractApprovalUrl(response) {
+  return (
+    response?.data?.approval_url ||
+    response?.data?.subscription?.approval_url ||
+    null
+  )
+}
+
+export async function initiatePlanCheckout(plan, profile = null) {
+  let customerData = {
+    email: profile?.email || '',
+    name: profile?.username || profile?.name || '',
+    surname: profile?.surname || profile?.lastName || '',
+  }
+
+  if (!customerData.email) {
+    try {
+      const userProfile = profile || (await fetchUserProfile())
+      customerData = {
+        email: userProfile?.email || '',
+        name: userProfile?.username || userProfile?.name || '',
+        surname: userProfile?.surname || userProfile?.lastName || '',
+      }
+    } catch (error) {
+      console.warn('Could not fetch user profile for subscription:', error)
+    }
+  }
+
+  const response = await upgradePlan(plan.id, customerData)
+  const approvalUrl = extractApprovalUrl(response)
+
+  if (response?.status && approvalUrl) {
+    return {
+      success: true,
+      approvalUrl,
+      subscription: response.data?.subscription ?? response.data,
+    }
+  }
+
+  if (response?.status) {
+    return {
+      success: true,
+      immediate: true,
+      data: response.data,
+    }
+  }
+
+  throw new Error(response?.message || 'Failed to create subscription')
+}
+
+export async function handlePlanSelect(plan) {
+  await initializePaddle()
+
+  const result = await initiatePlanCheckout(plan)
+
+  if (!result.success) {
+    throw new Error('Failed to create subscription')
+  }
+
+  if (result.approvalUrl) {
+    const redirected = redirectToPaddleCheckout(result.approvalUrl)
+    if (!redirected) {
+      throw new Error('Transaction ID not found in approval URL')
+    }
+    return result
+  }
+
+  if (result.immediate) {
+    return result
+  }
+
+  throw new Error('Unexpected checkout response')
+}
+
+export async function refreshSubscriptionAfterCheckout() {
+  clearCheckoutUrlParameters()
+  return fetchSubscription()
+}
+
+export async function setupPaddleCheckout(onCheckoutComplete) {
+  return initializePaddle(onCheckoutComplete)
+}
+
+export { clearCheckoutUrlParameters, isPaddleCheckoutMessage } from './paddle.js'
 
 export async function getPaymentById(subscriptionId) {
   return await apiService.getPaymentById(subscriptionId)
