@@ -105,7 +105,7 @@
       <WorkflowEditorAiChat
         ref="workflowChatRef"
         :class="[
-          'lg:self-stretch',
+          'lg:self-stretch overflow-visible',
           shouldShowEditor ? 'shrink-0 h-[70vh] lg:h-auto lg:w-[min(100vw,550px)] border-b lg:border-b-0 lg:border-l regular_border_color' : 'flex-1 w-full'
         ]"
         :workflow-id="workflowId"

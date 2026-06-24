@@ -43,8 +43,13 @@ let reconnectTimer = null
 let syncDebounce = null
 
 const messagesBodyRef = ref(null)
+const scrollAnchor = ref(null)
 /** @type {import('vue').Ref<any | null>} */
 const promptInputRef = ref(null)
+
+const hasMessages = computed(() => messages.value.length > 0)
+const isLoading = computed(() => sending.value)
+const isPromptDisabled = computed(() => sending.value || !connected.value)
 
 function focusPromptInput() {
   nextTick(() => {
@@ -106,11 +111,9 @@ function renderMarkdown(content) {
   return escapeHtml(s).replace(/\n/g, '<br>')
 }
 
-function scrollToBottom() {
-  nextTick(() => {
-    const el = messagesBodyRef.value
-    if (el) el.scrollTop = el.scrollHeight
-  })
+async function scrollToBottom() {
+  await nextTick()
+  scrollAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
 function append(kind, text, raw = false) {
@@ -199,14 +202,12 @@ function connect() {
     }
 
     if (data.type === 'workflow_sync') {
-      sending.value = false
       append('system', 'Workflow updated.')
       return
     }
 
-    sending.value = false
-
     if (data.type === 'response') {
+      sending.value = false
       const msg = data.message ?? ''
       append('assistant', msg, true)
       emit('ai-response', {
@@ -223,11 +224,13 @@ function connect() {
     }
 
     if (data.type === 'error') {
+      sending.value = false
       const reason = data.error_reason ? ` ${data.error_reason}` : ''
       append('error', `${data.message || 'Error'}${reason}`)
       return
     }
 
+    sending.value = false
     append('system', data.message || JSON.stringify(data))
   }
 
@@ -251,6 +254,7 @@ function connect() {
 
   ws.onerror = () => {
     connecting.value = false
+    sending.value = false
     append('error', 'Could not reach the assistant. Check that the service is running and you are signed in.')
   }
 }
@@ -413,51 +417,91 @@ defineExpose({
 
 <template>
   <aside
-    class="workflow-agent-chat flex min-h-[220px] flex-col bg_primary_color lg:h-full lg:min-h-0"
+    class="workflow-agent-chat relative flex min-h-[220px] flex-col overflow-visible bg_primary_color lg:h-full lg:min-h-0"
     aria-label="Workflow assistant chat"
   >
-
-
-    <!-- Welcoming view when messages list is empty -->
-    <div 
-      v-if="!messages.length" 
-      class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl flex flex-col justify-center items-center"
+    <div
+      ref="messagesBodyRef"
+      class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl"
+      :class="[
+        { 'flex flex-col justify-center': !hasMessages },
+        hasMessages ? 'pb-56' : '',
+      ]"
     >
-      <div class="w-full max-w-md flex flex-col items-center justify-center text-center my-auto py-8">
-        <!-- Welcoming title -->
-        <h1 class="primary_text_color heading_h5_semibold md:heading_h4_semibold">
-          Chat with your workflow
-        </h1>
-        <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color mb-8">
-          Automate support and resolve issues
-        </p>
+      <div
+        class="mx-auto flex w-full max-w-md flex-col"
+        :class="hasMessages ? 'gap-6' : 'items-center justify-center text-center py-8'"
+      >
+        <template v-if="!hasMessages">
+          <h1 class="primary_text_color heading_h5_semibold md:heading_h4_semibold">
+            Chat with your workflow
+          </h1>
+          <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color">
+            Automate support and resolve issues
+          </p>
 
-        <!-- Centered Prompt Box -->
-        <PromptBox
-          ref="promptInputRef"
-          :is-ai-generating="sending || !connected"
-          :disable-product-select="true"
-          :hide-product-select="true"
-          :hide-files="true"
-          placeholder="Describe what you want to automate today"
-          @send-message="handlePromptBoxSend"
-          class="mb-8 mt-0 w-full max-w-none"
-        />
-
-
-      </div>
-    </div>
-
-    <!-- Active Messages view when messages list is not empty -->
-    <template v-else>
-      <div ref="messagesBodyRef" class="custom_scrollbar min-h-0 flex-1 overflow-y-auto px-6xl py-6xl space-y-6">
-        <template v-for="(m, i) in messages" :key="i">
-          <div v-if="m.kind === 'user'" class="flex justify-end">
-            <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
-              <p class="Body_2_regular primary_text_color">{{ m.text }}</p>
-            </div>
+          <div class="mt-5 w-full overflow-visible">
+            <PromptBox
+              ref="promptInputRef"
+              :is-ai-generating="isPromptDisabled"
+              :disable-product-select="true"
+              :hide-product-select="true"
+              :hide-files="true"
+              placeholder="Describe what you want to automate today"
+              class="mt-0 w-full max-w-none"
+              @send-message="handlePromptBoxSend"
+            />
           </div>
-          <div v-else-if="m.kind === 'assistant'" class="flex items-start gap-3">
+        </template>
+
+        <template v-else>
+          <template v-for="(m, i) in messages" :key="i">
+            <div v-if="m.kind === 'user'" class="flex justify-end">
+              <div class="max-w-[85%] rounded-2xl border primary_border_color bg_secondary_color px-5xl py-xl">
+                <p class="Body_2_regular primary_text_color">{{ m.text }}</p>
+              </div>
+            </div>
+            <div v-else-if="m.kind === 'assistant'" class="flex items-start gap-3">
+              <img
+                :src="AgentChatIcon"
+                alt=""
+                class="h-8 w-8 shrink-0 rounded-full"
+                aria-hidden="true"
+              />
+              <div class="min-w-0 flex-1">
+                <div
+                  class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
+                  v-html="renderMarkdown(m.text)"
+                />
+                <ChatActionBar
+                  :is-liked="m.isLiked"
+                  :is-disliked="m.isDisliked"
+                  :padded="false"
+                  compact-icons
+                  show-regenerate
+                  class="lg:px-3xl"
+                  @copy="handleCopy(m.text)"
+                  @like="toggleChatReaction(i, 'like')"
+                  @dislike="toggleChatReaction(i, 'dislike')"
+                  @regenerate="handleRegenerate(i)"
+                />
+              </div>
+            </div>
+            <div v-else class="flex justify-center">
+              <div
+                class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
+                :class="
+                  m.kind === 'error'
+                    ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
+                    : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
+                "
+              >
+                {{ m.text }}
+              </div>
+            </div>
+          </template>
+
+          <div v-if="isLoading" class="flex items-start gap-3">
             <img
               :src="AgentChatIcon"
               alt=""
@@ -465,73 +509,52 @@ defineExpose({
               aria-hidden="true"
             />
             <div class="min-w-0 flex-1">
-              <div
-                class="chat-markdown Body_2_regular primary_text_color lg:px-3xl pt-sm pb-md"
-                v-html="renderMarkdown(m.text)"
-              />
-              <ChatActionBar
-                :is-liked="m.isLiked"
-                :is-disliked="m.isDisliked"
-                :padded="false"
-                compact-icons
-                show-regenerate
-                class="lg:px-3xl"
-                @copy="handleCopy(m.text)"
-                @like="toggleChatReaction(i, 'like')"
-                @dislike="toggleChatReaction(i, 'dislike')"
-                @regenerate="handleRegenerate(i)"
-              />
+              <div class="rounded-2xl py-xs">
+                <p class="primary_text_color body_3_regular">
+                  Got it, give me a moment<span class="loading-dots" />
+                </p>
+              </div>
             </div>
           </div>
-          <div v-else class="flex justify-center">
-            <div
-              class="max-w-[95%] rounded-lg px-2.5 py-1.5 text-center text-[11px] leading-snug"
-              :class="
-                m.kind === 'error'
-                  ? 'bg-red-50 text-red-800 ring-1 ring-red-100'
-                  : 'border border-blue-100/70 bg-sky-50/80 text-slate-700'
-              "
-            >
-              {{ m.text }}
-            </div>
-          </div>
+
+          <div ref="scrollAnchor" class="h-64 md:h-56" />
         </template>
-
-        <div v-if="sending" class="flex items-start gap-3">
-          <img
-            :src="AgentChatIcon"
-            alt=""
-            class="h-8 w-8 shrink-0 rounded-full"
-            aria-hidden="true"
-          />
-          <div class="min-w-0 flex-1">
-            <div class="rounded-2xl py-xs">
-              <p class="primary_text_color body_3_regular">
-                Got it, give me a moment<span class="loading-dots" />
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
+    </div>
 
-      <!-- Docked Prompt Box at the bottom -->
-      <div class="shrink-0 px-6xl pb-6xl pt-2">
-        <PromptBox
-          ref="promptInputRef"
-          :is-ai-generating="sending || !connected"
-          :disable-product-select="true"
-          :hide-product-select="true"
-          :hide-files="true"
-          placeholder="Ask the workflow assistant…"
-          @send-message="handlePromptBoxSend"
-          class="mt-0 w-full max-w-none"
-        />
+    <div
+      v-if="hasMessages"
+      class="workflow-prompt-dock absolute inset-x-0 bottom-0 z-20 overflow-visible bg_primary_color px-6xl pb-6xl pt-6 transition-all duration-300 ease-in-out"
+    >
+      <PromptBox
+        ref="promptInputRef"
+        :is-ai-generating="isPromptDisabled"
+        :disable-product-select="true"
+        :hide-product-select="true"
+        :hide-files="true"
+        placeholder="Ask the workflow assistant…"
+        class="mt-0 w-full max-w-none"
+        @send-message="handlePromptBoxSend"
+      />
+      <div class="text-center p-xl">
+        <p class="body_4_regular tertiary_text_color">
+          AI Agent can make mistakes. Please check for accuracy.
+        </p>
       </div>
-    </template>
+    </div>
   </aside>
 </template>
 
 <style scoped>
+.workflow-prompt-dock {
+  isolation: isolate;
+}
+
+.workflow-prompt-dock :deep(.prompt-box-animated),
+.workflow-prompt-dock :deep(.button-gradient) {
+  overflow: visible;
+}
+
 .chat-markdown :deep(p) {
   margin: 0 0 0.75em;
 }
