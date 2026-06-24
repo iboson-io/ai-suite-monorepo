@@ -42,44 +42,7 @@
             <p class="text-[11px] text-gray-400 mt-2">Configure this webhook URL in your Twilio Console under your phone number's "A call comes in" webhook setting</p>
           </div>
 
-          <!-- Twilio Voice Endpoint -->
-          <div>
-            <div class="flex items-center gap-1.5 mb-2">
-              <label class="block text-sm font-semibold text-gray-900">Voice Endpoint</label>
-              <Tooltip text="The Twilio voice incoming call endpoint prefix for this environment." position="top" :show-tail="true">
-                <svg class="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors duration-200 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </Tooltip>
-            </div>
-            
-            <div class="flex items-center border border-gray-255 rounded-lg px-4 bg-white focus-within:border-info-500 transition-colors shadow-sm">
-              <svg class="w-5 h-5 text-gray-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-              <input
-                type="text"
-                readonly
-                :value="voiceEndpoint || 'No endpoint available'"
-                class="flex-1 bg-transparent text-sm text-gray-500 outline-none font-medium h-[46px]"
-              />
-              <button
-                type="button"
-                class="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded hover:bg-gray-50 ml-3"
-                @click="$emit('copy-endpoint')"
-                title="Copy Endpoint"
-              >
-                <svg v-if="endpointCopiedLabel === 'Copied!'" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2"></path>
-                </svg>
-              </button>
-            </div>
-            <p class="text-[11px] text-gray-400 mt-2">The Twilio voice incoming call endpoint prefix for this environment</p>
-          </div>
+       
         </div>
       </div>
     </div>
