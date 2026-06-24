@@ -7,7 +7,7 @@
       <div>
         <h2 class="label_1_semibold primary_text_color">Manage AI Agents</h2>
         <p class="body_3_regular secondary_text_color mt-md">
-          Create and manage AI agents to automate support and workflows.
+          Create and manage AI agents to automate support and workflows
         </p>
       </div>
     </div>
