@@ -33,7 +33,7 @@
         <div class="relative">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
               form.name || focusedFields.name
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg-white px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
@@ -60,7 +60,7 @@
         <div class="relative mt-4xl">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
               form.email || focusedFields.email
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
@@ -87,7 +87,7 @@
         <div class="relative mt-4xl">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
               (showPassword ? form.password : actualPassword) || focusedFields.password
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg-white px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
