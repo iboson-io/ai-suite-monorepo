@@ -6,7 +6,7 @@
     <div ref="menuTriggerRef" class="agent-card-menu absolute right-4 top-4 z-10">
       <button
         type="button"
-        class="flex h-8 w-8 items-center justify-center rounded-full border primary_border_color text-black-300 transition-[background-color] hover:bg-info-50-hover"
+        class="flex h-8 w-8 items-center justify-center rounded-full border primary_border_color text-secondary_text_color transition-[background-color] hover:bg-info-50-hover"
         aria-label="Workflow options"
         :aria-expanded="isMenuOpen"
         @click.stop="toggleMenu"
@@ -52,7 +52,7 @@
             @click.stop="handleDelete"
           >
             <span class="label_2_medium primary_text_color">Delete</span>
-            <img :src="TrashIcon" alt="" class="h-4 w-4 shrink-0 text-black-300" aria-hidden="true" />
+            <img :src="TrashIcon" alt="" class="h-4 w-4 shrink-0 text-secondary_text_color" aria-hidden="true" />
           </button>
         </div>
       </Teleport>

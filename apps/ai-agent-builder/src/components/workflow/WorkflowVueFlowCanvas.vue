@@ -762,7 +762,7 @@ watch(
 </script>
 
 <template>
-  <div class="workflow-vue-flow workflow-vue-flow--joint-like relative h-full min-h-[280px] w-full min-w-0 flex-1 bg-[#f1f4f9]">
+  <div class="workflow-vue-flow workflow-vue-flow--joint-like relative h-full min-h-[280px] w-full min-w-0 flex-1 bg_primary_color">
     <VueFlow
       v-model:nodes="nodes"
       v-model:edges="edges"
@@ -793,7 +793,7 @@ watch(
 
       <Background gap="16" pattern-color="#d1d9e6" variant="lines" />
       <MiniMap
-        class="workflow-minimap !rounded-lg !border !border-slate-200/90 !shadow-md"
+        class="workflow-minimap !rounded-lg !regular_border_color !shadow-md"
         :pannable="true"
         :zoomable="true"
         :mask-color="'rgba(241, 245, 249, 0.72)'"

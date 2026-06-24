@@ -152,20 +152,20 @@ const routeLine = computed(() => {
     <!-- Edit Popover Overlay -->
     <div
       v-if="selected"
-      class="absolute left-1/2 top-full z-[1000] mt-2 w-[300px] -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl text-xs text-slate-800"
+      class="absolute left-1/2 top-full z-[1000] mt-2 w-[300px] -translate-x-1/2 rounded-lg regular_border_color bg_secondary_color p-3 shadow-xl text-xs primary_text_color"
       @pointerdown.stop
       @mousedown.stop
     >
-      <div class="flex items-center justify-between border-b pb-1 mb-2 font-bold text-slate-700">
+      <div class="flex items-center justify-between border-b pb-1 mb-2 font-bold primary_text_color">
         <span>Edit Router Rules</span>
       </div>
 
-      <div v-if="loading" class="py-4 text-center text-slate-500">
+      <div v-if="loading" class="py-4 text-center secondary_text_color">
         Loading details…
       </div>
 
       <div v-else class="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
-        <div v-if="!patternAgents.length" class="py-2 text-center text-slate-500">
+        <div v-if="!patternAgents.length" class="py-2 text-center secondary_text_color">
           Add agents inside this supervisor pattern first.
         </div>
         <template v-else>
@@ -176,10 +176,10 @@ const routeLine = computed(() => {
             :agent-label="agentLabel"
           />
           <div class="flex gap-2 mt-2">
-            <button type="button" class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]" :disabled="saving" @click="submitRouter">
+            <button type="button" class="primary_add_button flex-1 py-1 rounded text-white font-medium text-[11px]" :disabled="saving" @click="submitRouter">
               {{ saving ? 'Saving…' : routerExists ? 'Update' : 'Create' }}
             </button>
-            <button v-if="routerExists" type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 text-red-700 font-medium text-[11px]" :disabled="saving" @click="deleteRouter">
+            <button v-if="routerExists" type="button" class="flex-1 py-1 rounded border border-red-300 hover:bg-red-50 delete_text_color font-medium text-[11px]" :disabled="saving" @click="deleteRouter">
               Delete
             </button>
           </div>

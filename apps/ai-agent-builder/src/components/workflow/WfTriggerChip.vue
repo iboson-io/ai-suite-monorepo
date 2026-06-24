@@ -96,7 +96,7 @@ async function handleSave() {
 
 <template>
   <div
-    class="group/chip relative flex flex-col justify-center rounded-lg border border-slate-200 bg-white p-2 text-left shadow-sm ring-1 ring-slate-900/5 transition hover:border-blue-300 hover:shadow-md h-full w-full overflow-visible"
+    class="group/chip relative flex flex-col justify-center rounded-lg border regular_border_color bg_secondary_color p-2 text-left shadow-sm ring-1 ring-slate-900/5 transition hover:border-blue-300 hover:shadow-md h-full w-full overflow-visible"
     :class="[
       selected ? '!ring-2 !ring-blue-500 !ring-offset-2 !ring-offset-[#f1f4f9] z-50' : ''
     ]"
@@ -106,26 +106,26 @@ async function handleSave() {
     <Handle
       type="target"
       :position="Position.Left"
-      class="!h-2 !w-2 !border !border-slate-300 !bg-white"
+      class="!h-2 !w-2 !border regular_border_color !bg_secondary_color"
     />
     <Handle
       type="source"
       :position="Position.Right"
-      class="!h-2 !w-2 !border !border-slate-300 !bg-white"
+      class="!h-2 !w-2 !border regular_border_color !bg_secondary_color"
     />
 
     <!-- Read Mode (Always visible inside the chip node) -->
-    <span class="text-[9px] font-bold uppercase tracking-wide text-slate-400">Trigger</span>
-    <span class="truncate text-[11px] font-semibold capitalize leading-tight text-slate-900">
+    <span class="text-[9px] font-bold uppercase tracking-wide tertiary_text_color">Trigger</span>
+    <span class="truncate text-[11px] font-semibold capitalize leading-tight primary_text_color">
       {{ data.triggerType || 'event' }}
     </span>
-    <span class="truncate text-[9px] leading-tight text-slate-500">{{ data.subtitle || '—' }}</span>
+    <span class="truncate text-[9px] leading-tight secondary_text_color">{{ data.subtitle || '—' }}</span>
     <div class="group/del absolute -right-1.5 -top-1.5 z-10">
       <button
         type="button"
         data-action="delete-trigger"
         :data-trigger-id="data.triggerId"
-        class="flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] font-bold leading-none text-slate-700 shadow-md opacity-0 transition hover:bg-red-50 hover:text-red-700 group-hover/chip:opacity-100"
+        class="flex h-5 w-5 items-center justify-center rounded-full border regular_border_color bg_secondary_color text-[11px] font-bold leading-none secondary_text_color shadow-md opacity-0 transition hover:bg-red-50 hover:text-red-700 group-hover/chip:opacity-100"
         aria-label="Remove trigger"
       >
         ×
@@ -141,23 +141,23 @@ async function handleSave() {
     <!-- Edit Popover Overlay (floats under the chip node when selected) -->
     <div
       v-if="selected"
-      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[240px] -translate-x-1/2 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl text-xs text-slate-800"
+      class="absolute left-1/2 top-full mt-2 z-[1000] flex w-[240px] -translate-x-1/2 flex-col gap-2 rounded-lg border regular_border_color bg_secondary_color p-3 shadow-xl text-xs primary_text_color"
       @pointerdown.stop
       @mousedown.stop
     >
       <div class="flex items-center justify-between border-b pb-1 mb-1">
-        <span class="font-bold text-slate-700">Edit Trigger</span>
-        <label class="flex items-center gap-1 text-[10px] text-slate-600 cursor-pointer">
-          <input type="checkbox" v-model="localActive" class="rounded border-slate-300" />
+        <span class="font-bold primary_text_color">Edit Trigger</span>
+        <label class="flex items-center gap-1 text-[10px] secondary_text_color cursor-pointer">
+          <input type="checkbox" v-model="localActive" class="rounded regular_border_color" />
           Active
         </label>
       </div>
 
       <div class="flex flex-col gap-0.5">
-        <label class="text-[10px] font-medium text-slate-500">Type</label>
+        <label class="text-[10px] font-medium secondary_text_color">Type</label>
         <select
           v-model="localType"
-          class="border rounded px-1.5 py-1 text-xs bg-slate-50 outline-none"
+          class="border regular_border_color rounded px-1.5 py-1 text-xs bg_primary_color outline-none"
         >
           <option v-for="opt in TRIGGER_TYPE_OPTIONS" :key="opt.value" :value="opt.value">
             {{ opt.label }}
@@ -166,12 +166,12 @@ async function handleSave() {
       </div>
 
       <div class="flex flex-col gap-0.5">
-        <label class="text-[10px] font-medium text-slate-500">{{ getLabel(localType) }}</label>
+        <label class="text-[10px] font-medium secondary_text_color">{{ getLabel(localType) }}</label>
         <input
           v-model="localValue"
           type="text"
           :placeholder="getPlaceholder(localType)"
-          class="border rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg-white"
+          class="border regular_border_color rounded px-1.5 py-1 text-xs outline-none focus:border-blue-400 bg_secondary_color"
           @keydown.enter="handleSave"
         />
       </div>
@@ -179,7 +179,7 @@ async function handleSave() {
       <div class="flex gap-2 mt-1.5">
         <button
           type="button"
-          class="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px]"
+          class="primary_add_button flex-1 py-1 rounded text-white font-medium text-[11px]"
           :disabled="saving"
           @click="handleSave"
         >

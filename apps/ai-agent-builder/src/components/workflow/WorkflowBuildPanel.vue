@@ -1,20 +1,20 @@
 <template>
-  <aside v-if="false" class="workflow-build-panel w-full lg:w-[380px] xl:w-[300px] flex-shrink-0 border-b lg:border-b-0 lg:border-l border-slate-200 bg-white overflow-y-auto max-h-[40vh] lg:max-h-none">
-    <div class="p-4 space-y-4 text-sm text-slate-800">
+  <aside v-if="false" class="workflow-build-panel w-full lg:w-[380px] xl:w-[300px] flex-shrink-0 border-b lg:border-b-0 lg:border-l regular_border_color bg_secondary_color overflow-y-auto max-h-[40vh] lg:max-h-none">
+    <div class="p-4 space-y-4 text-sm primary_text_color">
       <!-- Workflow -->
-      <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+      <div class="rounded-lg border regular_border_color bg_primary_color p-3">
         <div class="flex items-start justify-between gap-2">
           <div class="min-w-0">
-            <p class="text-xs font-medium text-slate-500">Workflow</p>
-            <p class="font-semibold text-slate-900 truncate">{{ workflowRecord?.name || '…' }}</p>
-            <p v-if="workflowRecord?.status" class="text-xs capitalize text-slate-600 mt-0.5">
+            <p class="text-xs font-medium secondary_text_color">Workflow</p>
+            <p class="font-semibold primary_text_color truncate">{{ workflowRecord?.name || '…' }}</p>
+            <p v-if="workflowRecord?.status" class="text-xs capitalize secondary_text_color mt-0.5">
               {{ workflowRecord.status }}
             </p>
           </div>
           <div :class="wfCardTipWrap">
             <button
               type="button"
-              class="shrink-0 rounded-md border border-slate-300 p-1.5 text-slate-600 hover:bg-white hover:text-slate-900"
+              class="shrink-0 rounded-md border regular_border_color p-1.5 secondary_text_color hover:bg_secondary_color hover:primary_text_color"
               aria-label="Edit workflow"
               @click="openWorkflowEditModal"
             >
@@ -33,7 +33,7 @@
         <div class="flex flex-wrap gap-2 mt-3">
           <button
             type="button"
-            class="text-xs px-2 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+            class="text-xs px-2 py-1.5 rounded primary_add_button text-white disabled:opacity-50"
             :disabled="saving || workflowRecord?.status === 'active'"
             @click="doActivateWorkflow"
           >
@@ -41,7 +41,7 @@
           </button>
           <button
             type="button"
-            class="text-xs px-2 py-1.5 rounded border border-slate-300 hover:bg-white disabled:opacity-50"
+            class="text-xs px-2 py-1.5 rounded border regular_border_color hover:bg_secondary_color disabled:opacity-50"
             :disabled="saving || workflowRecord?.status !== 'active'"
             @click="doDeactivateWorkflow"
           >
@@ -50,7 +50,7 @@
           <div :class="wfCardTipWrap">
             <button
               type="button"
-              class="rounded-md border border-red-300 p-1.5 text-red-700 hover:bg-red-50"
+              class="rounded-md border regular_border_color p-1.5 text-red-700 hover:bg-red-50"
               aria-label="Delete workflow"
               @click="confirmDeleteWorkflow"
             >
@@ -79,7 +79,7 @@
           </p>
           <button
             type="button"
-            class="text-[11px] font-medium text-slate-500 hover:text-slate-900"
+            class="text-[11px] font-medium secondary_text_color hover:primary_text_color"
             @click="isAddingTrigger ? (isAddingTrigger = false) : requestClearCanvasSelection()"
           >
             {{ isAddingTrigger ? 'Cancel' : 'Clear' }}
@@ -88,18 +88,18 @@
 
         <template v-if="isAddingTrigger">
           <div class="space-y-3">
-            <label class="block text-xs font-medium text-slate-600">Type</label>
+            <label class="block text-xs font-medium secondary_text_color">Type</label>
             <div ref="triggerModalTypeDropdownRef" class="relative">
               <button
                 type="button"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900"
+                class="w-full border regular_border_color rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg_primary_color hover:bg_primary_color text-left primary_text_color"
                 :aria-expanded="triggerModalTypeOpen"
                 aria-haspopup="listbox"
                 @click="triggerModalTypeOpen = !triggerModalTypeOpen"
               >
                 <span>{{ triggerTypeOptionLabel(triggerForm.trigger_type) }}</span>
                 <svg
-                  class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
+                  class="w-4 h-4 secondary_text_color shrink-0 transition-transform duration-200"
                   :class="{ 'rotate-180': triggerModalTypeOpen }"
                   fill="none"
                   stroke="currentColor"
@@ -111,7 +111,7 @@
               </button>
               <ul
                 v-show="triggerModalTypeOpen"
-                class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+                class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
                 role="listbox"
               >
                 <li
@@ -119,8 +119,8 @@
                   :key="opt.value"
                   role="option"
                   :aria-selected="triggerForm.trigger_type === opt.value"
-                  class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-                  :class="{ 'bg-slate-100 font-medium': triggerForm.trigger_type === opt.value }"
+                  class="px-3 py-2 text-sm cursor-pointer hover:bg_primary_color"
+                  :class="{ 'bg_primary_color font-medium': triggerForm.trigger_type === opt.value }"
                   @click="selectTriggerModalType(opt.value)"
                 >
                   {{ opt.label }}
@@ -128,13 +128,13 @@
               </ul>
             </div>
 
-            <label class="flex items-center gap-2 text-xs text-slate-700">
-              <input v-model="triggerForm.is_active" type="checkbox" class="rounded border-slate-300" />
+            <label class="flex items-center gap-2 text-xs primary_text_color">
+              <input v-model="triggerForm.is_active" type="checkbox" class="rounded regular_border_color" />
               Active
             </label>
 
             <template v-if="triggerForm.trigger_type === 'email'">
-              <label class="block text-xs font-medium text-slate-600">Inbound email</label>
+              <label class="block text-xs font-medium secondary_text_color">Inbound email</label>
               <input
                 v-model="triggerEmail"
                 type="email"
@@ -148,7 +148,7 @@
               </p>
             </template>
             <template v-else-if="triggerForm.trigger_type === 'webhook'">
-              <label class="block text-xs font-medium text-slate-600">Endpoint URL</label>
+              <label class="block text-xs font-medium secondary_text_color">Endpoint URL</label>
               <input
                 v-model="triggerWebhook"
                 type="url"
@@ -162,7 +162,7 @@
               </p>
             </template>
             <template v-else-if="triggerForm.trigger_type === 'schedule'">
-              <label class="block text-xs font-medium text-slate-600">Cron</label>
+              <label class="block text-xs font-medium secondary_text_color">Cron</label>
               <input
                 v-model="triggerCron"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
@@ -175,7 +175,7 @@
               </p>
             </template>
             <template v-else-if="triggerForm.trigger_type === 'sms' || triggerForm.trigger_type === 'voice'">
-              <label class="block text-xs font-medium text-slate-600">Phone</label>
+              <label class="block text-xs font-medium secondary_text_color">Phone</label>
               <input
                 v-model="triggerPhone"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
@@ -191,7 +191,7 @@
             <div class="flex gap-2 pt-1">
               <button
                 type="button"
-                class="flex-1 py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 py-2 px-3 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 :disabled="saving"
                 @click="submitTrigger"
               >
@@ -199,7 +199,7 @@
               </button>
               <button
                 type="button"
-                class="flex-1 py-2 px-3 rounded-lg border border-slate-300 text-slate-800 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50"
+                class="flex-1 py-2 px-3 rounded-lg border regular_border_color primary_text_color text-xs font-semibold hover:bg_primary_color disabled:opacity-50"
                 :disabled="saving"
                 @click="isAddingTrigger = false"
               >
@@ -210,15 +210,15 @@
         </template>
 
         <template v-else-if="canvasSelection.kind === 'trigger'">
-          <div class="text-xs text-slate-600 py-2 font-medium">
+          <div class="text-xs secondary_text_color py-2 font-medium">
             Configure this trigger directly inside the trigger node on the canvas.
           </div>
         </template>
 
         <template v-else-if="canvasSelection.kind === 'pattern'">
-          <div v-if="canvasPatternLoading" class="text-xs text-slate-600 py-2">Loading pattern…</div>
+          <div v-if="canvasPatternLoading" class="text-xs secondary_text_color py-2">Loading pattern…</div>
           <div v-else-if="canvasEditPattern" class="space-y-3">
-            <label class="block text-xs font-medium text-slate-600">Pattern type</label>
+            <label class="block text-xs font-medium secondary_text_color">Pattern type</label>
             <select
               v-model="canvasPatternForm.pattern_type"
               class="w-full border rounded-lg px-3 py-2 text-sm"
@@ -231,7 +231,7 @@
               <option value="agent_to_agent">Agent-to-agent</option>
             </select>
             <!-- <p v-if="canvasPatternErr('pattern_type')" class="text-red-600 text-xs">{{ canvasPatternErr('pattern_type') }}</p>
-            <label class="block text-xs font-medium text-slate-600">Execution order</label>
+            <label class="block text-xs font-medium secondary_text_color">Execution order</label>
             <input
               v-model="canvasPatternForm.execution_order"
               type="text"
@@ -240,7 +240,7 @@
               placeholder="e.g. 2"
               @input="clearCanvasPatternErrKeys(['execution_order'])"
             > -->
-            <label class="block text-xs font-medium text-slate-600">Name <span class="text-red-600" aria-hidden="true">*</span></label>
+            <label class="block text-xs font-medium secondary_text_color">Name <span class="text-red-600" aria-hidden="true">*</span></label>
             <input
               v-model="canvasPatternForm.name"
               type="text"
@@ -250,7 +250,7 @@
               @input="clearCanvasPatternErrKeys(['name'])"
             >
             <p v-if="canvasPatternErr('name')" class="text-red-600 text-xs">{{ canvasPatternErr('name') }}</p>
-            <label class="block text-xs font-medium text-slate-600">Description <span class="text-red-600" aria-hidden="true">*</span></label>
+            <label class="block text-xs font-medium secondary_text_color">Description <span class="text-red-600" aria-hidden="true">*</span></label>
             <textarea
               v-model="canvasPatternForm.description"
               rows="3"
@@ -274,7 +274,7 @@
               <template v-else>
                 <button
                   type="button"
-                  class="w-full py-1.5 px-2 rounded-lg border border-violet-300 bg-white text-violet-900 text-xs font-semibold hover:bg-violet-100"
+                  class="w-full py-1.5 px-2 rounded-lg border border-violet-300 bg_secondary_color text-violet-900 text-xs font-semibold hover:bg-violet-100"
                   @click="canvasRouterExpanded = !canvasRouterExpanded"
                 >
                   {{
@@ -295,7 +295,7 @@
                   <div class="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
+                      class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
                       :disabled="saving"
                       @click="submitCanvasRouter"
                     >
@@ -304,7 +304,7 @@
                     <button
                       v-if="canvasRouterExists"
                       type="button"
-                      class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                      class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg border regular_border_color text-red-700 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                       :disabled="saving"
                       @click="deleteCanvasRouterFromSidebar"
                     >
@@ -317,7 +317,7 @@
             <div class="flex flex-wrap gap-2 pt-1">
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 :disabled="saving"
                 @click="submitCanvasPatternUpdate"
               >
@@ -325,7 +325,7 @@
               </button>
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border border-red-300 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border regular_border_color text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                 :disabled="saving"
                 @click="deleteSelectedCanvasPattern"
               >
@@ -341,7 +341,7 @@
           </div>
           <div v-else class="space-y-3">
             <div>
-              <p class="text-xs font-semibold text-slate-800">Supervisor router</p>
+              <p class="text-xs font-semibold primary_text_color">Supervisor router</p>
              
             </div>
             <p v-if="canvasPatternAgentsLoading" class="text-xs text-violet-800/90">Loading router and pattern agents…</p>
@@ -352,7 +352,7 @@
               <p>No agents on this pattern. Add agents to edit routing rules, or remove the router config.</p>
               <button
                 type="button"
-                class="w-full py-1.5 px-2 rounded-lg border border-red-200 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="w-full py-1.5 px-2 rounded-lg border regular_border_color text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                 :disabled="saving"
                 @click="deleteCanvasRouterFromSidebar"
               >
@@ -379,7 +379,7 @@
               <div class="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
+                  class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
                   :disabled="saving"
                   @click="submitCanvasRouter"
                 >
@@ -388,7 +388,7 @@
                 <button
                   v-if="canvasRouterExists"
                   type="button"
-                  class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                  class="flex-1 min-w-[6rem] py-1.5 px-2 rounded-lg border regular_border_color text-red-700 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                   :disabled="saving"
                   @click="deleteCanvasRouterFromSidebar"
                 >
@@ -406,13 +406,13 @@
           >
             This step is missing pattern metadata. Reload the workflow or re-add the agent.
           </div>
-          <div v-else-if="canvasAgentLoading" class="text-xs text-slate-600 py-2">Loading agent step…</div>
+          <div v-else-if="canvasAgentLoading" class="text-xs secondary_text_color py-2">Loading agent step…</div>
           <div v-else-if="canvasEditAgent" class="space-y-3">
-            <p class="text-xs text-slate-600">
+            <p class="text-xs secondary_text_color">
               Pattern agent
               </p>
-            <label class="block text-xs font-medium text-slate-600">Agent</label>
-            <p v-if="agentsLoading" class="text-xs text-slate-500">Loading your agents…</p>
+            <label class="block text-xs font-medium secondary_text_color">Agent</label>
+            <p v-if="agentsLoading" class="text-xs secondary_text_color">Loading your agents…</p>
             <p v-else-if="!agentOptions.length" class="text-xs text-amber-700">No agents in catalog. Create an agent first.</p>
             <select
               v-model="canvasAgentForm.agent_id"
@@ -425,11 +425,11 @@
               <option v-for="a in agentOptions" :key="a.id" :value="String(a.id)">{{ agentLabel(a) }}</option>
             </select>
             <p v-if="canvasAgentErr('agent_id')" class="text-red-600 text-xs">{{ canvasAgentErr('agent_id') }}</p>
-            <label class="flex items-center gap-2 text-xs text-slate-700">
-              <input v-model="canvasAgentForm.is_fallback" type="checkbox" class="rounded border-slate-300" />
+            <label class="flex items-center gap-2 text-xs primary_text_color">
+              <input v-model="canvasAgentForm.is_fallback" type="checkbox" class="rounded regular_border_color" />
               Fallback agent
             </label>
-            <label class="block text-xs font-medium text-slate-600">Timeout (seconds)</label>
+            <label class="block text-xs font-medium secondary_text_color">Timeout (seconds)</label>
             <input
               v-model="canvasAgentForm.timeoutSec"
               type="number"
@@ -444,7 +444,7 @@
             <div class="flex flex-wrap gap-2 pt-1">
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 :disabled="saving || !canvasAgentForm.agent_id"
                 @click="submitCanvasAgentUpdate"
               >
@@ -452,7 +452,7 @@
               </button>
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border border-red-300 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border regular_border_color text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                 :disabled="saving"
                 @click="deleteSelectedCanvasAgent"
               >
@@ -466,17 +466,17 @@
           <div v-if="!canvasSelection.channelId" class="text-xs text-amber-700">
             Missing channel id for this node. Reload the workflow.
           </div>
-          <div v-else-if="canvasOutputChannelLoading" class="text-xs text-slate-600 py-2">Loading output channel…</div>
+          <div v-else-if="canvasOutputChannelLoading" class="text-xs secondary_text_color py-2">Loading output channel…</div>
           <div v-else-if="canvasEditOutputChannel" class="space-y-3">
-            <p class="text-xs font-semibold text-slate-800">Output channel</p>
-            <label class="block text-xs font-medium text-slate-600">Channel type</label>
+            <p class="text-xs font-semibold primary_text_color">Output channel</p>
+            <label class="block text-xs font-medium secondary_text_color">Channel type</label>
             <div
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 mb-3 text-sm bg-slate-50 text-slate-700"
+              class="w-full border regular_border_color rounded-lg px-3 py-2 mb-3 text-sm bg_primary_color primary_text_color"
             >
               {{ outputChannelTypeLabel(canvasOutputChannelForm.channel_type) }}
             </div>
             <template v-if="canvasOutputChannelForm.channel_type === 'email'">
-              <label class="block text-xs font-medium text-slate-600">To</label>
+              <label class="block text-xs font-medium secondary_text_color">To</label>
               <input
                 v-model="canvasOutputChannelForm.emailTo"
                 type="email"
@@ -484,7 +484,7 @@
                 placeholder="owner@example.com"
                 autocomplete="off"
               >
-              <label class="block text-xs font-medium text-slate-600">Subject</label>
+              <label class="block text-xs font-medium secondary_text_color">Subject</label>
               <input
                 v-model="canvasOutputChannelForm.emailSubject"
                 type="text"
@@ -494,7 +494,7 @@
               >
             </template>
             <template v-else-if="canvasOutputChannelForm.channel_type === 'sms'">
-              <label class="block text-xs font-medium text-slate-600">From number</label>
+              <label class="block text-xs font-medium secondary_text_color">From number</label>
               <input
                 v-model="canvasOutputChannelForm.smsFromNumber"
                 type="text"
@@ -502,7 +502,7 @@
                 placeholder="+15551234567"
                 autocomplete="off"
               >
-              <p class="text-[11px] text-slate-500 mt-1 mb-3">
+              <p class="text-[11px] secondary_text_color mt-1 mb-3">
               Use international format: a leading
                 <code class="text-[10px]">+</code>, country code, 
               </p>
@@ -511,7 +511,7 @@
              
             </template>
             <template v-else-if="canvasOutputChannelForm.channel_type === 'outbound_call'">
-              <label class="block text-xs font-medium text-slate-600">From number</label>
+              <label class="block text-xs font-medium secondary_text_color">From number</label>
               <input
                 v-model="canvasOutputChannelForm.outboundFromNumber"
                 type="text"
@@ -519,7 +519,7 @@
                 placeholder="+15551234567"
                 autocomplete="off"
               >
-              <label class="block text-xs font-medium text-slate-600">TTS voice</label>
+              <label class="block text-xs font-medium secondary_text_color">TTS voice</label>
               <input
                 v-model="canvasOutputChannelForm.outboundTtsVoice"
                 type="text"
@@ -527,7 +527,7 @@
                 placeholder="e.g. Polly.Joanna"
                 autocomplete="off"
               >
-              <label class="block text-xs font-medium text-slate-600">Language</label>
+              <label class="block text-xs font-medium secondary_text_color">Language</label>
               <input
                 v-model="canvasOutputChannelForm.outboundLanguage"
                 type="text"
@@ -537,7 +537,7 @@
               >
             </template>
             <template v-else>
-              <label class="block text-xs font-medium text-slate-600">Config (JSON)</label>
+              <label class="block text-xs font-medium secondary_text_color">Config (JSON)</label>
               <textarea
                 v-model="canvasOutputChannelForm.configJson"
                 rows="5"
@@ -545,14 +545,14 @@
                 placeholder="{}"
               />
             </template>
-            <label class="flex items-center gap-2 text-xs text-slate-700">
-              <input v-model="canvasOutputChannelForm.is_primary" type="checkbox" class="rounded border-slate-300">
+            <label class="flex items-center gap-2 text-xs primary_text_color">
+              <input v-model="canvasOutputChannelForm.is_primary" type="checkbox" class="rounded regular_border_color">
               Primary channel
             </label>
             <div class="flex flex-wrap gap-2 pt-1">
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 :disabled="saving"
                 @click="submitCanvasOutputChannelUpdate"
               >
@@ -560,7 +560,7 @@
               </button>
               <button
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border border-red-300 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border regular_border_color text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                 :disabled="saving"
                 @click="deleteSelectedCanvasOutput"
               >
@@ -571,40 +571,40 @@
           <p v-else class="text-xs text-amber-700">Could not load this output channel.</p>
         </template>
         <template v-else-if="canvasSelection.kind === 'hitl'">
-          <p class="text-xs font-semibold text-slate-800">Human-in-the-loop</p>
+          <p class="text-xs font-semibold primary_text_color">Human-in-the-loop</p>
          
-          <p v-if="canvasHitlLoading" class="text-xs text-slate-500">Loading…</p>
+          <p v-if="canvasHitlLoading" class="text-xs secondary_text_color">Loading…</p>
           <div v-else class="space-y-2 pt-1">
             <label class="flex items-center gap-2 text-xs">
-              <input v-model="hitlForm.is_enabled" type="checkbox" class="rounded border-slate-300">
+              <input v-model="hitlForm.is_enabled" type="checkbox" class="rounded regular_border_color">
               Enabled
             </label>
-            <label class="block text-xs font-medium text-slate-600">Pause on</label>
+            <label class="block text-xs font-medium secondary_text_color">Pause on</label>
             <select v-model="hitlForm.pause_on" class="w-full border rounded-lg px-3 py-2 text-sm">
               <option value="failure">failure</option>
               <option value="before_confidential">before_confidential</option>
               <option value="both">both</option>
               <option value="custom">custom</option>
             </select>
-            <label class="block text-xs font-medium text-slate-600">Contact channel</label>
+            <label class="block text-xs font-medium secondary_text_color">Contact channel</label>
             <input v-model="hitlForm.contact_channel" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="email">
-            <label class="block text-xs font-medium text-slate-600">Message template</label>
+            <label class="block text-xs font-medium secondary_text_color">Message template</label>
             <textarea v-model="hitlForm.message_template" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" />
-            <label class="block text-xs font-medium text-slate-600">Timeout (hours)</label>
+            <label class="block text-xs font-medium secondary_text_color">Timeout (hours)</label>
             <input v-model.number="hitlForm.timeout_hours" type="number" min="1" class="w-full border rounded-lg px-3 py-2 text-sm">
-            <label class="block text-xs font-medium text-slate-600">On timeout</label>
+            <label class="block text-xs font-medium secondary_text_color">On timeout</label>
             <select v-model="hitlForm.on_timeout" class="w-full border rounded-lg px-3 py-2 text-sm">
               <option value="reject">reject</option>
               <option value="approve">approve</option>
               <option value="escalate">escalate</option>
             </select>
-            <label class="block text-xs font-medium text-slate-600">Owner message</label>
+            <label class="block text-xs font-medium secondary_text_color">Owner message</label>
             <input v-model="hitlForm.owner_message" class="w-full border rounded-lg px-3 py-2 text-sm">
             <div class="flex flex-wrap gap-2 pt-1">
               <button
                 v-if="hitlExists"
                 type="button"
-                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border border-red-300 text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
+                class="flex-1 min-w-[6rem] py-2 px-3 rounded-lg border regular_border_color text-red-800 text-xs font-semibold hover:bg-red-50 disabled:opacity-50"
                 :disabled="saving"
                 @click="deleteHitlConfig"
               >
@@ -627,14 +627,14 @@
       <div class="flex flex-col gap-2">
         <button
           type="button"
-          class="w-full py-2 px-3 rounded-lg border border-slate-300 text-slate-800 font-medium hover:bg-slate-50"
+          class="w-full py-2 px-3 rounded-lg border regular_border_color primary_text_color font-medium hover:bg_primary_color"
           @click="openPatternModal"
         >
           Add pattern
         </button>
         <button
           type="button"
-          class="w-full py-2 px-3 rounded-lg border border-slate-300 text-slate-800 font-medium hover:bg-slate-50"
+          class="w-full py-2 px-3 rounded-lg border regular_border_color primary_text_color font-medium hover:bg_primary_color"
           @click="openOutputChannelModal"
         >
           Add output channel
@@ -658,15 +658,15 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showWorkflowEditModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Edit workflow</h3>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Name</label>
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">Edit workflow</h3>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Name</label>
         <input v-model="workflowEditForm.name" class="focus:outline-none w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
-        <label class="block text-xs font-medium text-slate-600 mb-1">Description</label>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Description</label>
         <textarea v-model="workflowEditForm.description" rows="3" class="focus:outline-none w-full border rounded-lg px-3 py-2 mb-3 text-sm" />
         <div class="flex justify-end gap-2">
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showWorkflowEditModal = false">Cancel</button>
-          <button type="button" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitWorkflowEdit">
+          <button type="button" class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitWorkflowEdit">
             {{ saving ? 'Saving…' : 'Save' }}
           </button>
         </div>
@@ -682,22 +682,22 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showPatternModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Add pattern</h3>
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">Add pattern</h3>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Pattern type</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">Pattern type</label>
           <div ref="patternModalTypeDropdownRef" class="relative">
             <button
               type="button"
-              class="w-full border rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none"
-              :class="patternAddErr('pattern_type') ? 'border-red-500 ring-1 ring-red-200' : 'border-gray-200'"
+              class="w-full border rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg_primary_color hover:bg_primary_color text-left primary_text_color focus:outline-none"
+              :class="patternAddErr('pattern_type') ? 'border-red-500 ring-1 ring-red-200' : 'regular_border_color'"
               :aria-expanded="patternModalTypeOpen"
               aria-haspopup="listbox"
               @click="patternModalTypeOpen = !patternModalTypeOpen"
             >
               <span>{{ patternTypeOptionLabel(patternForm.pattern_type) }}</span>
               <svg
-                class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
+                class="w-4 h-4 secondary_text_color shrink-0 transition-transform duration-200"
                 :class="{ 'rotate-180': patternModalTypeOpen }"
                 fill="none"
                 stroke="currentColor"
@@ -709,7 +709,7 @@
             </button>
             <ul
               v-show="patternModalTypeOpen"
-              class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+              class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
               role="listbox"
             >
               <li
@@ -717,8 +717,8 @@
                 :key="opt.value"
                 role="option"
                 :aria-selected="patternForm.pattern_type === opt.value"
-                class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-                :class="{ 'bg-slate-100 font-medium': patternForm.pattern_type === opt.value }"
+                class="px-3 py-2 text-sm cursor-pointer hover:bg_primary_color"
+                :class="{ 'bg_primary_color font-medium': patternForm.pattern_type === opt.value }"
                 @click="selectPatternModalType(opt.value)"
               >
                 {{ opt.label }}
@@ -728,7 +728,7 @@
           <p v-if="patternAddErr('pattern_type')" class="text-red-600 text-xs mt-1">{{ patternAddErr('pattern_type') }}</p>
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">
+          <label class="block text-xs font-medium secondary_text_color mb-1">
             Name <span class="text-red-600" aria-hidden="true">*</span>
           </label>
           <input
@@ -744,7 +744,7 @@
           <p v-if="patternAddErr('name')" class="text-red-600 text-xs mt-1">{{ patternAddErr('name') }}</p>
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">
+          <label class="block text-xs font-medium secondary_text_color mb-1">
             Description <span class="text-red-600" aria-hidden="true">*</span>
           </label>
           <textarea
@@ -761,7 +761,7 @@
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showPatternModal = false">Cancel</button>
           <button
             type="button"
-            class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
+            class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50"
             :disabled="saving || !patternAddCanSubmit"
             @click="submitPattern"
           >
@@ -778,11 +778,11 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showPatternEditModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Edit pattern</h3>
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">Edit pattern</h3>
         <div
           v-if="Object.keys(patternEditApiErrorsFlat).length"
-          class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800"
+          class="mb-3 rounded-lg border regular_border_color bg-red-50 px-3 py-2 text-xs text-red-800"
         >
           <p class="font-medium text-red-900 mb-1">Please fix the following:</p>
           <ul class="list-disc pl-4 space-y-0.5">
@@ -793,7 +793,7 @@
           </ul>
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">Pattern type</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">Pattern type</label>
           <select
             v-model="patternEditForm.pattern_type"
             class="w-full border rounded-lg px-3 py-2 text-sm"
@@ -808,7 +808,7 @@
           <p v-if="patternEditErr('pattern_type')" class="text-red-600 text-xs mt-1">{{ patternEditErr('pattern_type') }}</p>
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">
+          <label class="block text-xs font-medium secondary_text_color mb-1">
             Name <span class="text-red-600" aria-hidden="true">*</span>
           </label>
           <input
@@ -823,7 +823,7 @@
           <p v-if="patternEditErr('name')" class="text-red-600 text-xs mt-1">{{ patternEditErr('name') }}</p>
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-medium text-slate-600 mb-1">
+          <label class="block text-xs font-medium secondary_text_color mb-1">
             Description <span class="text-red-600" aria-hidden="true">*</span>
           </label>
           <textarea
@@ -840,7 +840,7 @@
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showPatternEditModal = false">Cancel</button>
           <button
             type="button"
-            class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
+            class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50"
             :disabled="saving || !patternEditCanSubmit"
             @click="submitPatternEdit"
           >
@@ -857,9 +857,9 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showRouterModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 my-8" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-2">Workflow router</h3>
-        <p class="text-xs text-slate-500 mb-3">
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-lg w-full p-5 my-8" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-2">Workflow router</h3>
+        <p class="text-xs secondary_text_color mb-3">
           Map each condition to an agent on this pattern. Set a fallback when no rule matches.
         </p>
         <p v-if="routerModalPatternAgentsLoading" class="text-xs text-violet-800/90 mb-3">Loading pattern agents…</p>
@@ -884,7 +884,7 @@
           <button
             v-if="routerExists"
             type="button"
-            class="px-3 py-2 text-sm border border-red-300 text-red-800 rounded-lg"
+            class="px-3 py-2 text-sm border regular_border_color text-red-800 rounded-lg"
             :disabled="saving"
             @click="deleteRouterConfig"
           >
@@ -895,7 +895,7 @@
             <button
               v-if="!routerModalPatternAgentsLoading && routerModalPatternAgents.length"
               type="button"
-              class="px-3 py-2 text-sm bg-violet-600 text-white rounded-lg disabled:opacity-50"
+              class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50"
               :disabled="saving"
               @click="submitRouter"
             >
@@ -913,9 +913,9 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showAgentModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Add agent to pattern</h3>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Pattern</label>
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">Add agent to pattern</h3>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Pattern</label>
         <select v-model="agentForm.pattern_id" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm">
           <option value="" disabled>Select pattern</option>
           <option v-for="p in patterns" :key="p.id" :value="p.id">{{ p.name }} ({{ p.pattern_type }})</option>
@@ -929,26 +929,26 @@
             After adding agents, define <code class="text-[10px]">routing rules</code> so the supervisor knows when to use each.
           </p>
         </div>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Agent</label>
-        <p v-if="agentsLoading" class="text-xs text-slate-500 mb-2">Loading your agents…</p>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Agent</label>
+        <p v-if="agentsLoading" class="text-xs secondary_text_color mb-2">Loading your agents…</p>
         <p v-else-if="!agentOptions.length" class="text-xs text-amber-700 mb-2">No agents found. Create an agent in the dashboard first.</p>
         <div
           v-if="agentsLoading || !agentOptions.length"
-          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-400 mb-3"
+          class="w-full border regular_border_color rounded-lg px-3 py-2 text-sm bg_primary_color tertiary_text_color mb-3"
         >
           Select agent
         </div>
         <div v-else ref="agentModalAgentDropdownRef" class="relative mb-3">
           <button
             type="button"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none"
+            class="w-full border regular_border_color rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg_primary_color hover:bg_primary_color text-left primary_text_color focus:outline-none"
             :aria-expanded="agentModalAgentOpen"
             aria-haspopup="listbox"
             @click="agentModalAgentOpen = !agentModalAgentOpen"
           >
             <span class="truncate min-w-0">{{ addAgentAgentDisplayLabel() }}</span>
             <svg
-              class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
+              class="w-4 h-4 secondary_text_color shrink-0 transition-transform duration-200"
               :class="{ 'rotate-180': agentModalAgentOpen }"
               fill="none"
               stroke="currentColor"
@@ -960,7 +960,7 @@
           </button>
           <ul
             v-show="agentModalAgentOpen"
-            class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+            class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
             role="listbox"
           >
             <li
@@ -968,15 +968,15 @@
               :key="a.id"
               role="option"
               :aria-selected="String(agentForm.agent_id) === String(a.id)"
-              class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-              :class="{ 'bg-slate-100 font-medium': String(agentForm.agent_id) === String(a.id) }"
+              class="px-3 py-2 text-sm cursor-pointer hover:bg_primary_color"
+              :class="{ 'bg_primary_color font-medium': String(agentForm.agent_id) === String(a.id) }"
               @click="selectAddAgentAgent(a.id)"
             >
               {{ agentLabel(a) }}
             </li>
           </ul>
         </div>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Timeout (seconds)</label>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Timeout (seconds)</label>
         <input
           v-model="agentForm.timeoutSec"
           type="number"
@@ -989,7 +989,7 @@
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showAgentModal = false">Cancel</button>
           <button
             type="button"
-            class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50"
+            class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50"
             :disabled="saving || !agentForm.pattern_id || !agentForm.agent_id"
             @click="submitAgent"
           >
@@ -1006,9 +1006,9 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, () => showManageAgentsModal = false)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">Pattern agents</h3>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Pattern</label>
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">Pattern agents</h3>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Pattern</label>
         <select v-model="managePatternId" class="w-full border rounded-lg px-3 py-2 mb-3 text-sm" @change="loadManageAgents">
           <option value="" disabled>Select pattern</option>
           <option v-for="p in patterns" :key="p.id" :value="p.id">{{ p.name }} ({{ p.pattern_type }})</option>
@@ -1023,30 +1023,30 @@
           </p>
           <button
             type="button"
-            class="w-full py-1.5 px-2 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
+            class="w-full py-1.5 px-2 rounded-lg primary_add_button text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50"
             :disabled="saving"
             @click="openRouterModalForManageAgents"
           >
             Create or edit router
           </button>
         </div>
-        <p v-if="manageAgentsLoading" class="text-xs text-slate-500">Loading…</p>
+        <p v-if="manageAgentsLoading" class="text-xs secondary_text_color">Loading…</p>
         <ul v-else-if="managePatternAgents.length" class="space-y-2 text-xs">
           <li
             v-for="(row, idx) in manageAgentsSorted"
             :key="row.id"
-            class="flex items-center justify-between gap-2 border rounded-md p-2 bg-slate-50"
+            class="flex items-center justify-between gap-2 border rounded-md p-2 bg_primary_color"
           >
             <div class="min-w-0">
               <span class="font-medium">{{ agentLabelById(row.agent_id) }}</span>
-              <span class="text-slate-500 ml-2">#{{ row.execution_order }}</span>
+              <span class="secondary_text_color ml-2">#{{ row.execution_order }}</span>
             </div>
             <div class="flex gap-1.5 shrink-0">
               <div class="group/wf-reorder relative inline-flex">
                 <button
                   type="button"
                   aria-label="Move agent up"
-                  class="inline-flex items-center justify-center min-h-9 min-w-9 rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-100 hover:border-slate-300 disabled:opacity-35 disabled:pointer-events-none"
+                  class="inline-flex items-center justify-center min-h-9 min-w-9 rounded-lg border regular_border_color bg_secondary_color primary_text_color shadow-sm hover:bg_primary_color hover:regular_border_color disabled:opacity-35 disabled:pointer-events-none"
                   :disabled="idx === 0"
                   @click="moveManageAgent(row, -1)"
                 >
@@ -1065,7 +1065,7 @@
                 <button
                   type="button"
                   aria-label="Move agent down"
-                  class="inline-flex items-center justify-center min-h-9 min-w-9 rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-100 hover:border-slate-300 disabled:opacity-35 disabled:pointer-events-none"
+                  class="inline-flex items-center justify-center min-h-9 min-w-9 rounded-lg border regular_border_color bg_secondary_color primary_text_color shadow-sm hover:bg_primary_color hover:regular_border_color disabled:opacity-35 disabled:pointer-events-none"
                   :disabled="idx === manageAgentsSorted.length - 1"
                   @click="moveManageAgent(row, 1)"
                 >
@@ -1084,7 +1084,7 @@
             </div>
           </li>
         </ul>
-        <p v-else-if="managePatternId" class="text-xs text-slate-500">No agents in this pattern.</p>
+        <p v-else-if="managePatternId" class="text-xs secondary_text_color">No agents in this pattern.</p>
         <div class="flex justify-end mt-4">
           <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="showManageAgentsModal = false">Close</button>
         </div>
@@ -1098,28 +1098,28 @@
       @mousedown.self="handleBackdropMousedown"
       @click.self="handleBackdropClick($event, closeOutputChannelModal)"
     >
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
-        <h3 class="font-semibold text-slate-900 mb-3">
+      <div class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" @click.stop>
+        <h3 class="font-semibold primary_text_color mb-3">
           {{ outputChannelEditId ? 'Edit output channel' : 'Add output channel' }}
         </h3>
-        <label class="block text-xs font-medium text-slate-600 mb-1">Channel type</label>
+        <label class="block text-xs font-medium secondary_text_color mb-1">Channel type</label>
         <div
           v-if="outputChannelEditId"
-          class="w-full border border-gray-200 rounded-lg px-3 py-2 mb-3 text-sm bg-slate-50 text-slate-700"
+          class="w-full border regular_border_color rounded-lg px-3 py-2 mb-3 text-sm bg_primary_color primary_text_color"
         >
           {{ outputChannelTypeLabel(outputChannelForm.channel_type) }}
         </div>
         <div v-else ref="outputChannelTypeDropdownRef" class="relative mb-3">
           <button
             type="button"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 text-left text-slate-900 focus:outline-none"
+            class="w-full border regular_border_color rounded-lg px-3 py-2 text-sm flex items-center justify-between gap-2 bg_primary_color hover:bg_primary_color text-left primary_text_color focus:outline-none"
             :aria-expanded="outputChannelTypeOpen"
             aria-haspopup="listbox"
             @click="outputChannelTypeOpen = !outputChannelTypeOpen"
           >
             <span>{{ outputChannelTypeLabel(outputChannelForm.channel_type) }}</span>
             <svg
-              class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
+              class="w-4 h-4 secondary_text_color shrink-0 transition-transform duration-200"
               :class="{ 'rotate-180': outputChannelTypeOpen }"
               fill="none"
               stroke="currentColor"
@@ -1131,7 +1131,7 @@
           </button>
           <ul
             v-show="outputChannelTypeOpen"
-            class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg py-1 max-h-56 overflow-auto"
+            class="absolute z-[10010] left-0 right-0 mt-1 rounded-lg border regular_border_color bg_secondary_color shadow-lg py-1 max-h-56 overflow-auto"
             role="listbox"
           >
             <li
@@ -1139,8 +1139,8 @@
               :key="opt.value"
               role="option"
               :aria-selected="outputChannelForm.channel_type === opt.value"
-              class="px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
-              :class="{ 'bg-slate-100 font-medium': outputChannelForm.channel_type === opt.value }"
+              class="px-3 py-2 text-sm cursor-pointer hover:bg_primary_color"
+              :class="{ 'bg_primary_color font-medium': outputChannelForm.channel_type === opt.value }"
               @click="selectOutputChannelType(opt.value)"
             >
               {{ opt.label }}
@@ -1148,7 +1148,7 @@
           </ul>
         </div>
         <template v-if="outputChannelForm.channel_type === 'email'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">To</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">To</label>
           <input
             v-model="outputChannelForm.emailTo"
             type="email"
@@ -1156,7 +1156,7 @@
             placeholder="owner@example.com"
             autocomplete="off"
           >
-          <label class="block text-xs font-medium text-slate-600 mb-1">Subject</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">Subject</label>
           <input
             v-model="outputChannelForm.emailSubject"
             type="text"
@@ -1166,7 +1166,7 @@
           >
         </template>
         <template v-else-if="outputChannelForm.channel_type === 'sms'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">From number</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">From number</label>
           <input
             v-model="outputChannelForm.smsFromNumber"
             type="text"
@@ -1174,18 +1174,18 @@
             placeholder="+15551234567"
             autocomplete="off"
           >
-          <p class="text-[11px] text-slate-500 mt-1 mb-3">
+          <p class="text-[11px] secondary_text_color mt-1 mb-3">
             Use international format: a leading
             <code class="text-[10px]">+</code>, country code
           </p>
         </template>
         <template v-else-if="outputChannelForm.channel_type === 'voice'">
-          <p class="text-xs text-slate-600 mb-3">
+          <p class="text-xs secondary_text_color mb-3">
             No extra settings for this channel type.
           </p>
         </template>
         <template v-else-if="outputChannelForm.channel_type === 'outbound_call'">
-          <label class="block text-xs font-medium text-slate-600 mb-1">From number</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">From number</label>
           <input
             v-model="outputChannelForm.outboundFromNumber"
             type="text"
@@ -1193,7 +1193,7 @@
             placeholder="+15551234567"
             autocomplete="off"
           >
-          <label class="block text-xs font-medium text-slate-600 mb-1">TTS voice</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">TTS voice</label>
           <input
             v-model="outputChannelForm.outboundTtsVoice"
             type="text"
@@ -1201,7 +1201,7 @@
             placeholder="e.g. Polly.Joanna"
             autocomplete="off"
           >
-          <label class="block text-xs font-medium text-slate-600 mb-1">Language</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">Language</label>
           <input
             v-model="outputChannelForm.outboundLanguage"
             type="text"
@@ -1211,7 +1211,7 @@
           >
         </template>
         <template v-else>
-          <label class="block text-xs font-medium text-slate-600 mb-1">Config (JSON)</label>
+          <label class="block text-xs font-medium secondary_text_color mb-1">Config (JSON)</label>
           <textarea v-model="outputChannelForm.configJson" rows="5" class="w-full border rounded-lg px-3 py-2 mb-3 text-xs font-mono" placeholder="{}" />
         </template>
         <label class="flex items-center gap-2 mb-3 text-sm">
@@ -1222,7 +1222,7 @@
           <button
             v-if="outputChannelEditId"
             type="button"
-            class="px-3 py-2 text-sm border border-red-300 text-red-800 rounded-lg"
+            class="px-3 py-2 text-sm border regular_border_color text-red-800 rounded-lg"
             :disabled="saving"
             @click="deleteOutputChannelFromModal"
           >
@@ -1230,7 +1230,7 @@
           </button>
           <div class="flex gap-2 ml-auto">
             <button type="button" class="px-3 py-2 text-sm border rounded-lg" @click="closeOutputChannelModal">Cancel</button>
-            <button type="button" class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitOutputChannel">
+            <button type="button" class="px-3 py-2 text-sm primary_add_button text-white rounded-lg disabled:opacity-50" :disabled="saving" @click="submitOutputChannel">
               {{ saving ? 'Saving…' : outputChannelEditId ? 'Save' : 'Create' }}
             </button>
           </div>
@@ -1248,20 +1248,20 @@
       @click.self="handleBackdropClick($event, () => closeConfirmModal(false))"
     >
       <div
-        class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 border border-slate-100"
+        class="bg_secondary_color rounded-xl shadow-xl max-w-md w-full p-5 border primary_border_color"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         @click.stop
       >
-        <h3 id="confirm-modal-title" class="font-semibold text-slate-900 mb-2">
+        <h3 id="confirm-modal-title" class="font-semibold primary_text_color mb-2">
           {{ confirmModalTitle }}
         </h3>
-        <p class="text-sm text-slate-600 mb-6 whitespace-pre-wrap">{{ confirmModalMessage }}</p>
+        <p class="text-sm secondary_text_color mb-6 whitespace-pre-wrap">{{ confirmModalMessage }}</p>
         <div class="flex justify-end gap-2">
           <button
             type="button"
-            class="px-3 py-2 text-sm border rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
+            class="px-3 py-2 text-sm border rounded-lg regular_border_color primary_text_color hover:bg_primary_color"
             @click="closeConfirmModal(false)"
           >
             Cancel
