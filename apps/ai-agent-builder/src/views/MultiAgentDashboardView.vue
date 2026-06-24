@@ -32,6 +32,7 @@
         @page-change="handleChatPageChange"
         @save-group="handleSaveGroup"
         @sub-sidebar-changed="isSubSidebarOpen = $event"
+        @collapse-change="isMainSidebarCollapsed = $event"
       />
 
       <div
@@ -74,20 +75,6 @@
                 :model-value="chatRef.voiceEnabled"
                 @update:model-value="chatRef.handleVoiceToggle"
               />
-
-              <button
-                v-if="hasChatMessages"
-                type="button"
-                class="inline-flex items-center gap-md rounded-lg border primary_border_color bg_secondary_color px-4xl py-md label_2_medium primary_text_color hover:bg-gray-25 disabled:opacity-50"
-                :disabled="creatingChat"
-                @click="handleCreateChat"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span class="hidden sm:inline">New Chat</span>
-              </button>
-
               <button
                 type="button"
                 class="primary_add_button inline-flex shrink-0 items-center gap-md rounded-lg px-5xl py-md label_2_semibold primary_2_text_color"
@@ -106,7 +93,8 @@
             mode="multi"
             :group="group"
             :selected-chat-id="selectedChatId"
-            :is-sidebar-collapsed="!isSubSidebarOpen"
+            :is-sidebar-collapsed="isMainSidebarCollapsed"
+            :is-sub-sidebar-open="isSubSidebarOpen"
             @chat-created="handleChatCreated"
             @chat-used="handleChatUsed"
           />
@@ -169,6 +157,7 @@ const selectedChatId = ref(null)
 const savingGroup = ref(false)
 const groupError = ref('')
 const isSubSidebarOpen = ref(false)
+const isMainSidebarCollapsed = ref(false)
 const chatPagination = ref({
   currentPage: 1,
   totalPages: 1,

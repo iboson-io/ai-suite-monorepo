@@ -88,6 +88,11 @@
             placeholder="What's on your mind?"
             @send-message="handleFollowUpMessage"
           />
+          <div class="text-center p-xl">
+            <p class="body_4_regular tertiary_text_color">
+              AI Agent can make mistakes. Please check for accuracy.
+            </p>
+          </div>
         </div>
       </div>
     </section>

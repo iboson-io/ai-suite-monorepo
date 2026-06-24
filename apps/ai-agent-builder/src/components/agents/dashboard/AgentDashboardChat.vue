@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col relative">
+  <div ref="rootRef" class="flex min-h-0 flex-1 flex-col relative">
     <div
       v-if="loadingHistory"
       class="flex min-h-0 flex-1 items-center justify-center"
@@ -42,6 +42,30 @@
               <p class="mt-md heading_h3_semibold md:heading_h3_semibold gradient_text_color">
                 Automate support and resolve issues
               </p>
+
+              <div class="w-full max-w-3xl mx-auto mt-5">
+                <p
+                  v-if="isReconnecting && !isConnected"
+                  class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
+                >
+                  {{ connectingLabel }}<span class="loading-dots" />
+                </p>
+
+                <PromptBox
+                  :is-ai-generating="isLoading || isReconnecting"
+                  :initial-product-id="promptProductId"
+                  :disable-product-select="true"
+                  :hide-product-select="true"
+                  placeholder="What's on your mind?"
+                  @send-message="handleSendMessage"
+                />
+
+                <div class="text-center p-xl">
+                  <p class="body_4_regular tertiary_text_color">
+                    AI Agent can make mistakes. Please check for accuracy.
+                  </p>
+                </div>
+              </div>
             </div>
           </template>
 
@@ -59,17 +83,19 @@
               @toggle-audio="handleToggleAudio"
               @toast="showToast"
             />
+            <div ref="scrollAnchor" class="h-64 md:h-56" />
           </template>
-
-          <div ref="scrollAnchor" class="h-64 md:h-56" />
         </div>
       </div>
 
       <div
+        v-if="chatMessages.length > 0"
         ref="promptSectionRef"
         class="fixed bottom-0 left-0 right-0 z-40 bg_primary_color px-4 transition-all duration-300 ease-in-out md:px-6"
         :class="[
-          isSidebarCollapsed ? 'lg:left-20' : 'lg:left-[464px]'
+          isSubSidebarOpen
+            ? (isSidebarCollapsed ? 'lg:left-[464px]' : 'lg:left-[640px]')
+            : (isSidebarCollapsed ? 'lg:left-20' : 'lg:left-64')
         ]"
       >
         <div class="mx-auto max-w-3xl">
@@ -147,6 +173,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isSubSidebarOpen: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['chat-created', 'chat-used'])
@@ -165,6 +195,7 @@ function showToast(mainMessage, secondaryMessage = '', type = 'success') {
 
 const route = useRoute()
 
+const rootRef = ref(null)
 const chatMessages = ref([])
 const chatId = ref(null)
 const isLoading = ref(false)
@@ -651,7 +682,8 @@ async function handleRegenerate(index) {
 }
 
 function focusPrompt() {
-  promptSectionRef.value?.querySelector('textarea, input')?.focus()
+  const input = rootRef.value?.querySelector('textarea, input') || promptSectionRef.value?.querySelector('textarea, input')
+  input?.focus()
 }
 
 onUnmounted(() => {
