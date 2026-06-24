@@ -41,7 +41,7 @@
 }
     /* button */
 .secondary_google_button {
-    @apply rounded-md  w-full flex items-center justify-center gap-xxs bg-gray-25 p-md mt-6xl label_1_semibold secondary_text_color;
+    @apply rounded-md  w-full flex items-center justify-center gap-xxs bg-gray-25 p-xl mt-6xl label_1_semibold secondary_text_color;
 }
 
  /* new design system end*/

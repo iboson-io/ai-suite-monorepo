@@ -20,7 +20,7 @@
       <div class="relative mt-6xl">
         <label
           :class="[
-            'absolute left-md transition-all duration-200 pointer-events-none z-10',
+            'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
             (showPassword ? password : actualPassword) || focusedFields.password
               ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
               : 'top-1/2 -translate-y-1/2 secondary_text_color',

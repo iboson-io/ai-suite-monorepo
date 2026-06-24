@@ -39,12 +39,30 @@
         v-if="!showOtpField"
         class="space-y-3 sm:space-y-4"
         novalidate
+        autocomplete="off"
         @submit.prevent="handleLoginSubmit"
       >
+        <input
+          type="text"
+          name="username"
+          tabindex="-1"
+          aria-hidden="true"
+          class="absolute h-0 w-0 opacity-0 pointer-events-none"
+          autocomplete="username"
+        />
+        <input
+          type="password"
+          name="password"
+          tabindex="-1"
+          aria-hidden="true"
+          class="absolute h-0 w-0 opacity-0 pointer-events-none"
+          autocomplete="current-password"
+        />
+
         <div class="relative">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-xxl transition-all duration-200 pointer-events-none z-10',
               formData.email || focusedFields.email
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
@@ -55,14 +73,18 @@
           </label>
           <input
             v-model="formData.email"
-            type="email"
+            type="text"
+            name="agent_lab_signin_email"
+            inputmode="email"
+            autocomplete="off"
+            readonly
             class="input_box w-full pt-4xl px-xl pb-md"
             :class="[
               emailError ? 'error_border_color' : 'regular_border_color',
               focusedFields.email ? 'border border-info-50' : ''
             ]"
             :disabled="isLoading"
-            @focus="focusedFields.email = true"
+            @focus="(event) => { enableFieldEdit(event); focusedFields.email = true }"
             @blur="() => { focusedFields.email = false; validateEmail(); }"
             @input="clearEmailError"
           />
@@ -74,7 +96,7 @@
         <div class="relative">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-xxl transition-all duration-200 pointer-events-none z-10',
               formData.password || focusedFields.password
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
@@ -87,13 +109,16 @@
             <input
               v-model="formData.password"
               :type="showPassword ? 'text' : 'password'"
+              name="agent_lab_signin_password"
+              autocomplete="new-password"
+              readonly
               class="input_box w-full pt-4xl px-xl pb-md pr-10xl password-input"
               :class="[
                 passwordError ? 'error_border_color' : 'regular_border_color',
                 focusedFields.password ? 'border border-info-50' : ''
               ]"
               :disabled="isLoading"
-              @focus="focusedFields.password = true"
+              @focus="(event) => { enableFieldEdit(event); focusedFields.password = true }"
               @blur="() => { focusedFields.password = false; validatePassword(); }"
               @input="clearPasswordError"
             />
@@ -140,12 +165,13 @@
         v-else
         class="space-y-3 sm:space-y-4"
         novalidate
+        autocomplete="off"
         @submit.prevent="handleOtpSubmit"
       >
         <div class="relative">
           <label
             :class="[
-              'absolute left-md transition-all duration-200 pointer-events-none z-10',
+              'absolute left-xxl transition-all duration-200 pointer-events-none z-10',
               formData.otp || focusedFields.otp
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
@@ -157,13 +183,16 @@
           <input
             v-model="formData.otp"
             type="text"
+            name="agent_lab_signin_otp"
+            autocomplete="off"
+            readonly
             class="input_box w-full pt-4xl px-xl pb-md"
             :class="[
               otpError ? 'error_border_color' : 'regular_border_color',
               focusedFields.otp ? 'border border-info-50' : ''
             ]"
             :disabled="isLoading"
-            @focus="focusedFields.otp = true"
+            @focus="(event) => { enableFieldEdit(event); focusedFields.otp = true }"
             @blur="() => { focusedFields.otp = false; validateOtp(); }"
             @input="clearOtpError"
           />
@@ -300,6 +329,22 @@ function clearOtpError() {
   if (otpError.value) otpError.value = ''
 }
 
+function enableFieldEdit(event) {
+  event.target.removeAttribute('readonly')
+}
+
+function clearAutofillValues() {
+  if (!focusedFields.email) {
+    formData.value.email = ''
+  }
+  if (!focusedFields.password) {
+    formData.value.password = ''
+  }
+  if (!focusedFields.otp) {
+    formData.value.otp = ''
+  }
+}
+
 function resetOtpView() {
   showOtpField.value = false
   formData.value.otp = ''
@@ -364,6 +409,10 @@ async function handleOtpSubmit() {
 onMounted(() => {
   if (checkAuth() && isAuthenticated.value) {
     router.replace('/home')
+    return
   }
+
+  clearAutofillValues()
+  window.setTimeout(clearAutofillValues, 100)
 })
 </script>
