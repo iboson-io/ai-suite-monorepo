@@ -23,7 +23,7 @@
           :src="DownArrow"
           alt=""
           class="h-4 w-4 brightness-0 invert transition-transform duration-200"
-          :class="{ 'rotate-180': isDropdownOpen && !opensUpward }"
+          :class="{ 'rotate-180': isDropdownOpen }"
         />
       </button>
     </div>
