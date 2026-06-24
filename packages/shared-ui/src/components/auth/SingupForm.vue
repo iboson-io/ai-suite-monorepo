@@ -37,7 +37,7 @@
               form.name || focusedFields.name
                 ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg-white px-xs'
                 : 'top-1/2 -translate-y-1/2 secondary_text_color',
-              errors.name && (showPassword ? password : actualPassword) || focusedFields.password ? 'top-0' : errors.name  ? 'top-1/3' : ''
+              errors.name && form.name || focusedFields.name ? 'top-0' : errors.name ? 'top-1/3' : ''
             ]"
           >
             Fullname
@@ -85,18 +85,18 @@
 
         <!-- Password -->
         <div class="relative mt-4xl">
-          <label
-            :class="[
-              'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
-              (showPassword ? form.password : actualPassword) || focusedFields.password
-                ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg-white px-xs'
-                : 'top-1/2 -translate-y-1/2 secondary_text_color',
-              errors.password && (showPassword ? password : actualPassword) || focusedFields.password ? 'top-0' : errors.password  ? 'top-1/3' : ''
-            ]"
-          >
-            Password
-          </label>
           <div class="relative">
+            <label
+              :class="[
+                'absolute left-3xl transition-all duration-200 pointer-events-none z-10',
+                actualPassword || focusedFields.password
+                  ? 'top-0 label_2_medium secondary_text_color -translate-y-1/2 bg_secondary_color px-xs'
+                  : 'top-1/2 -translate-y-1/2 secondary_text_color',
+                errors.password && (actualPassword || focusedFields.password) ? 'top-0' : errors.password ? 'top-1/3' : ''
+              ]"
+            >
+              Password
+            </label>
             <input
               :value="showPassword ? form.password : '*'.repeat(actualPassword.length)"
               @input="handlePasswordInput"
