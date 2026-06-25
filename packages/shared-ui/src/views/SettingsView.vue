@@ -65,7 +65,10 @@
 
         <!-- Billing & Plan Tab Content -->
         <div v-else-if="activeTab === 'billing'">
-          <Billing/>
+          <Billing
+            ref="billingRef"
+            :on-plan-select="planSelectHandler"
+          />
         </div>
 
         <!-- Localization Tab Content -->
@@ -84,17 +87,55 @@
         </div>
       </div>
     </div>
+
+    <PaymentSuccessModal
+      :is-open="showPaymentSuccessModal"
+      :subscription-id="paymentData.subscriptionId"
+      :plan-name="paymentData.planName"
+      @close="closePaymentSuccessModal"
+    />
+
+    <PaymentFailureModal
+      :is-open="showPaymentFailureModal"
+      @close="closePaymentFailureModal"
+      @retry="handlePaymentRetry"
+    />
   </main>
 </template>
 
 <script setup>
-import { ref, reactive, h, onMounted, nextTick } from "vue";
+import { ref, reactive, h, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { getBrandingSectionConfig } from "@app/services/auth/branding.js";
+import * as billingService from "@app/services/settings/billing.js";
 import UserProfile from "../components/settings/UserProfile.vue"
 import Billing from "../components/settings/Billing.vue"
 import Localization from "../components/settings/localization.vue"
 import Security from "../components/settings/Security.vue"
 import DataPrivacySettings from "../components/settings/DataPrivacySettings.vue"
+import PaymentSuccessModal from "../components/settings/PaymentSuccessModal.vue"
+import PaymentFailureModal from "../components/settings/PaymentFailureModal.vue"
+
+const route = useRoute()
+const router = useRouter()
+const billingRef = ref(null)
+
+const showPaymentSuccessModal = ref(false)
+const showPaymentFailureModal = ref(false)
+const paymentData = ref({
+  subscriptionId: '',
+  planName: '',
+})
+
+const checkoutConfig = typeof billingService.getBillingCheckoutConfig === 'function'
+  ? billingService.getBillingCheckoutConfig()
+  : null
+
+const usesPaddleCheckout = checkoutConfig?.provider === 'paddle'
+
+const planSelectHandler = typeof billingService.handlePlanSelect === 'function'
+  ? billingService.handlePlanSelect
+  : null
 
 const PersonIcon = (props) =>
   h("svg", { 
@@ -183,6 +224,136 @@ const DatabaseIcon = (props) =>
     }),
   ]);
 
+const tabUrlMapping = {
+  account: 'account',
+  billing: 'billing',
+  localization: 'localization',
+  security: 'security',
+  'data-privacy': 'privacy',
+}
+
+const syncTabFromUrl = () => {
+  const urlTab = route.query.tab
+  if (!urlTab) return
+
+  const tabId = Object.keys(tabUrlMapping).find((key) => tabUrlMapping[key] === urlTab)
+  if (tabId && tabs.some((tab) => tab.id === tabId)) {
+    activeTab.value = tabId
+  }
+}
+
+const updateUrlForTab = (tabId) => {
+  const urlLabel = tabUrlMapping[tabId]
+  if (!urlLabel) return
+
+  const currentQuery = { ...route.query }
+  if (tabId === 'account') {
+    delete currentQuery.tab
+  } else {
+    currentQuery.tab = urlLabel
+  }
+
+  router.replace({
+    path: route.path,
+    query: currentQuery,
+  })
+}
+
+const clearCheckoutUrlParameters = () => {
+  if (typeof billingService.clearCheckoutUrlParameters === 'function') {
+    billingService.clearCheckoutUrlParameters()
+    return
+  }
+
+  if (typeof window === 'undefined') return
+
+  const url = new URL(window.location.href)
+  url.searchParams.delete('success')
+  url.searchParams.delete('subscription_id')
+  url.searchParams.delete('ba_token')
+  url.searchParams.delete('token')
+  url.searchParams.delete('_ptxn')
+  window.history.replaceState({}, '', url)
+}
+
+const handlePaymentSuccess = async (subscriptionId) => {
+  showPaymentSuccessModal.value = true
+  paymentData.value = {
+    subscriptionId: subscriptionId || '',
+    planName: 'Your Plan',
+  }
+
+  await billingRef.value?.reload?.()
+  activeTab.value = 'billing'
+  updateUrlForTab('billing')
+  clearCheckoutUrlParameters()
+}
+
+const handlePaymentFailure = () => {
+  showPaymentFailureModal.value = true
+  clearCheckoutUrlParameters()
+}
+
+const closePaymentSuccessModal = async () => {
+  showPaymentSuccessModal.value = false
+  paymentData.value = { subscriptionId: '', planName: '' }
+  await billingRef.value?.reload?.()
+  activeTab.value = 'billing'
+}
+
+const closePaymentFailureModal = () => {
+  showPaymentFailureModal.value = false
+}
+
+const handlePaymentRetry = () => {
+  closePaymentFailureModal()
+  activeTab.value = 'billing'
+  updateUrlForTab('billing')
+}
+
+const checkUrlParameters = () => {
+  const success = route.query.success
+  const subscriptionId = route.query.subscription_id
+  const baToken = route.query.ba_token
+  const token = route.query.token
+
+  if (success === 'true' && subscriptionId && baToken && token) {
+    handlePaymentSuccess(String(subscriptionId))
+  } else if (success === 'false') {
+    handlePaymentFailure()
+  }
+}
+
+const handlePaddleCheckoutComplete = async () => {
+  clearCheckoutUrlParameters()
+  activeTab.value = 'billing'
+  updateUrlForTab('billing')
+  await billingRef.value?.reload?.()
+}
+
+const handlePaddleMessage = async (event) => {
+  if (!usesPaddleCheckout) return
+
+  if (typeof billingService.isPaddleCheckoutMessage === 'function') {
+    if (!billingService.isPaddleCheckoutMessage(event)) return
+  } else if (!event?.data || typeof event.data !== 'object') {
+    return
+  } else {
+    const eventName = event.data.name || event.data.event_name
+    if (eventName !== 'checkout.closed' && eventName !== 'checkout.completed') {
+      return
+    }
+  }
+
+  await handlePaddleCheckoutComplete()
+
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  }
+}
+
 // Tab navigation
 const activeTab = ref("account");
 const tabsContainer = ref(null);
@@ -256,8 +427,8 @@ const checkScrollPosition = () => {
 };
 
 const handleTabClick = (tabId, index) => {
-  // Set active tab first
   activeTab.value = tabId;
+  updateUrlForTab(tabId);
   
   // Scroll to tab on mobile
   nextTick(() => {
@@ -310,12 +481,45 @@ const scrollTabs = (direction) => {
   setTimeout(checkScrollPosition, 100);
 };
 
+const setupPaddle = async () => {
+  if (!usesPaddleCheckout) return
+
+  if (typeof billingService.setupPaddleCheckout === 'function') {
+    await billingService.setupPaddleCheckout(handlePaddleCheckoutComplete)
+  }
+}
+
 onMounted(() => {
+  syncTabFromUrl()
+  checkUrlParameters()
+  setupPaddle()
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', handlePaddleMessage)
+  }
+
   nextTick(() => {
     checkScrollPosition();
-    // Also check on window resize
     window.addEventListener('resize', checkScrollPosition);
   });
+});
+
+watch(() => route.query.tab, () => {
+  syncTabFromUrl()
+})
+
+watch(
+  () => [route.query.success, route.query.subscription_id],
+  () => {
+    checkUrlParameters()
+  }
+)
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('message', handlePaddleMessage)
+    window.removeEventListener('resize', checkScrollPosition);
+  }
 });
 
 
