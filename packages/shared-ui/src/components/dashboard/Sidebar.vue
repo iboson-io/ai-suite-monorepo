@@ -24,7 +24,7 @@
         >
           <div class="relative flex h-7 w-7 shrink-0 items-center justify-center transition-all duration-200">
             <img
-              v-if="hoverLogo"
+              v-if="showBackToHome && hoverLogo"
               :src="BackHomeIcon"
               alt=""
               class="h-6 w-6"
@@ -44,9 +44,9 @@
           <span
             v-if="!isCollapsed"
             class="transition-colors duration-200"
-            :class="hoverLogo ? 'secondary_text_color label_1_semibold' : 'gradient_text_color heading_h6_semibold'"
+            :class="(showBackToHome && hoverLogo) ? 'secondary_text_color label_1_semibold' : 'gradient_text_color heading_h6_semibold'"
           >
-            {{ hoverLogo ? 'Back to home' : (sidebarConfig.brandName || 'Genius AI') }}
+            {{ (showBackToHome && hoverLogo) ? 'Back to home' : (sidebarConfig.brandName || 'Genius AI') }}
           </span>
         </div>
 
@@ -70,12 +70,12 @@
       <div class="relative group mt-6xl" @mouseenter="hoveredItem = 'newChat'" @mouseleave="hoveredItem = null"
         :ref="el => { if (el) menuItemRefs['newChat'] = el }">
 
-        <button class="button-gradient w-full" @click="handleNewChatClick">
+        <button class="button-gradient w-full" :disabled="creatingChat" @click="handleNewChatClick">
           <span class="flex gap-md items-center w-full bg_primary_color primary_text_color label_2_semibold"
            :class="isCollapsed ? `justify-center ${sidebarConfig.newChatButtonClass}` : 'p-xl'"
           >
             <img :src="PlusIcon" class="h-4 w-4" />
-            <span v-if="!isCollapsed">New Chat</span>
+            <span v-if="!isCollapsed">{{ creatingChat ? 'Creating...' : 'New Chat' }}</span>
           </span>
         </button>
 
@@ -104,7 +104,7 @@
         >
           <!-- Dynamic Chat Sessions from API -->
           <div 
-            v-for="session in chatSessions" 
+            v-for="session in displayChatSessions" 
             :key="session.id"
             :data-session-id="session.id"
             @click="handleSessionRowClick(session)"
@@ -123,7 +123,7 @@
                 class="w-full bg-transparent border-none outline-none label_2_regular primary_text_color"
                 placeholder="Enter chat title..."
               />
-              <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || 'Untitled Chat') : (session.title || 'Untitled Chat') }}</span>
+              <span v-else class="block truncate">{{ sidebarConfig.enableSessionRename ? truncateTitle(session.title || session.name || 'Untitled Chat') : (session.title || session.name || 'Untitled Chat') }}</span>
             </div>
             <div class="relative shrink-0 flex items-center">
               <button
@@ -140,15 +140,15 @@
             </div>
           </div>
           <!-- Loading State -->
-          <div v-if="isLoadingSessions" class="mt-xl p-xl label_2_regular secondary_text_color">
+          <div v-if="displayIsLoading" class="mt-xl p-xl label_2_regular secondary_text_color">
             Loading...
           </div>
           <!-- Loading More State -->
-          <div v-if="loadingMoreSessions" class="mt-md text-center py-xs label_3_regular secondary_text_color">
+          <div v-if="displayLoadingMore" class="mt-md text-center py-xs label_3_regular secondary_text_color">
             Loading more...
           </div>
           <!-- Empty State -->
-          <div v-else-if="chatSessions.length === 0" class="mt-xl p-xl label_2_regular secondary_text_color">
+          <div v-else-if="displayChatSessions.length === 0" class="mt-xl p-xl label_2_regular secondary_text_color">
             No chat history
           </div>
         </div>
@@ -188,37 +188,41 @@
 
       <!-- Menu (scrolls when many tabs; does not overlap bottom section) -->
       <nav class="sidebar-nav-scroll mt-xl min-h-0 flex-1 overflow-y-auto custom_scrollbar">
-        <div v-for="item in menuItems" :key="item.tab" @click="handleSidebarClick(item.tab)"
-          @mouseenter="hoveredItem = item.tab" @mouseleave="hoveredItem = null"
-          class="relative group flex cursor-pointer items-center gap-lg rounded-lg py-xl mt-md hover:bg-info-50-hover" :class="[
-          activeTab === item.tab ? 'bg-info-50-hover' : '',
-          isCollapsed ? 'justify-center' : 'px-2'
-        ]" :ref="el => { if (el) menuItemRefs[item.tab] = el }">
-          <img :src="item.icon" class="h-5 w-5" />
+        <template v-for="(group, gIdx) in computedMenuItemsGroups" :key="gIdx">
+          <div v-for="item in group.items" :key="item.tab" @click="handleSidebarClick(item.tab)"
+            @mouseenter="hoveredItem = item.tab" @mouseleave="hoveredItem = null"
+            class="relative group flex cursor-pointer items-center gap-lg rounded-lg py-xl mt-md hover:bg-info-50-hover" :class="[
+            activeTab === item.tab ? 'bg-info-50-hover' : '',
+            isCollapsed ? 'justify-center' : 'px-2'
+          ]" :ref="el => { if (el) menuItemRefs[item.tab] = el }">
+            <img :src="item.icon" class="h-5 w-5" />
 
-          <span v-if="!isCollapsed" class="label_2_semibold primary_text_color">
-            {{ item.label }}
-          </span>
+            <span v-if="!isCollapsed" class="label_2_semibold primary_text_color">
+              {{ item.label }}
+            </span>
 
-          <Teleport to="body">
-            <div v-if="isCollapsed && hoveredItem === item.tab" :style="getTooltipStyle(item.tab)"
-              class="pointer-events-none fixed whitespace-nowrap z-[1000] transition-all duration-200">
-              <div
-                class="relative bg-black-400 primary_2_text_color label_2_medium rounded-lg px-xl py-md outline-none ring-0 border_none">
-                {{ item.label }}
-                <!-- Speech Bubble Tail -->
-                <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full border_none">
-                  <div
-                    class="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-transparent border-r-black-400">
+            <Teleport to="body">
+              <div v-if="isCollapsed && hoveredItem === item.tab" :style="getTooltipStyle(item.tab)"
+                class="pointer-events-none fixed whitespace-nowrap z-[1000] transition-all duration-200">
+                <div
+                  class="relative bg-black-400 primary_2_text_color label_2_medium rounded-lg px-xl py-md outline-none ring-0 border_none">
+                  {{ item.label }}
+                  <!-- Speech Bubble Tail -->
+                  <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full border_none">
+                    <div
+                      class="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-transparent border-r-black-400">
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Teleport>
-        </div>
+            </Teleport>
+          </div>
+          <div v-if="gIdx < computedMenuItemsGroups.length - 1" class="block h-[1px] w-full bg-gray-25 my-xl"></div>
+        </template>
       </nav>
 
       <div
+        v-if="!hideBottomSection"
         class="sidebar_bottom_section relative bottom-auto shrink-0 pb-md"
         :class="isCollapsed ? 'w-[2.875em]' : 'w-52'"
       >
@@ -372,9 +376,18 @@
   const props = defineProps({
     activeTab: String,
     activeSessionId: [String, Number],
+    isCustomChats: Boolean,
+    customChats: Array,
+    isLoadingSessions: Boolean,
+    loadingMoreSessions: Boolean,
+    creatingChat: Boolean,
+    customMenuGroups: Array,
+    hideBottomSection: Boolean,
+    disableDefaultFetch: Boolean,
+    showBackToHome: Boolean,
   });
 
-  const emit = defineEmits(["changeTab", "collapseChange", "newChat", "loadSession", "sessionDeleted"]);
+  const emit = defineEmits(["changeTab", "collapseChange", "newChat", "loadSession", "sessionDeleted", "renameChat", "deleteChat", "loadMoreChats"]);
   const router = useRouter();
   const changeTab = (tab) => emit("changeTab", tab);
 
@@ -385,6 +398,23 @@
   const menuItemRefs = ref({});
   const hoverLogo = ref(false);
   
+  const computedMenuItemsGroups = computed(() => {
+    if (props.customMenuGroups) return props.customMenuGroups;
+    return [{ items: menuItems }];
+  });
+
+  const displayChatSessions = computed(() => {
+    return props.isCustomChats ? (props.customChats || []) : chatSessions.value;
+  });
+
+  const displayIsLoading = computed(() => {
+    return props.isCustomChats ? props.isLoadingSessions : isLoadingSessions.value;
+  });
+
+  const displayLoadingMore = computed(() => {
+    return props.isCustomChats ? props.loadingMoreSessions : loadingMoreSessions.value;
+  });
+
   // Notification data
   const notifications = ref([]);
   const unreadNotificationsCount = ref(0);
@@ -493,7 +523,7 @@
     if (!sidebarConfig.enableSessionRename) return;
 
     editingSessionId.value = session.id;
-    editingTitle.value = session.title || '';
+    editingTitle.value = session.title || session.name || '';
 
     nextTick(() => {
       const el = Array.isArray(editInputRef.value) ? editInputRef.value[0] : editInputRef.value;
@@ -510,13 +540,20 @@
     const sessionId = editingSessionId.value;
     const newTitle = editingTitle.value.trim();
     
-    const session = chatSessions.value.find(s => s.id === sessionId);
-    if (session && (session.title || '') === newTitle) {
+    const session = displayChatSessions.value.find(s => s.id === sessionId);
+    if (session && (session.title || session.name || '') === newTitle) {
       editingSessionId.value = null;
       editingTitle.value = '';
       return;
     }
     
+    if (props.isCustomChats) {
+      emit('renameChat', { id: sessionId, newTitle });
+      editingSessionId.value = null;
+      editingTitle.value = '';
+      return;
+    }
+
     try {
       await renameChatSession(sessionId, newTitle);
       const sessionIndex = chatSessions.value.findIndex(s => s.id === sessionId);
@@ -559,6 +596,12 @@
 
     closeChatSessionMenu();
     deletingChatSessionId.value = sessionId;
+
+    if (props.isCustomChats) {
+      emit('deleteChat', sessionId);
+      deletingChatSessionId.value = null;
+      return;
+    }
 
     try {
       await deleteChatSession(sessionId);
@@ -623,6 +666,11 @@
       showNotifications.value = false;
     }
     closeChatSessionMenu();
+
+    if (props.showBackToHome) {
+      router.push('/home');
+      return;
+    }
 
     const homeRoute = sidebarConfig.chatRoute || '/chat';
     if (router.currentRoute.value.path !== homeRoute) {
@@ -750,7 +798,11 @@
     closeChatSessionMenu();
     const el = event.target;
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 20) {
-      loadMoreChatSessions();
+      if (props.isCustomChats) {
+        emit('loadMoreChats');
+      } else {
+        loadMoreChatSessions();
+      }
     }
   };
 
@@ -781,22 +833,24 @@
   // Emit initial collapsed state and fetch sessions
   onMounted(() => {
     emit("collapseChange", isCollapsed.value);
-    loadChatSessions();
-    loadSidebarUser();
-    fetchNotificationsForBadge();
-    window.addEventListener("profile-updated", loadSidebarUser);
+    if (!props.disableDefaultFetch) {
+      loadChatSessions();
+      loadSidebarUser();
+      fetchNotificationsForBadge();
+      window.addEventListener("profile-updated", loadSidebarUser);
+    }
   });
 
   const syncActiveChatSession = () => {
-    if (props.activeTab !== 'chat' || chatSessions.value.length === 0) return;
+    if (props.activeTab !== 'chat' || displayChatSessions.value.length === 0) return;
 
     const hasSelected = props.activeSessionId != null && props.activeSessionId !== '';
-    const exists = hasSelected && chatSessions.value.some(s => String(s.id) === String(props.activeSessionId));
+    const exists = hasSelected && displayChatSessions.value.some(s => String(s.id) === String(props.activeSessionId));
 
     if (exists) {
       handleSessionClick(props.activeSessionId);
-    } else if (chatSessions.value.length > 0) {
-      handleSessionClick(chatSessions.value[0].id);
+    } else if (displayChatSessions.value.length > 0) {
+      handleSessionClick(displayChatSessions.value[0].id);
     }
   };
 
