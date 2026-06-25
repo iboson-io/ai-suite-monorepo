@@ -98,10 +98,6 @@ export function buildCreateAgentPayload({
     case 'doc':
       agentData.auth_type = 'document_access'
       if (trimmedBaseUrl || trimmedToken) {
-        agentData.auth_config = {
-          base_url: trimmedBaseUrl,
-          token: trimmedToken,
-        }
         if (trimmedBaseUrl) agentData.base_url = trimmedBaseUrl
         if (trimmedToken) agentData.token = trimmedToken
       }
