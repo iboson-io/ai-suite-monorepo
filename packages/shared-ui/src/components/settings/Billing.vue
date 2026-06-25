@@ -101,7 +101,7 @@
         </div>
 
         <!-- Payment Method Section -->
-        <div class="mt-6xl md:mt-10 pt-6 border-t primary_border_color">
+        <div class="p-3xl mt-6xl md:mt-10 pt-6 border-t primary_border_color">
           <h3 class="label_1_semibold primary_text_color">Payment Method</h3>
           <p class="label_2_regular secondary_text_color mt-md">
             Manage your saved payment methods and billing details securely.
