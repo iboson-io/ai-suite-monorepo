@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="fixed left-0 top-0 h-screen flex flex-col bg_secondary_color transition-all duration-300 z-10 border primary_border_color "
+    class="fixed left-0 top-0 h-screen flex flex-col overflow-visible bg_secondary_color transition-all duration-300 z-10 border primary_border_color"
     :class="isCollapsed ? 'w-20 px-3xl' : 'w-64 pl-4xl pr-xs'" @click="handleSidebarContainerClick">
     <div
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -8,47 +8,54 @@
     >
       <div class="shrink-0">
       <!-- Logo + Toggle -->
-      <div class="relative group flex items-center pt-2xl lg:pt-6xl justify-center" 
-        :class="isCollapsed ? 'justify-center':'justify-between' "
-        @mouseenter="hoveredItem = 'logo'" 
+      <div
+        class="relative group flex w-full items-center pt-2xl lg:pt-6xl"
+        :class="isCollapsed ? 'justify-center' : ''"
+        @mouseenter="hoveredItem = 'logo'"
         @mouseleave="hoveredItem = null"
-        :ref="el => { if (el) menuItemRefs['logo'] = el }">
-        <div class="flex items-center gap-lg">
-          <div
-            v-if="sidebarConfig.brandIcon"
-            @click="handleToggleCollapse"
-            class="relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center"
-          >
-            <img :src="sidebarConfig.brandIcon" alt="" class="h-7 w-auto" />
-          </div>
-          <div
-            v-else
-            @click="handleToggleCollapse"
-            @mouseenter="() => { if (isCollapsed) hoverLogo = true }"
-            @mouseleave="() => { if (isCollapsed) hoverLogo = false }"
-            class="relative h-7 w-7 rounded-full cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200"
-            :class="isCollapsed ? (hoverLogo ? 'opacity-100 bg-transparent' : 'bg-gradient-to-r from-pink-500 to-purple-600') : 'bg-gradient-to-r from-pink-500 to-purple-600'"
-          >
-            <img v-if="isCollapsed" :src="SidebarIcon" alt=""
-              class="h-4 w-4 transition-opacity duration-200 relative z-10"
-              :class="hoverLogo ? 'opacity-100' : 'opacity-0'" />
+        :ref="el => { if (el) menuItemRefs['logo'] = el }"
+      >
+        <div
+          class="flex cursor-pointer items-center"
+          :class="isCollapsed ? '' : 'gap-lg h-8'"
+          @click="handleLogoClick"
+          @mouseenter="hoverLogo = true"
+          @mouseleave="hoverLogo = false"
+        >
+          <div class="relative flex h-7 w-7 shrink-0 items-center justify-center transition-all duration-200">
+            <img
+              v-if="hoverLogo"
+              :src="BackHomeIcon"
+              alt=""
+              class="h-6 w-6"
+            />
+            <img
+              v-else-if="sidebarConfig.brandIcon"
+              :src="sidebarConfig.brandIcon"
+              alt=""
+              class="h-7 w-7 object-contain"
+            />
+            <div
+              v-else
+              class="h-7 w-7 rounded-full bg-gradient-to-r from-pink-500 to-purple-600"
+            />
           </div>
 
-          <span v-if="!isCollapsed" class="heading_h5_semibold gradient_text_color">
-            {{ sidebarConfig.brandName || 'Genius AI' }}
+          <span
+            v-if="!isCollapsed"
+            class="transition-colors duration-200"
+            :class="hoverLogo ? 'secondary_text_color label_1_semibold' : 'gradient_text_color heading_h6_semibold'"
+          >
+            {{ hoverLogo ? 'Back to home' : (sidebarConfig.brandName || 'Genius AI') }}
           </span>
         </div>
-
-        <button v-if="!isCollapsed" @click="handleToggleCollapse">
-          <img :src="SidebarIcon" alt="" />
-        </button>
 
         <Teleport to="body">
           <div v-if="isCollapsed && hoveredItem === 'logo'" :style="getTooltipStyle('logo')"
             class="pointer-events-none fixed whitespace-nowrap z-[1000] transition-all duration-200 ">
             <div
               class="relative bg-black-400 primary_2_text_color label_2_medium rounded-lg px-xl py-md outline-none ring-0 border_none mt-11xl">
-              Open sidebar
+              Home
               <!-- Speech Bubble Tail -->
               <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full border_none ">
                 <div class="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-transparent border-r-black-400">
@@ -314,6 +321,20 @@
       :type="toastType"
       @close="toastOpen = false"
     />
+
+    <button
+      type="button"
+      class="absolute right-0 top-[1.75rem] z-20 flex h-6 w-6 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border primary_border_color bg_secondary_color shadow-sm lg:top-[5rem]"
+      :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      @click="handleToggleCollapse"
+    >
+      <img
+        :src="SidebarIcon"
+        alt=""
+        class="h-4 w-4 transition-transform duration-200"
+        :class="isCollapsed ? 'rotate-180' : ''"
+      />
+    </button>
   </aside>
 
 
@@ -342,6 +363,7 @@
   import PlusIcon from "../../assets/images/PlusIcon.svg";
   import ImageEditIcon from "../../assets/images/ImageEditIcon.svg";
   import TrashIcon from "../../assets/images/TrashIcon.svg";
+  import BackHomeIcon from "../../assets/images/BackHomeIcon.svg";
 
   const sidebarConfig = getSidebarConfig();
   const menuItems = getSidebarMenuItems();
@@ -591,6 +613,26 @@
 
     showNotifications.value = false;
     changeTab(tab);
+  };
+
+  const handleLogoClick = () => {
+    if (showUserAccount.value) {
+      showUserAccount.value = false;
+    }
+    if (showNotifications.value) {
+      showNotifications.value = false;
+    }
+    closeChatSessionMenu();
+
+    const homeRoute = sidebarConfig.chatRoute || '/chat';
+    if (router.currentRoute.value.path !== homeRoute) {
+      changeTab('chat');
+      router.push(homeRoute);
+    }
+
+    if (props.activeSessionId != null && props.activeSessionId !== '') {
+      emit('loadSession', props.activeSessionId);
+    }
   };
 
   const handleToggleCollapse = () => {
