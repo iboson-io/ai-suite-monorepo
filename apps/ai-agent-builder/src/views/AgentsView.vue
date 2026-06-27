@@ -469,6 +469,7 @@ async function handleCreateAgentSubmit({
   accessToken,
   dbConfig,
   selectedComposioApps,
+  selectedMergeApps,
 }) {
   if (agentCreateSubmitting.value) return
 
@@ -488,6 +489,7 @@ async function handleCreateAgentSubmit({
       accessToken,
       dbConfig,
       selectedComposioApps,
+      selectedMergeApps,
     })
 
     if (!created?.id) {
