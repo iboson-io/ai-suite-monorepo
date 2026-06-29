@@ -20,6 +20,7 @@ export function resolveKnowledgeType({
   if (normalizedTab === 'documents' || normalizedTab === 'doc') return 'doc'
   if (normalizedTab === 'db') return 'db'
   if (normalizedTab === 'composio') return 'composio'
+  if (normalizedTab === 'mcp') return 'mcp'
   if (normalizedTab === 'api') return 'api'
 
   if (selectedComposioApps.length > 0) return 'composio'
@@ -52,6 +53,7 @@ export function buildCreateAgentPayload({
   accessToken = '',
   dbConfig = null,
   selectedComposioApps = [],
+  selectedMergeApps = [],
 }) {
   const knowledgeType = resolveKnowledgeType({
     knowledgeTab,
@@ -142,6 +144,18 @@ export function buildCreateAgentPayload({
       }
       break
 
+    case 'mcp':
+      agentData.agent_type = 'mcp'
+      agentData.auth_type = 'mcp_config'
+      agentData.auth_config = {
+        transport: 'streamable_http',
+        server_name: 'merge',
+      }
+      if (selectedMergeApps.length > 0) {
+        agentData.connected_apps = [...selectedMergeApps]
+      }
+      break
+
     default:
       break
   }
@@ -161,6 +175,7 @@ export async function createSingleAgent({
   accessToken = '',
   dbConfig = null,
   selectedComposioApps = [],
+  selectedMergeApps = [],
 } = {}) {
   const nameValidation = validateAgentName(name)
   if (!nameValidation.valid) {
@@ -179,6 +194,7 @@ export async function createSingleAgent({
     accessToken,
     dbConfig,
     selectedComposioApps,
+    selectedMergeApps,
   })
 
   const response = await apiService.createAgentWithFiles(

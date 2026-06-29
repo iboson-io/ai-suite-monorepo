@@ -25,4 +25,5 @@ export const KNOWLEDGE_TYPE_LABELS = {
   documents: 'Document Agent',
   db: 'DB Agent',
   composio: 'Composio Agent',
+  mcp: 'Merge Agent',
 }

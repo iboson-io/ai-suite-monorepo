@@ -372,6 +372,15 @@
           @store-form-data-before-redirect="$emit('store-form-data-before-redirect')"
         />
       </template>
+
+      <!-- Merge MCP -->
+      <template v-else-if="effectiveActiveTab === 'mcp'">
+        <MergeAppsList
+          :selected-apps="selectedMergeApps"
+          :agent-id="agentId"
+          @update:selected-apps="$emit('update:selected-merge-apps', $event)"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -389,6 +398,7 @@ import {
 } from '../../../services/agents/knowledgeValidation.js'
 import DbAgentsConfiguration from './DbAgentsConfiguration.vue'
 import ComposioAppsList from './ComposioAppsList.vue'
+import MergeAppsList from './MergeAppsList.vue'
 import KnowledgeUploadedFileCard from './KnowledgeUploadedFileCard.vue'
 import { useSimulatedFileUpload } from './useSimulatedFileUpload.js'
 
@@ -418,6 +428,8 @@ const props = defineProps({
   showDbPassword: { type: Boolean, default: false },
   dbValidationErrors: { type: Object, default: () => ({}) },
   selectedComposioApps: { type: Array, default: () => [] },
+  selectedMergeApps: { type: Array, default: () => [] },
+  agentId: { type: String, default: null },
 })
 
 const emit = defineEmits([
@@ -434,6 +446,7 @@ const emit = defineEmits([
   'toggle-db-password',
   'validate-db-field',
   'update:selected-composio-apps',
+  'update:selected-merge-apps',
   'store-form-data-before-redirect',
   'delete-existing-file',
 ])
@@ -453,6 +466,7 @@ const VALIDATION_FIELD_TO_TAB = {
   documents: 'documents',
   db: 'db',
   composio: 'composio',
+  mcp: 'mcp',
 }
 
 const apiSchemaSections = [
@@ -644,11 +658,25 @@ const ComposioIcon = {
   },
 }
 
+const MergeIcon = {
+  render() {
+    return h('svg', { class: 'h-full w-full', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+      h('path', {
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'stroke-width': '2',
+        d: 'M13 10V3L4 14h7v7l9-11h-7z',
+      }),
+    ])
+  },
+}
+
 const sidebarTabs = [
   { id: 'documents', label: 'Documents', icon: DocumentsIcon },
   { id: 'api', label: 'API Schema', icon: ApiSchemaIcon },
   { id: 'db', label: 'Data Base', icon: DatabaseIcon },
   { id: 'composio', label: 'Composio', icon: ComposioIcon },
+  { id: 'mcp', label: 'Merge', icon: MergeIcon },
 ]
 
 function triggerDocumentUpload() {

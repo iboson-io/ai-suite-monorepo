@@ -123,6 +123,7 @@ export function validateCreateKnowledgeStep({
   baseUrl = '',
   dbConfig = null,
   selectedComposioApps = [],
+  selectedMergeApps = [],
   existingSchemaCount = 0,
   existingDocumentCount = 0,
 }) {
@@ -176,6 +177,17 @@ export function validateCreateKnowledgeStep({
           valid: false,
           message: 'Select at least one Composio app.',
           field: 'composio',
+        }
+      }
+      return { valid: true, message: '' }
+    }
+
+    case 'mcp': {
+      if (!selectedMergeApps.length) {
+        return {
+          valid: false,
+          message: 'Select at least one Merge app to attach to this agent.',
+          field: 'mcp',
         }
       }
       return { valid: true, message: '' }

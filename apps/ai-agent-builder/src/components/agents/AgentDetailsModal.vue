@@ -13,7 +13,7 @@
         class="flex w-auto flex-col overflow-hidden rounded-2xl border primary_border_color bg_secondary_color shadow-2xl"
         :class="
           isCreateMode && createStep === 2
-            ? 'h-[560px] max-h-[560px]'
+            ? 'h-[650px] max-h-[650px]'
             : 'max-h-[min(90vh,720px)] '
         "
         @click.stop
@@ -80,6 +80,7 @@
             :show-db-password="showDbPassword"
             :db-validation-errors="dbValidationErrors"
             :selected-composio-apps="selectedComposioApps"
+            :selected-merge-apps="selectedMergeApps"
             @update:active-tab="switchKnowledgeTab"
             @add-documents="addDocumentFiles"
             @add-schemas="addSchemaFiles"
@@ -93,6 +94,7 @@
             @toggle-db-password="showDbPassword = !showDbPassword"
             @validate-db-field="validateDbField"
             @update:selected-composio-apps="selectedComposioApps = $event"
+            @update:selected-merge-apps="selectedMergeApps = $event"
             @store-form-data-before-redirect="storeFormDataBeforeRedirect"
           />
 
@@ -525,6 +527,7 @@ const dbConfig = ref(emptyDbConfig())
 const showDbPassword = ref(false)
 const dbValidationErrors = ref({})
 const selectedComposioApps = ref([])
+const selectedMergeApps = ref([])
 
 const isViewMode = computed(() => props.mode === 'view')
 const isCreateMode = computed(() => props.mode === 'create')
@@ -681,6 +684,7 @@ function storeFormDataBeforeRedirect() {
     accessToken: accessToken.value,
     dbConfig: { ...dbConfig.value },
     selectedComposioApps: [...selectedComposioApps.value],
+    selectedMergeApps: [...selectedMergeApps.value],
     timestamp: Date.now(),
   }
   sessionStorage.setItem(CREATE_FORM_STORAGE_KEY, JSON.stringify(formData))
@@ -708,6 +712,7 @@ function restoreFormDataFromStorage() {
     accessToken.value = formData.accessToken ?? ''
     dbConfig.value = formData.dbConfig ?? emptyDbConfig()
     selectedComposioApps.value = formData.selectedComposioApps ?? []
+    selectedMergeApps.value = formData.selectedMergeApps ?? []
     schemaFiles.value = []
     documentFiles.value = []
     sessionStorage.removeItem(CREATE_FORM_STORAGE_KEY)
@@ -799,6 +804,7 @@ function resetCreateForm() {
   showDbPassword.value = false
   dbValidationErrors.value = {}
   selectedComposioApps.value = []
+  selectedMergeApps.value = []
   sessionStorage.removeItem(CREATE_FORM_STORAGE_KEY)
 }
 
@@ -840,6 +846,7 @@ function handleCreateSubmit() {
     baseUrl: baseUrl.value,
     dbConfig: dbConfig.value,
     selectedComposioApps: selectedComposioApps.value,
+    selectedMergeApps: selectedMergeApps.value,
   })
 
   if (!knowledgeResult.valid) {
@@ -865,6 +872,7 @@ function handleCreateSubmit() {
     accessToken: accessToken.value.trim(),
     dbConfig: { ...dbConfig.value },
     selectedComposioApps: [...selectedComposioApps.value],
+    selectedMergeApps: [...selectedMergeApps.value],
   })
 }
 
@@ -895,6 +903,12 @@ watch(dbConfig, () => {
 
 watch(selectedComposioApps, () => {
   if (knowledgeValidationField.value === 'composio') {
+    clearKnowledgeValidation()
+  }
+}, { deep: true })
+
+watch(selectedMergeApps, () => {
+  if (knowledgeValidationField.value === 'mcp') {
     clearKnowledgeValidation()
   }
 }, { deep: true })

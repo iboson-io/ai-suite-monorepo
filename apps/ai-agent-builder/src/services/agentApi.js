@@ -988,6 +988,17 @@ class ApiService {
           formData.append('auth_config', JSON.stringify(agentData.auth_config))
         }
         break
+
+      case 'mcp':
+        formData.set('auth_type', 'mcp_config')
+        formData.append('auth_config', JSON.stringify({
+          transport: 'streamable_http',
+          server_name: 'merge'
+        }))
+        if (agentData.connected_apps && Array.isArray(agentData.connected_apps) && agentData.connected_apps.length > 0) {
+          formData.append('connected_apps', JSON.stringify(agentData.connected_apps))
+        }
+        break
     }
 
     const url = `${this.agentBaseURL}${API_ENDPOINTS.CREATE_AGENT}`
@@ -2003,6 +2014,45 @@ class ApiService {
   async disconnectConnectedApp(agentId, connectedAccountId) {
     return this.requestAgent(`/api/agents/${agentId}/connected-apps/${connectedAccountId}`, {
       method: 'DELETE'
+    })
+  }
+
+  async getMergeApps(page = 1, limit = 100, search = null) {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+    if (search && search.trim()) {
+      queryParams.append('search', search.trim())
+    }
+    return this.requestAgent(`${API_ENDPOINTS.MERGE_APPS}?${queryParams}`, {
+      method: 'GET'
+    })
+  }
+
+  async getMergeConnectedApps() {
+    return this.requestAgent(API_ENDPOINTS.MERGE_CONNECTED_APPS, {
+      method: 'GET'
+    })
+  }
+
+  async getAgentMergeApps(agentId) {
+    return this.requestAgent(`${API_ENDPOINTS.AGENT_MERGE_APPS}/${agentId}/merge-apps`, {
+      method: 'GET'
+    })
+  }
+
+  async generateMergeLinkToken(mergeAppId) {
+    return this.requestAgent(`${API_ENDPOINTS.MERGE_APPS}/${mergeAppId}/link-token`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    })
+  }
+
+  async mergeLinkCallback(mergeAppId) {
+    return this.requestAgent(`${API_ENDPOINTS.MERGE_APPS}/${mergeAppId}/callback`, {
+      method: 'POST',
+      body: JSON.stringify({})
     })
   }
 
