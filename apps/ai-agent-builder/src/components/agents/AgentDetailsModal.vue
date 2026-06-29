@@ -13,7 +13,7 @@
         class="flex w-auto flex-col overflow-hidden rounded-2xl border primary_border_color bg_secondary_color shadow-2xl"
         :class="
           isCreateMode && createStep === 2
-            ? 'h-[560px] max-h-[560px]'
+            ? 'h-[650px] max-h-[650px]'
             : 'max-h-[min(90vh,720px)] '
         "
         @click.stop

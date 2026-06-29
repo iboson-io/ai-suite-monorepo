@@ -80,7 +80,7 @@
           <div
             v-if="filteredApps.length"
             :key="listTransitionKey"
-            class="relative grid grid-cols-2 gap-md"
+            class="relative grid grid-cols-3 gap-md"
           >
             <div
               v-if="pageLoading"
