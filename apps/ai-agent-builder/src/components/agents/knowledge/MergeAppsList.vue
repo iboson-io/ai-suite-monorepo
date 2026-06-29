@@ -16,9 +16,9 @@
 
     <template v-else>
       <!-- Search bar -->
-      <div class="mb-4xl flex items-center justify-between gap-4xl">
+      <div class="mb-4xl flex flex-col items-stretch gap-y-3">
         <p class="label_2_semibold primary_text_color shrink-0">Connect tools to enable actions</p>
-        <div class="relative max-w-[280px] w-full">
+        <div class="relative w-full">
           <img
             :src="SearchIcon"
             alt=""
@@ -53,7 +53,7 @@
           <div
             v-if="apps.length"
             :key="listTransitionKey"
-            class="relative grid grid-cols-3 gap-md"
+            class="relative grid grid-cols-2 gap-md"
           >
             <!-- Page loading overlay -->
             <div
@@ -65,12 +65,12 @@
 
             <!-- App card -->
             <div
-              v-for="app in apps"
+              v-for="app in sortedApps"
               :key="app.id"
-              class="flex flex-col items-start rounded-xl border p-4xl transition-all duration-200"
+              class="flex flex-col items-start rounded-xl p-4xl transition-all duration-200"
               :class="isSelected(app.id)
-                ? 'border-info-500 bg-info-50 shadow-sm'
-                : 'primary_border_color bg-white'"
+                ? 'selected_platform_border bg-white shadow-sm'
+                : 'border primary_border_color bg-white'"
             >
               <!-- Logo row + action chip (top-right) -->
               <div class="mb-md flex w-full items-start justify-between gap-sm">
@@ -132,7 +132,7 @@
               <div class="mt-md w-full">
                 <!-- Connected badge -->
                 <template v-if="isConnected(app.slug)">
-                  <span class="caption_1_regular rounded-full bg-success-50 px-md py-xs text-success-700">
+                  <span class="label_3_regular rounded-full bg-success-50 px-md py-xs text-success-700">
                     ✓ Connected
                   </span>
                 </template>
@@ -178,7 +178,8 @@
       <!-- Pagination -->
       <div
         v-if="pagination && pagination.total_pages > 1"
-        class="mt-4xl flex items-center justify-between gap-md pt-4xl pb-2 label_2_regular"
+        class="flex items-center justify-between gap-md label_2_regular"
+        style="position: sticky; bottom: -24px; background-color: #ffffff; z-index: 10; padding: 24px 0px; border-top: 1px solid #F3F4F5;"
       >
         <p class="caption_1_regular secondary_text_color whitespace-nowrap">
           Page {{ pagination.current_page }} / {{ pagination.total_pages }}
@@ -199,7 +200,7 @@
             </svg>
           </button>
 
-          <div class="flex items-center gap-xs overflow-x-auto">
+          <div class="flex items-center gap-xs">
             <template v-for="(page, index) in visiblePages" :key="`${page}-${index}`">
               <span v-if="page === 'ellipsis'" class="caption_1_regular tertiary_text_color px-xs">...</span>
               <button
@@ -285,6 +286,16 @@ function loadMergeSDK() {
 const listTransitionKey = computed(
   () => `${pagination.value?.current_page ?? 1}-${searchQuery.value.trim()}`
 )
+
+const sortedApps = computed(() => {
+  return [...apps.value].sort((a, b) => {
+    const aConn = isConnected(a.slug)
+    const bConn = isConnected(b.slug)
+    if (aConn && !bConn) return -1
+    if (!aConn && bConn) return 1
+    return 0
+  })
+})
 
 const visiblePages = computed(() => {
   if (!pagination.value) return []
@@ -516,5 +527,9 @@ onMounted(async () => {
 .apps-fade-enter-from,
 .apps-fade-leave-to {
   opacity: 0;
+}
+
+:deep(.selected_platform_border::before) {
+  border-radius: 0.75rem !important;
 }
 </style>

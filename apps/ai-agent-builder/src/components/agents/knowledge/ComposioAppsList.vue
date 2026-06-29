@@ -26,7 +26,7 @@
               class="h-4 w-4 rounded-full object-cover"
               @error="onAppLogoError"
             />
-            {{ app.name || app.app_name || 'App' }}
+            {{ app.name || app.app_name || app.slug_name || 'App' }}
             <button
               type="button"
               class="text-secondary_text_color hover:text-error-600"
@@ -39,14 +39,11 @@
         </div>
       </div>
 
-      <div
-        class="mb-4xl flex"
-        :class="editMode ? 'flex-col items-stretch gap-y-3' : 'items-center justify-between gap-4xl'"
-      >
+      <div class="mb-4xl flex flex-col items-stretch gap-y-3">
         <p class="label_2_semibold primary_text_color shrink-0">
           Connect tools to enable actions
         </p>
-        <div class="relative w-full" :class="editMode ? '' : 'max-w-[280px]'">
+        <div class="relative w-full">
           <img
             :src="SearchIcon"
             alt=""
@@ -80,7 +77,7 @@
           <div
             v-if="filteredApps.length"
             :key="listTransitionKey"
-            class="relative grid grid-cols-3 gap-md"
+            class="relative grid grid-cols-2 gap-md"
           >
             <div
               v-if="pageLoading"
@@ -93,10 +90,10 @@
               v-for="app in filteredApps"
               :key="app.id || app.app_name || app.name"
               type="button"
-              class="flex flex-col items-start rounded-xl border p-4xl text-left transition-all duration-200"
+              class="flex flex-col items-start rounded-xl p-4xl text-left transition-all duration-200"
               :class="isAppSelected(app)
-                ? 'border-info-500 bg-info-50 shadow-sm'
-                : 'primary_border_color bg-white hover:border-info-300 hover:bg-gray-25'"
+                ? 'selected_platform_border bg-white shadow-sm'
+                : 'border primary_border_color bg-white hover:border-info-300 hover:bg-gray-25'"
               :disabled="pageLoading"
               @click.stop="toggleAppSelection(app)"
             >
@@ -113,7 +110,7 @@
               </div>
 
               <span class="label_2_semibold primary_text_color line-clamp-1">
-                {{ app.name || app.app_name || 'Unnamed App' }}
+                {{ app.name || app.app_name || app.slug_name || 'Unnamed App' }}
               </span>
               <span class="label_2_regular tertiary_text_color mt-xs line-clamp-2">
                 {{ getAppDescription(app) }}
@@ -136,9 +133,10 @@
 
       <div
         v-if="pagination && pagination.total_pages > 1"
-        class="mt-4xl flex items-center justify-between gap-md  pt-4xl pb-2 label_2_regular"
+        class="flex items-center justify-between gap-md label_2_regular"
+        style="position: sticky; bottom: -24px; background-color: #ffffff; z-index: 10; padding: 24px 0px; border-top: 1px solid #F3F4F5;"
       >
-        <p class="caption_1_regular secondary_text_color whitespace-nowrap">
+        <p class="label_1_regular secondary_text_color whitespace-nowrap">
           Page {{ pagination.current_page }} / {{ pagination.total_pages }}
           <span v-if="pagination.total_count" class="tertiary_text_color">
             ({{ pagination.total_count }})
@@ -161,7 +159,7 @@
             </svg>
           </button>
 
-          <div class="flex items-center gap-xs overflow-x-auto">
+          <div class="flex items-center gap-xs">
             <template v-for="(page, index) in visiblePages" :key="`${page}-${index}`">
               <span
                 v-if="page === 'ellipsis'"
@@ -517,5 +515,9 @@ onMounted(() => {
 .apps-fade-enter-from,
 .apps-fade-leave-to {
   opacity: 0;
+}
+
+:deep(.selected_platform_border::before) {
+  border-radius: 0.75rem !important;
 }
 </style>
