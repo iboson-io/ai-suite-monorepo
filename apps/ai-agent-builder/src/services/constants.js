@@ -92,6 +92,11 @@ export const API_ENDPOINTS = {
   // Support endpoints
   SUBMIT_SUPPORT_TICKET: '/api/support/tickets',
 
+  // Merge.dev endpoints
+  MERGE_APPS: '/api/merge-apps',
+  MERGE_CONNECTED_APPS: '/api/merge-apps/connected-apps',
+  AGENT_MERGE_APPS: '/api/agents',
+
   // OpenAI Realtime API endpoints
   CREATE_REALTIME_SESSION: '/session',
   REALTIME_WEBSOCKET: '/realtime',

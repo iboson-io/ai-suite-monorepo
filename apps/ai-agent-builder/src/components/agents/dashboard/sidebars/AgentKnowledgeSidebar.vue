@@ -22,6 +22,8 @@
         :show-db-password="showDbPassword"
         :db-validation-errors="dbValidationErrors"
         :selected-composio-apps="selectedComposioApps"
+        :selected-merge-apps="selectedMergeApps"
+        :agent-id="agent?.id ? String(agent.id) : null"
         @add-documents="addDocumentFiles"
         @add-schemas="addSchemaFiles"
         @remove-document="removeDocumentFile"
@@ -34,6 +36,7 @@
         @toggle-db-password="showDbPassword = !showDbPassword"
         @validate-db-field="validateDbField"
         @update:selected-composio-apps="selectedComposioApps = $event"
+        @update:selected-merge-apps="selectedMergeApps = $event"
         @delete-existing-file="handleDeleteFile"
       />
     </div>
@@ -87,6 +90,7 @@ const dbConfig = ref({
 const showDbPassword = ref(false)
 const dbValidationErrors = ref({})
 const selectedComposioApps = ref([])
+const selectedMergeApps = ref([])
 const validationField = ref('')
 const validationError = ref('')
 const saveError = ref('')
@@ -106,6 +110,8 @@ const knowledgeTooltipText = computed(() => {
       return 'Configure database connection settings for the agent.'
     case 'composio':
       return 'Select and configure third-party application integrations via Composio.'
+    case 'mcp':
+      return 'Select and configure third-party application integrations via Merge.'
     default:
       return 'Manage the knowledge base and data sources for this agent.'
   }
@@ -139,6 +145,7 @@ function resetFromAgent(agent) {
     password: agent?.dbConfig?.password ?? '',
   }
   selectedComposioApps.value = [...(agent?.selectedComposioApps ?? [])]
+  selectedMergeApps.value = [...(agent?.selectedMergeApps ?? agent?.connectedApps ?? [])]
   validationField.value = ''
   validationError.value = ''
   saveError.value = ''
@@ -212,6 +219,7 @@ async function handleSave() {
     accessToken: accessToken.value,
     dbConfig: dbConfig.value,
     selectedComposioApps: selectedComposioApps.value,
+    selectedMergeApps: selectedMergeApps.value,
     existingSchemaCount: existingSchemaFiles.value.length,
     existingDocumentCount: existingDocumentFiles.value.length,
   })
@@ -237,6 +245,7 @@ async function handleSave() {
       accessToken: accessToken.value,
       dbConfig: dbConfig.value,
       selectedComposioApps: selectedComposioApps.value,
+      selectedMergeApps: selectedMergeApps.value,
     })
 
     schemaFiles.value = []

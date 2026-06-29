@@ -68,6 +68,10 @@ export function resolveAgentKnowledgeType(raw) {
     return 'composio'
   }
 
+  if (agentTypeValue === 'mcp' || authType === 'mcp_config') {
+    return 'mcp'
+  }
+
   switch (authType) {
     case 'bearer_token':
       return 'api'
@@ -88,6 +92,7 @@ export function knowledgeTabFromType(type) {
   if (normalized === 'documents' || normalized === 'doc') return 'documents'
   if (normalized === 'db') return 'db'
   if (normalized === 'composio') return 'composio'
+  if (normalized === 'mcp') return 'mcp'
   return 'api'
 }
 
@@ -135,6 +140,9 @@ export function mapAgentDetails(raw) {
       : Array.isArray(raw.connected_apps)
         ? raw.connected_apps
         : [],
+    selectedMergeApps: (raw.agent_type === 'mcp' || raw.auth_type === 'mcp_config')
+      ? (Array.isArray(raw.connected_apps) ? raw.connected_apps : [])
+      : [],
   }
 }
 

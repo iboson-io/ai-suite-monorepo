@@ -49,6 +49,7 @@ export async function updateAgentKnowledge(agentId, {
   accessToken = '',
   dbConfig = null,
   selectedComposioApps = [],
+  selectedMergeApps = [],
 } = {}) {
   const { agentData, knowledgeType } = buildCreateAgentPayload({
     name: 'placeholder',
@@ -59,6 +60,7 @@ export async function updateAgentKnowledge(agentId, {
     accessToken,
     dbConfig,
     selectedComposioApps,
+    selectedMergeApps,
   })
 
   delete agentData.name
