@@ -155,7 +155,7 @@
         <button
           type="submit"
           class="primary_button w-full"
-          :disabled="isLoading || !isLoginButtonEnabled"
+          :disabled="isLoading"
         >
           {{ isLoading ? 'Signing In...' : 'Sign In' }}
         </button>
@@ -204,7 +204,7 @@
         <button
           type="submit"
           class="primary_button w-full"
-          :disabled="isLoading || !isOtpButtonEnabled"
+          :disabled="isLoading"
         >
           {{ isLoading ? 'Verifying OTP...' : 'Verify OTP' }}
         </button>
@@ -352,7 +352,9 @@ function resetOtpView() {
 }
 
 async function handleLoginSubmit() {
-  if (!validateEmail() || !validatePassword()) return
+  const isEmailValid = validateEmail()
+  const isPasswordValid = validatePassword()
+  if (!isEmailValid || !isPasswordValid) return
 
   isLoading.value = true
   error.value = ''
@@ -382,7 +384,9 @@ async function handleLoginSubmit() {
 }
 
 async function handleOtpSubmit() {
-  if (!validateEmail() || !validateOtp()) return
+  const isEmailValid = validateEmail()
+  const isOtpValid = validateOtp()
+  if (!isEmailValid || !isOtpValid) return
 
   isLoading.value = true
   error.value = ''
