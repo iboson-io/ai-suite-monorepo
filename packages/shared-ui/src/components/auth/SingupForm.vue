@@ -131,7 +131,7 @@
             <input
               type="checkbox"
               v-model="form.terms"
-              class="accent-gray-25 mt-xxs primary_border_color scale-125 checked:bg-gray-25 checked:primary_border_color"
+              class="cursor-pointer accent-gray-25 mt-xxs primary_border_color scale-125 checked:bg-gray-25 checked:primary_border_color"
             />
             <span class="secondary_text_color">
               I agree to the
@@ -247,6 +247,30 @@ onMounted(() => {
 watch(() => form.password, (newVal) => {
   if (showPassword.value) {
     actualPassword.value = newVal
+  }
+})
+
+watch(() => form.name, (newVal) => {
+  if (errors.name && newVal.trim() !== "") {
+    errors.name = ""
+  }
+})
+
+watch(() => form.email, (newVal) => {
+  if (errors.email && newVal.trim() !== "" && emailRegex.test(newVal.trim())) {
+    errors.email = ""
+  }
+})
+
+watch(() => form.password, (newVal) => {
+  if (errors.password && newVal !== "" && passwordRegex.test(newVal)) {
+    errors.password = ""
+  }
+})
+
+watch(() => form.terms, (newVal) => {
+  if (errors.terms && newVal) {
+    errors.terms = ""
   }
 })
 
@@ -389,7 +413,7 @@ const handleSubmit = async () => {
     isValid = false
   } else if (!passwordRegex.test(form.password)) {
     errors.password =
-      "Oops! The password you entered is incorrect."
+      "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     isValid = false
   }
 
