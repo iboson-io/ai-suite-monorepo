@@ -453,7 +453,7 @@
   const chatSessionForOpenMenu = computed(() => {
     const id = openChatSessionMenuId.value;
     if (id == null) return null;
-    return chatSessions.value.find((s) => s.id === id) ?? null;
+    return displayChatSessions.value.find((s) => s.id === id) ?? null;
   });
 
   const setChatSessionMenuTriggerRef = (sessionId, el) => {
@@ -639,7 +639,9 @@
     }
 
     // Navigate to chat and emit newChat event
-    router.push(sidebarConfig.chatRoute || '/chat');
+    if (!props.isCustomChats) {
+      router.push(sidebarConfig.chatRoute || '/chat');
+    }
     emit('newChat');
   };
 
@@ -815,7 +817,9 @@
     closeChatSessionMenu();
     console.log('Session clicked:', sessionId);
     // Navigate to chat with session ID
-    router.push(sidebarConfig.chatRoute || '/chat');
+    if (!props.isCustomChats) {
+      router.push(sidebarConfig.chatRoute || '/chat');
+    }
     // Emit event to load the specific session
     emit('loadSession', sessionId);
   };
