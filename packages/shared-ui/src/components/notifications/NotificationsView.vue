@@ -3,14 +3,14 @@
     <div
       v-if="open"
       class="fixed inset-0 z-[200] bg_overlay lg:inset-auto lg:top-0 lg:bottom-0 lg:right-0"
-      :class="isCollapsed ? 'lg:left-16' : 'lg:left-64'"
+      :class="isCollapsed ? 'lg:left-20' : 'lg:left-64'"
       aria-hidden="true"
       @click="$emit('close')"
     />
 
     <div
       v-if="open"
-      class="fixed z-[210] flex flex-col bg_secondary_color py-6xl px-5xl shadow-xl max-lg:top-0 max-lg:left-0 max-lg:right-0 max-lg:bottom-0 max-lg:w-[90%] max-lg:m-auto max-lg:max-h-[calc(95vh-3rem)] max-lg:rounded-3xl lg:inset-auto lg:top-0 lg:bottom-0 lg:h-auto lg:w-[40%] lg:max-h-screen lg:rounded-none"
+      class="fixed z-[210] flex flex-col bg_secondary_color py-6xl px-5xl shadow-xl max-lg:top-0 max-lg:left-0 max-lg:right-0 max-lg:bottom-0 max-lg:w-[90%] max-lg:m-auto max-lg:max-h-[calc(95vh-3rem)] max-lg:rounded-3xl lg:inset-auto lg:top-0 lg:bottom-0 lg:h-auto lg:w-[30%] lg:max-h-screen lg:rounded-none"
       :class="isCollapsed ? 'lg:left-20' : 'lg:left-[16em]'"
       role="dialog"
       aria-modal="true"

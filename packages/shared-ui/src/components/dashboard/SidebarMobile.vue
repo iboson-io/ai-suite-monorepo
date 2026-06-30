@@ -543,7 +543,7 @@ const syncActiveChatSession = () => {
 
   if (exists) {
     handleSessionClick(props.activeSessionId);
-  } else if (chatSessions.value.length > 0) {
+  } else if (!hasSelected && chatSessions.value.length > 0) {
     handleSessionClick(chatSessions.value[0].id);
   }
 };

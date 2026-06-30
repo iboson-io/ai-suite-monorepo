@@ -856,7 +856,7 @@
 
     if (exists) {
       handleSessionClick(props.activeSessionId);
-    } else if (displayChatSessions.value.length > 0) {
+    } else if (!hasSelected && displayChatSessions.value.length > 0) {
       handleSessionClick(displayChatSessions.value[0].id);
     }
   };

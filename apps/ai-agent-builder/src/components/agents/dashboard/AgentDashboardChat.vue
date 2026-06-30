@@ -45,14 +45,14 @@
 
               <div class="w-full max-w-3xl mx-auto mt-5">
                 <p
-                  v-if="isReconnecting && !isConnected"
+                  v-if="isReconnecting || (chatId && !isConnected)"
                   class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
                 >
                   {{ connectingLabel }}<span class="loading-dots" />
                 </p>
 
                 <PromptBox
-                  :is-ai-generating="isLoading || isReconnecting"
+                  :is-ai-generating="isLoading || isReconnecting || (chatId && !isConnected)"
                   :initial-product-id="promptProductId"
                   :disable-product-select="true"
                   :hide-product-select="true"
@@ -100,7 +100,7 @@
       >
         <div class="mx-auto max-w-3xl">
           <p
-            v-if="isReconnecting && !isConnected"
+            v-if="isReconnecting || (chatId && !isConnected)"
             class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
           >
             {{ connectingLabel }}<span class="loading-dots" />
@@ -108,7 +108,7 @@
 
 
           <PromptBox
-            :is-ai-generating="isLoading || isReconnecting"
+            :is-ai-generating="isLoading || isReconnecting || (chatId && !isConnected)"
             :initial-product-id="promptProductId"
             :disable-product-select="true"
             :hide-product-select="true"
