@@ -88,7 +88,7 @@ export function getGoogleConnectUrl() {
 }
 
 export async function disconnectGoogle() {
-  throw new Error('Google disconnect is not available yet.')
+  await apiService.request('/api/auth/google', { method: 'DELETE' })
 }
 
 export async function deleteProfilePicture() {
