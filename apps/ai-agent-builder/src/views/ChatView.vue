@@ -76,7 +76,7 @@
       <div
         class="fixed bottom-0 left-0 right-0 z-40 bg_primary_color px-4 transition-all duration-300 ease-in-out md:px-6"
         :class="[
-          isSidebarCollapsed ? 'lg:left-16' : 'lg:left-64'
+          isSidebarCollapsed ? 'lg:left-20' : 'lg:left-64'
         ]"
       >
         <div class="mx-auto w-full max-w-3xl">
