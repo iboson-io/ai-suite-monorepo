@@ -51,6 +51,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { TOKEN_KEY, USER_KEY } from '../../../services/api.js'
 import { USER_API_URL } from '../../../services/constants.js'
+import { apiService } from '../../../services/agentApi.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -64,6 +65,7 @@ const storeAuthData = (token, userData) => {
   if (userData) {
     localStorage.setItem(USER_KEY, JSON.stringify(userData))
   }
+  apiService.setAuthToken(token)
 }
 
 const retryAuth = () => {
