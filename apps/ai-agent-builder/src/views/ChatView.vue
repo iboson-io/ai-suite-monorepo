@@ -471,8 +471,11 @@ async function handleFirstMessage(messageData) {
     await currentWs.value.ensureConnected(agentId, activeChatId)
     currentWs.value.send(messageData.text)
   } catch (error) {
-    messages.value[0].isLoading = false
-    messages.value[0].aiResponse = error?.message || 'Sorry, something went wrong. Please try again.'
+    if (error?.message === 'Connection aborted by new attempt') return
+    if (messages.value[0]) {
+      messages.value[0].isLoading = false
+      messages.value[0].aiResponse = error?.message || 'Sorry, something went wrong. Please try again.'
+    }
     isLoading.value = false
   }
 }
@@ -495,8 +498,11 @@ async function handleFollowUpMessage(messageData) {
     await currentWs.value.ensureConnected(selectedAgentId.value, chatId.value)
     currentWs.value.send(messageData.text)
   } catch (error) {
-    messages.value[nextIndex].isLoading = false
-    messages.value[nextIndex].aiResponse = error?.message || 'Sorry, something went wrong.'
+    if (error?.message === 'Connection aborted by new attempt') return
+    if (messages.value[nextIndex]) {
+      messages.value[nextIndex].isLoading = false
+      messages.value[nextIndex].aiResponse = error?.message || 'Sorry, something went wrong.'
+    }
     isLoading.value = false
   }
 }
@@ -627,11 +633,14 @@ async function handleRegenerate(index) {
     await currentWs.value.ensureConnected(selectedAgentId.value, chatId.value)
     currentWs.value.send(message.text)
   } catch (err) {
+    if (err?.message === 'Connection aborted by new attempt') return
     const lastIndex = messages.value.length - 1
-    messages.value[lastIndex] = {
-      ...messages.value[lastIndex],
-      isLoading: false,
-      aiResponse: err?.message || 'Sorry, something went wrong. Please try again.',
+    if (lastIndex >= 0 && messages.value[lastIndex]) {
+      messages.value[lastIndex] = {
+        ...messages.value[lastIndex],
+        isLoading: false,
+        aiResponse: err?.message || 'Sorry, something went wrong. Please try again.',
+      }
     }
     isLoading.value = false
     await scrollToBottom()
@@ -651,7 +660,8 @@ watch(
       handleNewChat()
       emit('reset-complete')
     }
-  }
+  },
+  { immediate: true }
 )
 
 watch(
