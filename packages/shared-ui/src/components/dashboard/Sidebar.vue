@@ -224,7 +224,7 @@
       <div
         v-if="!hideBottomSection"
         class="sidebar_bottom_section relative bottom-auto shrink-0 pb-md"
-        :class="isCollapsed ? 'w-[2.875em]' : 'w-52'"
+        :class="isCollapsed ? 'w-full' : 'w-52'"
       >
 
           <div class="block h-[1px] w-full bg-info-50 " :class="isCollapsed ? 'hidden' : ''"></div>
@@ -269,9 +269,8 @@
            <div class="block h-[1px] w-full bg-info-50 mt-xl" :class="isCollapsed ? 'hidden' : ''"></div>
 
 
-          <!-- User -->
-          <div class="relative group mt-7xl p-md flex items-center gap-md cursor-pointer rounded-md hover:bg_primary_color"
-            :class="isCollapsed ? 'justify-center' : ''" @click.stop="showUserAccount = true"
+          <div class="relative group mt-7xl flex items-center gap-md cursor-pointer rounded-md hover:bg_primary_color"
+            :class="isCollapsed ? 'justify-center py-md px-0' : 'p-md'" @click.stop="showUserAccount = true"
             @mouseenter="hoveredItem = 'account'" @mouseleave="hoveredItem = null"
             :ref="el => { if (el) menuItemRefs['account'] = el }">
             <img
@@ -385,6 +384,7 @@
     hideBottomSection: Boolean,
     disableDefaultFetch: Boolean,
     showBackToHome: Boolean,
+    isCreatingNewChat: Boolean,
   });
 
   const emit = defineEmits(["changeTab", "collapseChange", "newChat", "loadSession", "sessionDeleted", "renameChat", "deleteChat", "loadMoreChats"]);
@@ -846,6 +846,9 @@
   });
 
   const syncActiveChatSession = () => {
+    if (props.isCreatingNewChat) {
+      return;
+    }
     if (props.activeTab !== 'chat' || displayChatSessions.value.length === 0) return;
 
     const hasSelected = props.activeSessionId != null && props.activeSessionId !== '';

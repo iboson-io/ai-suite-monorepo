@@ -240,6 +240,7 @@ const props = defineProps({
   isOpen: { type: Boolean, default: false },
   activeTab: { type: String, default: "" },
   activeSessionId: [String, Number],
+  isCreatingNewChat: Boolean,
 });
 
 const emit = defineEmits(["changeTab", "close", "newChat", "loadSession", "sessionDeleted"]);
@@ -532,6 +533,9 @@ onMounted(() => {
 });
 
 const syncActiveChatSession = () => {
+  if (props.isCreatingNewChat) {
+    return;
+  }
   if (props.activeTab !== 'chat' || chatSessions.value.length === 0) return;
 
   const hasSelected = props.activeSessionId != null && props.activeSessionId !== '';

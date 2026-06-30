@@ -127,7 +127,7 @@ watch(() => props.resetChat, (newVal) => {
     // Reset the flag after handling
     emit('reset-complete');
   }
-});
+}, { immediate: true });
 
 const handleFirstMessage = async (messageData) => {
   // Prevent multiple submissions while loading

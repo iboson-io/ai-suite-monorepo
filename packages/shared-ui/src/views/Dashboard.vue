@@ -3,8 +3,9 @@
     <Sidebar
       ref="sidebarRef"
       :class="['hidden', hideSidebar ? 'lg:hidden' : 'lg:flex']"
-      :activeTab="activeTab"
-      :activeSessionId="activeSessionId"
+      :active-tab="activeTab"
+      :active-session-id="activeSessionId"
+      :is-creating-new-chat="isCreatingNewChat"
       @changeTab="handleTabChange"
       @collapseChange="isSidebarCollapsed = $event"
       @newChat="handleNewChat"
@@ -15,8 +16,9 @@
     <SidebarMobile
       ref="sidebarMobileRef"
       :is-open="showMobileSidebar"
-      :activeTab="activeTab"
-      :activeSessionId="activeSessionId"
+      :active-tab="activeTab"
+      :active-session-id="activeSessionId"
+      :is-creating-new-chat="isCreatingNewChat"
       @close="showMobileSidebar = false"
       @changeTab="handleTabChange"
       @newChat="handleNewChat"
@@ -111,6 +113,7 @@ const sessionRemovedFromList = ref(null)
 const sidebarRef = ref(null)
 const sidebarMobileRef = ref(null)
 const activeSessionId = ref(null)
+const isCreatingNewChat = ref(false)
 
 const hideSidebar = ref(false)
 
@@ -184,12 +187,17 @@ const handleTabChange = (tab) => {
 }
 
 const handleNewChat = () => {
+  isCreatingNewChat.value = true
   resetChatFlag.value = true
   sessionToLoad.value = null
   activeSessionId.value = null
 }
 
 const handleLoadSession = (sessionId) => {
+  isCreatingNewChat.value = false
+  if (activeTab.value === 'chat' && activeSessionId.value != null && String(activeSessionId.value) === String(sessionId)) {
+    return
+  }
   activeSessionId.value = sessionId
   sessionToLoad.value = sessionId
   if (activeTab.value !== 'chat') {
@@ -199,6 +207,7 @@ const handleLoadSession = (sessionId) => {
 }
 
 const handleNewSessionCreated = (newChatId) => {
+  isCreatingNewChat.value = false
   activeSessionId.value = newChatId
   sidebarRef.value?.refreshChatSessions?.()
   sidebarMobileRef.value?.refreshChatSessions?.()

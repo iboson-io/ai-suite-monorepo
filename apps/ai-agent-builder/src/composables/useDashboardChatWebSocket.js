@@ -11,6 +11,7 @@ export function useDashboardChatWebSocket(mode = 'single') {
   let reconnectTimeout = null
   let activeScopeId = null
   let activeChatId = null
+  let connectionAttemptId = 0
 
   function setOnMessage(handler) {
     onMessageHandler = handler
@@ -117,7 +118,14 @@ export function useDashboardChatWebSocket(mode = 'single') {
 
   async function reconnect(scopeId, chatId) {
     disconnect()
+    connectionAttemptId++
+    const currentAttemptId = connectionAttemptId
+
     await new Promise((resolve) => setTimeout(resolve, 300))
+    if (currentAttemptId !== connectionAttemptId) {
+      return new Promise((_, reject) => reject(new Error('Connection aborted by new attempt')))
+    }
+
     connect(scopeId, chatId)
 
     return new Promise((resolve, reject) => {
@@ -125,6 +133,12 @@ export function useDashboardChatWebSocket(mode = 'single') {
       const startTime = Date.now()
 
       const checkConnection = setInterval(() => {
+        if (currentAttemptId !== connectionAttemptId) {
+          clearInterval(checkConnection)
+          reject(new Error('Connection aborted by new attempt'))
+          return
+        }
+
         if (websocket.value?.readyState === WebSocket.OPEN && isConnected.value) {
           clearInterval(checkConnection)
           resolve()
