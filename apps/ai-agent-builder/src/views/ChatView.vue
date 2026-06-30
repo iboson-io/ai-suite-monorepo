@@ -37,8 +37,14 @@
         </p>
 
         <div class="max-w-3xl mx-auto">
+          <p
+            v-if="isReconnecting || (chatId && !isConnected)"
+            class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
+          >
+            {{ connectingLabel }}<span class="loading-dots" />
+          </p>
           <PromptBox
-            :is-ai-generating="isLoading"
+            :is-ai-generating="isLoading || isReconnecting || (chatId && !isConnected)"
             :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
             placeholder="Ask a question, select an agent, or create a new one"
@@ -80,8 +86,14 @@
         ]"
       >
         <div class="mx-auto w-full max-w-3xl">
+          <p
+            v-if="isReconnecting || (chatId && !isConnected)"
+            class="connecting-status mb-md text-center caption_1_regular secondary_text_color"
+          >
+            {{ connectingLabel }}<span class="loading-dots" />
+          </p>
           <PromptBox
-            :is-ai-generating="isLoading"
+            :is-ai-generating="isLoading || isReconnecting || (chatId && !isConnected)"
             :initial-product-id="selectedAgentId"
             :show-all-products-option="false"
             :disable-product-select="true"
@@ -288,6 +300,12 @@ const singleWs = useDashboardChatWebSocket('single')
 const multiWs = useDashboardChatWebSocket('multi')
 const currentWs = computed(() => isMulti.value ? multiWs : singleWs)
 
+const isConnected = computed(() => currentWs.value.isConnected.value)
+const isReconnecting = computed(() => currentWs.value.isReconnecting.value)
+const connectingLabel = computed(() =>
+  isMulti.value ? 'Connecting to multi-agent system' : 'Connecting to agent'
+)
+
 singleWs.setOnMessage(handleWsMessage)
 multiWs.setOnMessage(handleWsMessage)
 
@@ -456,7 +474,9 @@ async function handleFirstMessage(messageData) {
     }
 
     let activeChatId = chatId.value
+    let isNewChat = false
     if (!activeChatId) {
+      isNewChat = true
       const created = isMulti.value
         ? await apiService.createChat(null, messageData.text.slice(0, 80) || 'New Chat', agentId)
         : await apiService.createChat(agentId, messageData.text.slice(0, 80) || 'New Chat')
@@ -465,11 +485,14 @@ async function handleFirstMessage(messageData) {
         throw new Error('Could not create chat.')
       }
       chatId.value = activeChatId
-      emit('newSessionCreated', activeChatId)
     }
 
     await currentWs.value.ensureConnected(agentId, activeChatId)
     currentWs.value.send(messageData.text)
+
+    if (isNewChat) {
+      emit('newSessionCreated', activeChatId)
+    }
   } catch (error) {
     if (error?.message === 'Connection aborted by new attempt') return
     if (messages.value[0]) {

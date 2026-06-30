@@ -129,7 +129,7 @@ export function useDashboardChatWebSocket(mode = 'single') {
     connect(scopeId, chatId)
 
     return new Promise((resolve, reject) => {
-      const maxWaitTime = 10000
+      const maxWaitTime = 30000
       const startTime = Date.now()
 
       const checkConnection = setInterval(() => {
@@ -144,6 +144,7 @@ export function useDashboardChatWebSocket(mode = 'single') {
           resolve()
         } else if (Date.now() - startTime > maxWaitTime) {
           clearInterval(checkConnection)
+          disconnect()
           reject(new Error('WebSocket connection timeout'))
         }
       }, 100)

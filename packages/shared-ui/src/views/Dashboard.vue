@@ -209,8 +209,10 @@ const handleLoadSession = (sessionId) => {
 const handleNewSessionCreated = (newChatId) => {
   isCreatingNewChat.value = false
   activeSessionId.value = newChatId
-  sidebarRef.value?.refreshChatSessions?.()
-  sidebarMobileRef.value?.refreshChatSessions?.()
+  nextTick(() => {
+    sidebarRef.value?.refreshChatSessions?.()
+    sidebarMobileRef.value?.refreshChatSessions?.()
+  })
 }
 
 const handleSessionDeleted = (sessionId) => {
